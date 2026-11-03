@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Knockout Luck</title>
+  <meta name="description" content="How much of a Champions League knockout is luck? A model tested against the bookmakers, 2012-13 to 2025-26.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-row">
+      <span class="brand">Knockout Luck</span>
+      <nav>
+        <a href="#runs">Champions</a>
+        <a href="#butterfly">What if?</a>
+        <a href="#comeback">Comebacks</a>
+        <a href="#ties">Every tie</a>
+        <a href="#blind-spot">Real Madrid</a>
+        <a href="#honest">Is the model honest?</a>
+        <a href="#live">Live</a>
+      </nav>
+      <button class="theme" id="theme" type="button" aria-label="Switch light or dark mode">◐</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <p class="kicker">Champions League knockouts, <span data-fill="seasons"></span></p>
+      <h1>How much of a Champions League knockout is luck?</h1>
+      <p class="lede">For every knockout tie, a model worked out each team's chance of going through <b>before the first leg</b>, using only matches played earlier. Then we checked what actually happened.</p>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-value" data-fill="underdog"></span>
+          <span class="stat-label">average chance the underdog goes through</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" data-fill="median-run"></span>
+          <span class="stat-label">chance the typical champion had of winning every tie they played</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" data-fill="real"></span>
+          <span class="stat-label" data-fill="real-label"></span>
+        </div>
+      </div>
+    </section>
+
+    <section id="runs" class="card">
+      <h2>Even champions mostly got lucky</h2>
+      <p class="sub">The chance each champion had of winning every tie it actually played, judged before each tie. Seasons are labelled by the year of the final. Hover or tap a bar to see its route.</p>
+      <div class="chart" id="runs-chart" role="img" aria-label="Bar chart of each champion's chance of winning its run"></div>
+      <div class="path" id="runs-path" aria-live="polite"></div>
+    </section>
+
+    <section id="butterfly" class="card">
+      <h2>Change one result, change the whole tournament</h2>
+      <p class="sub">Pick the winner of any tie and watch every club's chance of lifting the trophy move. Strengths are frozen just before the round of 16, so the only thing changing is the results you choose.</p>
+      <div class="filters">
+        <label>Season <select id="bf-season"></select></label>
+        <button class="more" id="bf-real" type="button">Play it as it happened</button>
+        <button class="more" id="bf-reset" type="button">Clear my picks</button>
+      </div>
+      <p class="small" id="bf-note"></p>
+      <div class="bf-grid">
+        <div class="bracket" id="bf-bracket"></div>
+        <div>
+          <h3>Chance of winning the trophy</h3>
+          <div class="legend" id="bf-legend"></div>
+          <div class="chart" id="bf-chart" role="img" aria-label="Each club's chance of winning the trophy, before and after your picks"></div>
+          <p class="swing" id="bf-swing" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="comeback" class="card">
+      <h2>Comeback meter</h2>
+      <p class="sub">Pick a first-leg score. How likely is your team to still go through? The model's estimate sits next to every real two-legged tie that started the same way (Champions League and Europa League knockouts since 2011-12).</p>
+      <div class="cb-controls">
+        <div class="seg" role="group" aria-label="Where your team played the first leg">
+          <span class="seg-label">First leg</span>
+          <button type="button" data-venue="home" aria-pressed="false">At home</button>
+          <button type="button" data-venue="away" aria-pressed="true">Away</button>
+        </div>
+        <label>Your goals <select id="cb-us"></select></label>
+        <label>Their goals <select id="cb-them"></select></label>
+        <label>Your team is <select id="cb-strength">
+          <option value="-0.5">Much weaker</option>
+          <option value="-0.25">Weaker</option>
+          <option value="0" selected>Evenly matched</option>
+          <option value="0.25">Stronger</option>
+          <option value="0.5">Much stronger</option>
+        </select></label>
+        <label>Rules <select id="cb-rules">
+          <option value="0" selected>Today's (no away goals)</option>
+          <option value="1">Away-goals rule (to 2020-21)</option>
+        </select></label>
+      </div>
+      <div class="cb-grid">
+        <div>
+          <div class="meter-row">
+            <div class="meter-head"><span>Model's estimate</span><b id="cb-model"></b></div>
+            <div class="meter"><span id="cb-model-bar"></span></div>
+          </div>
+          <div class="meter-row">
+            <div class="meter-head"><span id="cb-hist-label">Real ties</span><b id="cb-hist"></b></div>
+            <div class="meter"><span id="cb-hist-bar" class="alt"></span><i id="cb-hist-range"></i></div>
+          </div>
+          <p class="swing" id="cb-text" aria-live="polite"></p>
+        </div>
+        <div>
+          <h3>Model's chance after every first-leg score</h3>
+          <p class="small" id="cb-heat-sub"></p>
+          <div class="chart" id="cb-heat" role="img" aria-label="Heatmap of the chance of going through after each first-leg score"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>The later the round, the closer the contest</h2>
+      <p class="sub">How often the model's favourite went through, against how often the model expected it to. The bars show 95% uncertainty: with only 14 finals, every round is a small sample.</p>
+      <div class="legend" id="rounds-legend"></div>
+      <div class="chart" id="rounds-chart" role="img" aria-label="Favourite win rate by round, expected and actual"></div>
+    </section>
+
+    <section id="ties" class="card">
+      <h2>Every knockout tie</h2>
+      <p class="sub">Each bar splits the chances between the two teams before the first leg. ✓ marks the team that went through.</p>
+      <div class="filters">
+        <label>Season <select id="f-season"></select></label>
+        <label>Round <select id="f-round"></select></label>
+        <label class="grow">Club <input id="f-club" type="search" placeholder="Search a club" autocomplete="off"></label>
+        <label class="check"><input id="f-upsets" type="checkbox"> Upsets only</label>
+      </div>
+      <p class="count" id="ties-count"></p>
+      <div class="ties" id="ties-list"></div>
+      <button class="more" id="ties-more" type="button" hidden>Show more ties</button>
+    </section>
+
+    <section id="blind-spot" class="card">
+      <h2>Luck, or a blind spot? Real Madrid</h2>
+      <p class="sub">Ties won against ties the model expected each club to win, for clubs with at least 8 ties. Most clubs sit close to what the model expected. One doesn't.</p>
+      <div class="legend" id="clubs-legend"></div>
+      <div class="chart" id="clubs-chart" role="img" aria-label="Expected and actual ties won per club"></div>
+      <div class="note">
+        <p><b>Real Madrid went through <span data-fill="real-won"></span> ties when the model expected <span data-fill="real-expected"></span>.</b> If the model were right, that would happen about once in 13,000 tries. The model rates Real accurately in La Liga, but in Champions League knockout matches they take about a third of a point a match more than expected.</p>
+        <p>So part of Real Madrid's "luck" isn't luck. Either they lift their level for these matches, or something that matters here isn't visible in league results.</p>
+      </div>
+    </section>
+
+    <section id="honest" class="card">
+      <h2>Is the model honest?</h2>
+      <p class="sub">Tested on <span data-fill="test-matches"></span> league matches from seasons it never saw (2017-18 onwards), against the bookmakers' closing odds.</p>
+      <div class="split">
+        <div>
+          <h3>When it says 60%, does it happen 60% of the time?</h3>
+          <div class="legend" id="cal-legend"></div>
+          <div class="chart" id="cal-chart" role="img" aria-label="Calibration chart"></div>
+        </div>
+        <div>
+          <h3>Accuracy scores (lower is better)</h3>
+          <table class="table" id="scores-table">
+            <thead><tr><th>Model</th><th class="num">Brier</th><th class="num">Log loss</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p class="small">The bookmakers win, as expected: closing odds include team news and the betting market's money. The model closes most of the gap between knowing nothing and the bookmakers.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="live" class="card">
+      <h2>Live: strongest clubs now</h2>
+      <p class="sub" id="live-sub"></p>
+      <div class="split">
+        <div>
+          <table class="table" id="ratings-table">
+            <thead><tr><th>#</th><th>Club</th><th class="num">Attack</th><th class="num">Defence</th><th class="num">Overall</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div>
+          <h3>The prediction ledger</h3>
+          <p class="small">Every prediction is saved before kick-off and never changed afterwards, then scored once the match is played.</p>
+          <div class="ledger" id="ledger"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p>Data: league results and closing odds from football-data.co.uk; Champions League results from openfootball (public domain). Models: Elo and Dixon–Coles, refitted on earlier matches only. Built <span data-fill="built"></span>.</p>
+    </footer>
+  </main>
+
+  <div class="tip" id="tip" role="tooltip"></div>
+  <script src="app.js"></script>
+</body>
+</html>

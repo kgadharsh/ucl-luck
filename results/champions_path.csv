@@ -1,0 +1,15 @@
+season,champion,ties,path_probability,weakest_tie,weakest_tie_p
+2012-13,Bayern Munich,4,0.1888,Quarterfinals,0.5351
+2013-14,Real Madrid,4,0.1306,Semifinals,0.3891
+2014-15,Barcelona,4,0.1272,Semifinals,0.4670
+2015-16,Real Madrid,4,0.2530,Final,0.5266
+2016-17,Real Madrid,4,0.0532,Quarterfinals,0.3239
+2017-18,Real Madrid,4,0.0368,Round of 16,0.3795
+2018-19,Liverpool,4,0.1372,Semifinals,0.4665
+2019-20,Bayern Munich,4,0.1086,Quarterfinals,0.4500
+2020-21,Chelsea,4,0.0331,Final,0.3099
+2021-22,Real Madrid,4,0.0295,Semifinals,0.3038
+2022-23,Man City,4,0.2622,Quarterfinals,0.6408
+2023-24,Real Madrid,4,0.0934,Quarterfinals,0.3860
+2024-25,Paris SG,5,0.0503,Semifinals,0.3689
+2025-26,Paris SG,5,0.0647,Final,0.4233
