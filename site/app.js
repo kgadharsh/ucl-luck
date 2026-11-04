@@ -322,7 +322,7 @@ function drawRuns(data) {
     const cx = m.l + step * (i + 0.5);
     const top_y = y(run.probability);
     const h = y(0) - top_y;
-    // Each bar, its labels and its hover zone share a group, so CSS can fade the other bars.
+    // Each bar, its labels and its hover zone share a group, so the other bars can be faded.
     const col = svg("g", { class: "bar-col" }, root);
     svg("rect", { x: cx - barWidth / 2, y: top_y, width: barWidth, height: h, fill: run === least ? css("--s2") : css("--s1"), class: "grow bar", style: `--d:${i * 45}ms` }, col);
     if (run === most || run === least) {
@@ -339,6 +339,10 @@ function drawRuns(data) {
     const hit = svg("rect", { x: cx - step / 2, y: top_y - 12, width: step, height: height - top_y + 12, class: "hit" }, col);
     hover(hit, `<b>${run.season}: ${clean(run.champion)}</b><br>${pct(run.probability, 1)} chance of winning every tie<br>${run.ties.map((t) => `${ROUND_SHORT[t.round]} v ${clean(t.opponent)}: ${pct(t.probability)}`).join("<br>")}`,
       () => showPath(run));
+    // Fade the other bars while this one is pointed at. (A CSS :has(:hover) rule did this, but
+    // WebKit doesn't always re-check it when the pointer moves.)
+    hit.addEventListener("pointerenter", () => { root.classList.add("focusing"); col.classList.add("lit"); });
+    hit.addEventListener("pointerleave", () => { root.classList.remove("focusing"); col.classList.remove("lit"); });
   });
   if (chosenRun) showPath(chosenRun, true);
   else showPath(least);

@@ -257,7 +257,7 @@ h3 { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .05e
 .chart .label-strong { fill: var(--ink); font-weight: 500; font-size: 12px; }
 .chart .hit { fill: transparent; cursor: pointer; }
 .chart .bar { transition: opacity .15s; }
-.chart svg:has(.bar-col:hover) .bar-col:not(:hover) .bar { opacity: .35; }
+.chart svg.focusing .bar-col:not(.lit) .bar { opacity: .35; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 10px; font: 12px var(--mono); color: var(--ink-2); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { width: 10px; height: 10px; display: inline-block; }
