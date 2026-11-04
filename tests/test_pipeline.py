@@ -1,0 +1,193 @@
+"""The daily pipeline: downloads, the prediction ledger and knockout ties.
+
+Everything runs on temporary files; nothing here touches data/ or results/.
+"""
+
+import importlib.util
+import io
+import urllib.error
+import warnings
+from datetime import date, datetime, timezone
+
+import pandas as pd
+import pytest
+
+from conftest import ROOT, needs_raw_data
+
+
+class _Reply(io.BytesIO):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        pass
+
+
+def _replying(body):
+    return lambda url, timeout=30: _Reply(body)
+
+
+def _failing(error):
+    def opener(url, timeout=30):
+        raise error
+    return opener
+
+
+@pytest.fixture
+def download():
+    spec = importlib.util.spec_from_file_location("download_data", ROOT / "scripts" / "download_data.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.PAUSE_SECONDS = 0
+    return module
+
+
+# ---------- downloads ----------
+
+@pytest.mark.parametrize("error", [
+    urllib.error.HTTPError("http://x", 404, "Not Found", None, None),
+    urllib.error.URLError("no network"),
+    TimeoutError("timed out"),
+], ids=["http-404", "no-network", "timeout"])
+def test_failed_refresh_keeps_the_old_file(download, tmp_path, monkeypatch, error):
+    dest = tmp_path / "E0.csv"
+    dest.write_bytes(b"old season data")
+    monkeypatch.setattr(download.urllib.request, "urlopen", _failing(error))
+    result = download.fetch("http://x", dest, refresh=True)
+    assert dest.read_bytes() == b"old season data"
+    assert result.startswith("kept old copy")
+
+
+def test_failed_download_of_a_new_file_reports_missing(download, tmp_path, monkeypatch):
+    monkeypatch.setattr(download.urllib.request, "urlopen", _failing(urllib.error.URLError("no network")))
+    dest = tmp_path / "new.csv"
+    assert download.fetch("http://x", dest).startswith("missing")
+    assert not dest.exists()
+
+
+def test_successful_refresh_replaces_the_file_completely(download, tmp_path, monkeypatch):
+    dest = tmp_path / "E0.csv"
+    dest.write_bytes(b"old")
+    monkeypatch.setattr(download.urllib.request, "urlopen", _replying(b"new season data"))
+    assert download.fetch("http://x", dest, refresh=True) == "refreshed"
+    assert dest.read_bytes() == b"new season data"
+    assert not list(tmp_path.glob("*.part"))
+
+
+def test_files_on_disk_are_kept_without_refresh(download, tmp_path, monkeypatch):
+    dest = tmp_path / "E0.csv"
+    dest.write_bytes(b"old")
+    monkeypatch.setattr(download.urllib.request, "urlopen", _failing(AssertionError("should not download")))
+    assert download.fetch("http://x", dest) == "kept"
+
+
+@pytest.mark.parametrize("day, season", [
+    (date(2026, 6, 30), 2025), (date(2026, 7, 1), 2026), (date(2027, 1, 15), 2026), (date(2027, 7, 1), 2027)])
+def test_current_season_rolls_over_on_1_july(download, day, season):
+    assert download.current_season(day) == season
+
+
+# ---------- fixtures: only matches still to kick off ----------
+
+FIXTURES = """Div,Date,Time,HomeTeam,AwayTeam
+E0,07/11/2026,12:30,Arsenal,Chelsea
+E0,07/11/2026,17:30,Liverpool,Everton
+E0,07/11/2026,17:30,Liverpool,Everton
+E0,07/11/2026,,Fulham,Brentford
+E0,08/11/2026,,Newcastle,Burnley
+SP1,07/11/2026,20:00,Barcelona,Getafe
+B1,08/11/2026,15:00,Genk,Gent
+"""
+
+
+@pytest.fixture
+def update(tmp_path, monkeypatch):
+    import update as module
+    (tmp_path / "data" / "raw").mkdir(parents=True)
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "LEDGER", tmp_path / "prediction_ledger.csv")
+    return module
+
+
+def test_only_fixtures_still_to_kick_off_are_predicted(update, monkeypatch):
+    monkeypatch.setattr(update.urllib.request, "urlopen", _replying(FIXTURES.encode()))
+    now = datetime(2026, 11, 7, 14, 0, tzinfo=timezone.utc)  # in November UK time is UTC
+    fixtures = update.upcoming_fixtures(now)
+    assert sorted(zip(fixtures.home, fixtures.away)) == [
+        ("Barcelona", "Getafe"),  # kicks off later today
+        ("Liverpool", "Everton"),  # later today, listed twice: kept once
+        ("Newcastle", "Burnley"),  # tomorrow, no time given
+    ]  # not Arsenal v Chelsea (already kicked off), Fulham v Brentford (today, time unknown), Genk v Gent (not big five)
+    assert set(fixtures.season) == {"2026-27"}
+
+
+def test_kick_off_times_are_read_as_uk_time(update, monkeypatch):
+    summer = "Div,Date,Time,HomeTeam,AwayTeam\nE0,15/08/2026,15:00,Leeds,Wolves\n"
+    monkeypatch.setattr(update.urllib.request, "urlopen", _replying(summer.encode()))
+    # 15:00 in August is 14:00 UTC (British Summer Time), so at 14:30 UTC it has started.
+    assert update.upcoming_fixtures(datetime(2026, 8, 15, 13, 30, tzinfo=timezone.utc)).shape[0] == 1
+    assert update.upcoming_fixtures(datetime(2026, 8, 15, 14, 30, tzinfo=timezone.utc)).shape[0] == 0
+
+
+def test_season_boundary_is_1_july(update):
+    seasons = update.season_of(pd.Series(pd.to_datetime(["2027-06-30", "2027-07-01"])))
+    assert seasons.tolist() == ["2026-27", "2027-28"]
+
+
+# ---------- the ledger: predictions are never changed or duplicated ----------
+
+def _prediction(day, p_home=0.6):
+    return pd.DataFrame({"competition": ["E0"], "season": ["2026-27"], "date": [pd.Timestamp(day)],
+                         "kickoff": [f"{day} 15:00 UTC"], "home": ["Liverpool"], "away": ["Everton"],
+                         "p_home": [p_home], "p_draw": [0.25], "p_away": [1 - p_home - 0.25]})
+
+
+def test_an_empty_old_format_ledger_takes_its_first_prediction(update):
+    pd.DataFrame(columns=["date", "home", "away", "competition", "p_home", "p_draw", "p_away",
+                          "predicted_at", "brier"]).to_csv(update.LEDGER, index=False)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", FutureWarning)
+        ledger, added = update.add_to_ledger(_prediction("2026-11-08"), "2026-11-05 05:30 UTC")
+    assert added == 1 and len(ledger) == 1
+
+
+def test_a_moved_match_keeps_its_original_prediction_and_is_scored(update):
+    first, _ = update.add_to_ledger(_prediction("2026-11-08", 0.6), "2026-11-05 05:30 UTC")
+    first.to_csv(update.LEDGER, index=False)
+    ledger, added = update.add_to_ledger(_prediction("2026-11-09", 0.5), "2026-11-07 05:30 UTC")
+    assert added == 0 and len(ledger) == 1
+    assert ledger.predicted_at.iloc[0] == "2026-11-05 05:30 UTC" and ledger.p_home.iloc[0] == 0.6
+    played = pd.DataFrame({"competition": ["E0"], "season": ["2026-27"], "date": [pd.Timestamp("2026-11-09")],
+                           "home": ["Liverpool"], "away": ["Everton"], "home_goals": [2], "away_goals": [0],
+                           "book_home": [0.62], "book_draw": [0.23], "book_away": [0.15]})
+    scored = update.score_ledger(ledger, played)
+    assert scored.brier.notna().sum() == 1
+
+
+def test_a_new_fixture_is_added_alongside_existing_ones(update):
+    first, _ = update.add_to_ledger(_prediction("2026-11-08"), "2026-11-05 05:30 UTC")
+    first.to_csv(update.LEDGER, index=False)
+    other = _prediction("2026-11-08").assign(home="Arsenal", away="Chelsea")
+    ledger, added = update.add_to_ledger(other, "2026-11-06 05:30 UTC")
+    assert added == 1 and len(ledger) == 2
+
+
+# ---------- knockout ties ----------
+
+@needs_raw_data
+def test_an_unfinished_two_legged_tie_is_skipped_not_decided(tmp_path, monkeypatch):
+    import knockouts
+    from matches import load_matches
+
+    matches = load_matches()
+    last16 = matches[(matches.competition == "CL") & (matches.season == "2025-26") & (matches["round"] == "Round of 16")]
+    pairs = last16.apply(lambda row: frozenset((row.home, row.away)), axis=1)
+    second_legs = last16.sort_values("date").groupby(pairs).tail(1).index
+    monkeypatch.setattr(knockouts, "load_matches", lambda: matches.drop(second_legs))
+    monkeypatch.setattr(knockouts, "RESULTS", tmp_path)
+    (tmp_path / "dixon_coles_settings.csv").write_bytes((ROOT / "results" / "dixon_coles_settings.csv").read_bytes())
+    knockouts.main()
+    ties = pd.read_csv(tmp_path / "knockout_ties.csv")
+    full = pd.read_csv(ROOT / "results" / "knockout_ties.csv")
+    assert len(ties) == len(full) - len(second_legs) == len(full) - 8
+    assert not ((ties.season == "2025-26") & (ties["round"] == "Round of 16")).any()

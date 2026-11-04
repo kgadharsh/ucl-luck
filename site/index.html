@@ -5,9 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Knockout Luck</title>
   <meta name="description" content="How much of a Champions League knockout is luck? A model tested against the bookmakers, 2012-13 to 2025-26.">
-  <link rel="stylesheet" href="style.css">
+  <meta property="og:title" content="How much of a Champions League knockout is luck?">
+  <meta property="og:description" content="Every knockout tie since 2012-13, with each team's chance before the first leg. Even champions mostly got lucky.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316140f'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23d23d1c'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+  <link rel="stylesheet" href="style.css?v=20">
+  <script>
+    // Before anything paints or draws: mark that JS is on, and apply a saved light/dark choice,
+    // so charts are never drawn in the system theme's colours and the page doesn't flash.
+    document.documentElement.classList.add("js");
+    try { const theme = localStorage.getItem("theme"); if (theme) document.documentElement.dataset.theme = theme; } catch (e) { /* storage unavailable */ }
+  </script>
 </head>
 <body>
+  <section class="mast" aria-label="Edition">
+    <div class="wrap mast-row">
+      <span class="mast-meta">Champions League knockouts, <span data-fill="seasons"></span></span>
+      <span class="grow"></span>
+      <span>Updated <span data-fill="built"></span></span>
+      <button class="theme" id="theme" type="button" aria-pressed="false">Dark mode</button>
+    </div>
+  </section>
+  <div class="wire" role="region" aria-label="Biggest upsets since 2012-13: ties won by a side given under 35%">
+    <button class="wire-tag" id="wire-pause" type="button" aria-pressed="false" aria-label="Pause the upsets ticker" title="Pause or play">Upsets <span class="when-running" aria-hidden="true">❚❚</span><span class="when-paused" aria-hidden="true">▶</span></button>
+    <div class="wire-track"><div class="wire-belt" id="wire-belt"></div></div>
+  </div>
   <header class="top">
     <div class="wrap top-row">
       <span class="brand">Knockout Luck</span>
@@ -15,40 +40,62 @@
         <a href="#runs">Champions</a>
         <a href="#butterfly">What if?</a>
         <a href="#comeback">Comebacks</a>
+        <a href="#rounds">Favourites</a>
         <a href="#ties">Every tie</a>
         <a href="#blind-spot">Real Madrid</a>
         <a href="#honest">Is the model honest?</a>
         <a href="#live">Live</a>
       </nav>
-      <button class="theme" id="theme" type="button" aria-label="Switch light or dark mode">◐</button>
     </div>
+    <div class="progress" id="progress"></div>
   </header>
 
   <main class="wrap">
-    <section class="hero">
-      <p class="kicker">Champions League knockouts, <span data-fill="seasons"></span></p>
-      <h1>How much of a Champions League knockout is luck?</h1>
-      <p class="lede">For every knockout tie, a model worked out each team's chance of going through <b>before the first leg</b>, using only matches played earlier. Then we checked what actually happened.</p>
-      <div class="stats">
-        <div class="stat">
-          <span class="stat-value" data-fill="underdog"></span>
-          <span class="stat-label">average chance the underdog goes through</span>
+    <section class="hero" id="top">
+      <p class="kicker">Model v. bookmakers</p>
+      <h1>How much of a Champions League knockout is <em>luck?</em></h1>
+      <div class="hero-grid">
+        <div class="hero-text">
+          <p class="lede">For every knockout tie, a model worked out each team's chance of going through <b>before the first leg</b>, using only matches played earlier. Then we checked what actually happened.</p>
+          <div class="stats">
+            <div class="stat">
+              <span class="stat-value" data-fill="underdog"></span>
+              <span class="stat-label">average chance the underdog goes through</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value" data-fill="median-run"></span>
+              <span class="stat-label">chance the typical champion had of winning every tie they played</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value" data-fill="real"></span>
+              <span class="stat-label" data-fill="real-label"></span>
+            </div>
+          </div>
         </div>
-        <div class="stat">
-          <span class="stat-value" data-fill="median-run"></span>
-          <span class="stat-label">chance the typical champion had of winning every tie they played</span>
-        </div>
-        <div class="stat">
-          <span class="stat-value" data-fill="real"></span>
-          <span class="stat-label" data-fill="real-label"></span>
-        </div>
+        <figure class="machine">
+          <div class="machine-head">
+            <span class="machine-title">The luck machine</span>
+            <div class="machine-buttons">
+              <button class="machine-replay machine-pause" id="machine-pause" type="button">Pause</button>
+              <button class="machine-replay" id="machine-replay" type="button">Drop them again</button>
+            </div>
+          </div>
+          <p class="machine-now" id="machine-now" aria-live="off">Every tie since 2012-13, about to drop.</p>
+          <div class="machine-stage"><canvas id="machine" role="img" aria-label="A Galton board of every knockout tie"></canvas></div>
+          <div class="machine-score">
+            <div class="ms-under"><b id="ms-under">0</b><span>underdogs went through</span></div>
+            <div class="ms-fav"><b id="ms-fav">0</b><span>favourites went through</span></div>
+          </div>
+          <figcaption>Each ball is one of the <span data-fill="ties"></span> ties, dropped in the order they were played. The route through the pegs is random; where it lands is not. It lands on the chance the team that went through had before the first leg, so <span class="red">everything left of the red line went to the underdog</span>.</figcaption>
+        </figure>
       </div>
     </section>
 
     <section id="runs" class="card">
       <h2>Even champions mostly got lucky</h2>
-      <p class="sub">The chance each champion had of winning every tie it actually played, judged before each tie. Seasons are labelled by the year of the final. Hover or tap a bar to see its route.</p>
+      <p class="sub">The chance each champion had of winning every tie it actually played, judged before each tie. Hover or tap a bar, or pick a champion below, to see its route.</p>
       <div class="chart" id="runs-chart" role="img" aria-label="Bar chart of each champion's chance of winning its run"></div>
+      <div class="filters run-pick"><label>Show the run of <select id="runs-pick"></select></label></div>
       <div class="path" id="runs-path" aria-live="polite"></div>
     </section>
 
@@ -74,7 +121,7 @@
 
     <section id="comeback" class="card">
       <h2>Comeback meter</h2>
-      <p class="sub">Pick a first-leg score. How likely is your team to still go through? The model's estimate sits next to every real two-legged tie that started the same way (Champions League and Europa League knockouts since 2011-12).</p>
+      <p class="sub">Pick a first-leg score. How likely is your team to still go through? The model's estimate sits next to every real two-legged tie that started the same way (Champions League knockouts since 2011-12, and Europa League knockouts from 2020-21 to 2024-25).</p>
       <div class="cb-controls">
         <div class="seg" role="group" aria-label="Where your team played the first leg">
           <span class="seg-label">First leg</span>
@@ -115,9 +162,9 @@
       </div>
     </section>
 
-    <section class="card">
+    <section id="rounds" class="card">
       <h2>The later the round, the closer the contest</h2>
-      <p class="sub">How often the model's favourite went through, against how often the model expected it to. The bars show 95% uncertainty: with only 14 finals, every round is a small sample.</p>
+      <p class="sub">How often the model's favourite went through, against how often the model expected it to. The bars show 95% uncertainty: with only <span data-fill="finals"></span> finals, every round is a small sample.</p>
       <div class="legend" id="rounds-legend"></div>
       <div class="chart" id="rounds-chart" role="img" aria-label="Favourite win rate by round, expected and actual"></div>
     </section>
@@ -125,11 +172,21 @@
     <section id="ties" class="card">
       <h2>Every knockout tie</h2>
       <p class="sub">Each bar splits the chances between the two teams before the first leg. ✓ marks the team that went through.</p>
+      <figure class="ticker">
+        <figcaption><b>Season by season.</b> One bar per tie, grouped by round within each season, from the play-offs to the final. A bar's height is the chance the team that went through had before the first leg; the dotted line is 50%, so <span class="red">red bars, below it, are ties the underdog won</span>. Click a season, or choose one below, to zoom in.</figcaption>
+        <div class="strip-nav" id="strip-nav" hidden>
+          <button type="button" class="more" data-step="-1">‹ <span></span></button>
+          <b></b>
+          <button type="button" class="more" data-step="1"><span></span> ›</button>
+          <button type="button" class="more" data-all>All seasons</button>
+        </div>
+        <div class="chart" id="ticker-chart" role="img" aria-label="Every knockout tie by season and round, with the chance the team that went through had beforehand"></div>
+      </figure>
       <div class="filters">
         <label>Season <select id="f-season"></select></label>
         <label>Round <select id="f-round"></select></label>
         <label class="grow">Club <input id="f-club" type="search" placeholder="Search a club" autocomplete="off"></label>
-        <label class="check"><input id="f-upsets" type="checkbox"> Upsets only</label>
+        <label class="check"><input id="f-upsets" type="checkbox"> Upsets only (under 35%)</label>
       </div>
       <p class="count" id="ties-count"></p>
       <div class="ties" id="ties-list"></div>
@@ -142,7 +199,7 @@
       <div class="legend" id="clubs-legend"></div>
       <div class="chart" id="clubs-chart" role="img" aria-label="Expected and actual ties won per club"></div>
       <div class="note">
-        <p><b>Real Madrid went through <span data-fill="real-won"></span> ties when the model expected <span data-fill="real-expected"></span>.</b> If the model were right, that would happen about once in 13,000 tries. The model rates Real accurately in La Liga, but in Champions League knockout matches they take about a third of a point a match more than expected.</p>
+        <p><b>Real Madrid went through <span data-fill="real-won"></span> ties when the model expected <span data-fill="real-expected"></span>.</b> If the model were right, that would happen about once in <span data-fill="real-odds"></span> tries. The model rates Real accurately in La Liga, but in Champions League knockout matches they take about a third of a point a match more than expected.</p>
         <p>So part of Real Madrid's "luck" isn't luck. Either they lift their level for these matches, or something that matters here isn't visible in league results.</p>
       </div>
     </section>
@@ -153,8 +210,13 @@
       <div class="split">
         <div>
           <h3>When it says 60%, does it happen 60% of the time?</h3>
+          <div class="seg cal-view" role="group" aria-label="Chart view">
+            <button type="button" data-view="gap" aria-pressed="true">Gap from honest</button>
+            <button type="button" data-view="full" aria-pressed="false">Full scale</button>
+          </div>
           <div class="legend" id="cal-legend"></div>
-          <div class="chart" id="cal-chart" role="img" aria-label="Calibration chart"></div>
+          <div class="chart" id="cal-chart" role="img" aria-label="Calibration chart: for each model, how often the home team actually won against how likely the model said it was"></div>
+          <p class="small" id="cal-note"></p>
         </div>
         <div>
           <h3>Accuracy scores (lower is better)</h3>
@@ -173,7 +235,7 @@
       <div class="split">
         <div>
           <table class="table" id="ratings-table">
-            <thead><tr><th>#</th><th>Club</th><th class="num">Attack</th><th class="num">Defence</th><th class="num">Overall</th></tr></thead>
+            <thead><tr><th>#</th><th>Club</th><th class="num">Attack</th><th class="num">Defence</th><th class="num">Overall</th><th class="rbar-head"><span class="sr">Overall, as a bar</span></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -190,7 +252,8 @@
     </footer>
   </main>
 
-  <div class="tip" id="tip" role="tooltip"></div>
-  <script src="app.js"></script>
+  <div class="tip" id="tip" aria-hidden="true"></div>
+  <script src="motion.js?v=9"></script>
+  <script src="app.js?v=24"></script>
 </body>
 </html>

@@ -12,11 +12,20 @@ Usage:
 import time
 import urllib.error
 import urllib.request
+from datetime import date
 from pathlib import Path
 
 RAW = Path(__file__).resolve().parent.parent / "data" / "raw"
 FIRST_SEASON = 2011
-LAST_SEASON = 2026  # 2026-27, the season in progress
+
+
+def current_season(today=None):
+    """First year of the season in progress: 2026 (for 2026-27) from July 2026 to June 2027."""
+    today = today or date.today()
+    return today.year if today.month >= 7 else today.year - 1
+
+
+LAST_SEASON = current_season()
 
 # Big five leagues: England, Spain, Germany, Italy, France
 LEAGUES = ["E0", "SP1", "D1", "I1", "F1"]
@@ -30,18 +39,23 @@ def seasons():
         yield year
 
 
-def fetch(url, dest):
-    if dest.exists():
+def fetch(url, dest, refresh=False):
+    """Download url to dest. A failed download never removes a copy already on disk:
+    the old file stays until a new one has arrived in full."""
+    if dest.exists() and not refresh:
         return "kept"
     try:
         with urllib.request.urlopen(url, timeout=30) as response:
             data = response.read()
-    except urllib.error.HTTPError as err:
-        return f"missing ({err.code})"
+    except (urllib.error.URLError, TimeoutError) as err:
+        reason = err.code if isinstance(err, urllib.error.HTTPError) else err
+        return f"kept old copy, fetch failed ({reason})" if dest.exists() else f"missing ({reason})"
     dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_bytes(data)
+    partial = dest.with_suffix(dest.suffix + ".part")
+    partial.write_bytes(data)
+    partial.replace(dest)
     time.sleep(PAUSE_SECONDS)
-    return "downloaded"
+    return "refreshed" if refresh else "downloaded"
 
 
 def main(refresh_current=False):
@@ -49,21 +63,17 @@ def main(refresh_current=False):
         code = f"{year % 100:02d}{(year + 1) % 100:02d}"  # 2011 -> "1112"
         name = f"{year}-{(year + 1) % 100:02d}"  # 2011 -> "2011-12"
 
-        if refresh_current and year == LAST_SEASON:
-            # The season in progress changes after every matchday, so fetch it again.
-            for old in (RAW / "leagues" / name).glob("*.csv"):
-                old.unlink()
-            for old in (RAW / "europe" / name).glob("*.txt"):
-                old.unlink()
+        # The season in progress changes after every matchday, so fetch it again.
+        refresh = refresh_current and year == LAST_SEASON
 
         for league in LEAGUES:
             url = f"https://www.football-data.co.uk/mmz4281/{code}/{league}.csv"
-            result = fetch(url, RAW / "leagues" / name / f"{league}.csv")
+            result = fetch(url, RAW / "leagues" / name / f"{league}.csv", refresh)
             print(f"{name} {league}: {result}")
 
         for comp in EUROPE:
             url = f"https://raw.githubusercontent.com/openfootball/champions-league/master/{name}/{comp}.txt"
-            result = fetch(url, RAW / "europe" / name / f"{comp}.txt")
+            result = fetch(url, RAW / "europe" / name / f"{comp}.txt", refresh)
             print(f"{name} {comp}: {result}")
 
 

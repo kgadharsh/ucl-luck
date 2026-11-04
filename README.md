@@ -34,7 +34,7 @@ If I stop after week 2, I still have a model tested against bookmakers.
 | Source | What | Licence |
 |---|---|---|
 | [football-data.co.uk](https://www.football-data.co.uk/) | League results with bookmaker odds, including closing odds (for example `PSCH`, Pinnacle closing home odds) | Free to use; check their terms before publishing anything built on it |
-| [openfootball/champions-league](https://github.com/openfootball/champions-league) | Champions League and Europa League results, 2011-12 onwards, including extra time and penalties | CC0 (public domain) |
+| [openfootball/champions-league](https://github.com/openfootball/champions-league) | Champions League results from 2011-12 and Europa League results from 2020-21 to 2024-25 (the only Europa League seasons it has), including extra time and penalties | CC0 (public domain) |
 
 Raw data is downloaded by `scripts/download_data.py` into `data/raw/` and isn't committed.
 
@@ -48,22 +48,23 @@ python3 -m venv .venv
 
 ## Dashboard
 
-`site/` is a static dashboard: plain HTML, CSS and JavaScript with hand-drawn SVG charts, no libraries and no build step. It shows:
-- the headline numbers;
-- each champion's run, with its route on tap;
+`site/` is a static dashboard: plain HTML, CSS and JavaScript with hand-drawn SVG and canvas charts, no libraries and no build step (`app.js` draws the charts, `motion.js` handles the animation). It shows:
+- **the luck machine**: every tie since 2012-13 drops through a Galton board and lands on the chance the team that went through had before the first leg, so the pile is the shape of the luck. Hover a ball for its tie; click it to find it in the explorer;
+- a ticker of the biggest upsets (the team that went through had under 35%) and the headline numbers;
+- each champion's run, with a funnel showing its chance shrinking tie by tie (pick any champion);
 - **"What if?"**, a butterfly-effect bracket for every season since 2012-13 (`src/brackets.py`). Pick the winner of any tie, and every club's chance of winning the trophy is recalculated exactly, with gains and losses shown against the chances before your picks. Strengths are frozen just before the round of 16. For seasons before 2024-25, when later rounds were drawn round by round, the bracket uses the draws as they happened;
 - **a comeback meter**: pick a first-leg score, venue, team strength and rule set.
   - The model works out the exact chance of going through, covering the second leg, extra time, penalties and, optionally, away goals.
-  - It sits next to the record of all 337 real two-legged Champions League and Europa League knockout ties that started the same way since 2011-12, with a 95% range.
+  - It sits next to the record of real two-legged ties that started the same way under the same rules, with a 95% range: 337 ties in all, from Champions League knockouts since 2011-12 and Europa League knockouts from 2020-21 to 2024-25.
   - A heatmap shows every first-leg score at once. Under today's rules only the goal difference matters, so each diagonal is the same; with away goals it isn't.
   - Real teams that lost the first leg away usually hosted the second leg because they were seeded, which is why the record beats the "evenly matched" model there.
 - favourites by round, with uncertainty;
-- an explorer for all 226 ties, with filters for season, round, club and upsets;
+- an explorer for all 226 ties, with a season-by-season strip and filters for season, round, club and upsets;
 - the Real Madrid blind spot;
-- calibration and scores against the bookmakers;
+- calibration against the bookmakers, shown as each model's gap from honest (or on the full scale), plus the scores;
 - the live ratings and the prediction ledger.
 
-It works on phones and in light and dark mode.
+It works on phones, in light and dark mode, with a keyboard, and printed or saved as PDF (every section prints, in the light palette). Readers who ask their system for reduced motion get the finished page without animation.
 
 ```bash
 .venv/bin/python src/export_site.py              # writes site/data.json from results/
@@ -72,11 +73,27 @@ python3 -m http.server 8123 --directory site     # then open http://localhost:81
 
 The daily workflow refreshes `site/data.json`, so the page can be hosted free on GitHub Pages or Netlify and stay up to date.
 
+## Tests
+
+```bash
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/python -m playwright install chromium firefox webkit   # the three browser engines, once
+.venv/bin/python -m pytest                                       # everything, about 3 minutes
+.venv/bin/python -m pytest -o addopts="" tests/test_pipeline.py tests/test_data.py   # just the fast checks
+```
+
+- `tests/test_pipeline.py`: failed downloads keep the old data, only fixtures still to kick off are predicted (in UK time), a moved match is never predicted twice, the season rolls over on 1 July, and unfinished two-legged ties are skipped.
+- `tests/test_data.py`: `site/data.json` agrees with itself (every champion's run is the product of its ties, the calibration chart uses the same matches as the scores table), and the README quotes the same numbers as the data.
+- `tests/test_site.py`: the dashboard in Chromium, Firefox and WebKit (Safari's engine). It checks that charts use the right colours in every theme combination, that nothing runs off-screen from 320px to 1920px wide, an accessibility scan, reduced motion, tooltips (they hide however the pointer leaves; a tap shows one on touch screens), hover zones, keyboard focus, links to a section, the nav highlight, the season strip's zoom and filters, and that a printout shows every section in final form.
+
+GitHub Actions runs them on every push and pull request and after each daily update (`.github/workflows/tests.yml`). The daily job also runs the pipeline and data checks before it commits, so it never commits a `data.json` that disagrees with itself.
+
 ## Live predictions (self-updating)
 
-`src/update.py` refits Dixon–Coles on every match played so far. It then predicts upcoming big-five league fixtures and writes them to a **prediction ledger** (`results/live/prediction_ledger.csv`), stamped with the time of prediction.
-- A prediction already in the ledger is never changed, so the record can't be quietly improved afterwards.
+`src/update.py` refits Dixon–Coles on the last three years of matches, with recent ones counting more. It then predicts big-five league fixtures that haven't kicked off yet (using the kick-off times in football-data's fixture list) and writes them to a **prediction ledger** (`results/live/prediction_ledger.csv`), stamped with the time of prediction.
+- A prediction already in the ledger is never changed, so the record can't be quietly improved afterwards. Each league meeting is predicted once per season, even if the match is moved to another date.
 - Once a match is played, its prediction is scored against the result and the bookmakers' closing odds.
+- If a download fails, the previous copy of that season's data is kept rather than lost.
 - `results/live/scorecard.md` shows the running score and the current strongest clubs.
 
 ```bash
@@ -92,7 +109,7 @@ The daily workflow refreshes `site/data.json`, so the page can be hosted free on
 
 ### Week 1: Elo against the bookmakers
 
-**Setup.** One Elo rating per club, updated after every big-five league, Champions League and Europa League match from August 2011 (30,331 matches). A rating difference becomes home/draw/away chances through an ordered logistic model, refitted each season on earlier seasons only.
+**Setup.** One Elo rating per club, updated after every big-five league and Champions League match from August 2011 and every Europa League match from 2020-21 (30,331 matches, up to 2 November 2026). A rating difference becomes home/draw/away chances through an ordered logistic model, refitted each season on earlier seasons only.
 - 2011-12: warm-up, not scored.
 - 2012-13 to 2016-17: tuning only (K = 20, home advantage = 40 points, promoted sides start 50 below their league's average, no regression between seasons).
 - 2017-18 onwards: test seasons, never used for any choice.
@@ -170,7 +187,7 @@ Run it with `.venv/bin/python src/evaluate_dc.py` (about 3 minutes).
 ### Luck, or a blind spot? Real Madrid
 
 The tie probabilities are honest overall, but one club breaks them.
-- **Real Madrid went through 36 of 44 ties when the model expected 24.3.** If the model were right, that would happen about **once in 13,000 tries**, which is still far too rare after allowing for 15 clubs being checked. Every other club with 8 or more ties is within the normal range.
+- **Real Madrid went through 36 of 44 ties when the model expected 24.3.** If the model were right, that would happen about **once in 11,500 tries**, which is still far too rare after allowing for 15 clubs being checked. Every other club with 8 or more ties is within the normal range.
 - The model rates Real accurately in La Liga: they took 2.24 points a match against 2.18 expected. In **Champions League knockout matches** they took **1.85 against 1.50 expected**, a third of a point a match over 82 matches. Bayern, City, Barcelona and PSG show no comparable gap.
 - **Conclusion:** part of what looks like Real Madrid's luck is not luck. Either Real lifts its level for Champions League knockouts, or something that matters there (squad depth, experience) isn't visible in league results. A model built mostly on league results can't tell these apart. That limit is worth stating plainly, and testing it further is a natural next step.
 

@@ -1,0 +1,43 @@
+# Runs the test suite: the daily pipeline, data.json and README consistency, and the
+# dashboard itself in Chromium, Firefox and WebKit (Safari's engine).
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  # Pushes made by the daily job don't trigger workflows, so check its output this way.
+  workflow_run:
+    workflows: ["Daily update"]
+    types: [completed]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Restore downloaded results
+        uses: actions/cache/restore@v4
+        with:
+          path: data/raw
+          key: raw-${{ github.run_id }}
+          restore-keys: raw-
+
+      - name: Install
+        run: pip install -r requirements-dev.txt
+
+      - name: Install browsers
+        run: python -m playwright install --with-deps chromium firefox webkit
+
+      - name: Download any missing results
+        run: python scripts/download_data.py
+
+      - name: Run tests
+        run: pytest

@@ -1,15 +1,18 @@
 """Self-updating predictions with an honest ledger.
 
 Each run:
-1. refits Dixon–Coles on every match played so far,
-2. predicts upcoming big-five league fixtures and adds them to a ledger,
-   stamped with the time of prediction (a prediction already in the ledger is never changed),
+1. refits Dixon–Coles on the matches of the last three years (recent ones count more),
+2. predicts big-five league fixtures that have not kicked off and adds them to a ledger,
+   stamped with the time of prediction (a prediction already in the ledger is never changed,
+   even if the match is moved to another date),
 3. scores ledger predictions whose matches have now been played, against the bookmakers,
 4. writes current ratings and a scorecard.
 
 Run after scripts/download_data.py --refresh-current, by hand or on a schedule.
 """
 
+import inspect
+import json
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,7 +30,16 @@ LIVE = ROOT / "results" / "live"
 LEDGER = LIVE / "prediction_ledger.csv"
 FIXTURES_URL = "https://www.football-data.co.uk/fixtures.csv"
 LEAGUES = {"E0", "SP1", "D1", "I1", "F1"}
-KEY = ["date", "home", "away"]
+# One prediction per league meeting: two clubs meet at a given ground once a season, so this
+# key survives a match being moved to another date (keying on the date would predict it twice).
+KEY = ["competition", "season", "home", "away"]
+UK = "Europe/London"  # fixtures.csv gives kick-off times in UK time
+
+
+def season_of(dates):
+    """'2026-27' for any date from July 2026 to June 2027."""
+    years = dates.dt.year - (dates.dt.month < 7).astype(int)
+    return years.astype(str) + "-" + ((years + 1) % 100).map("{:02d}".format)
 
 
 def settings():
@@ -35,19 +47,32 @@ def settings():
     return dict(xi=row.xi, prior_weight=row.prior_weight, newcomer=row.newcomer), row.rho
 
 
-def upcoming_fixtures(today):
+def upcoming_fixtures(now):
+    """Big-five fixtures that have not kicked off yet."""
     with urllib.request.urlopen(FIXTURES_URL, timeout=30) as response:
         path = ROOT / "data" / "raw" / "fixtures.csv"
         path.write_bytes(response.read())
     frame = pd.read_csv(path, encoding="utf-8-sig")
-    frame = frame[frame["Div"].isin(LEAGUES)]
+    frame = frame[frame["Div"].isin(LEAGUES)].reset_index(drop=True)
+    dates = pd.to_datetime(parse_dates(frame["Date"]))
+    times = frame["Time"].fillna("").astype(str).str.strip() if "Time" in frame else pd.Series("", index=frame.index)
+    kickoff = pd.to_datetime(dates.dt.strftime("%Y-%m-%d") + " " + times, format="%Y-%m-%d %H:%M", errors="coerce")
+    kickoff = kickoff.dt.tz_localize(UK, ambiguous="NaT", nonexistent="NaT").dt.tz_convert("UTC")
     fixtures = pd.DataFrame({
         "competition": frame["Div"],
-        "date": pd.to_datetime(parse_dates(frame["Date"])),
+        "season": season_of(dates),
+        "date": dates,
+        "kickoff": kickoff,
         "home": frame["HomeTeam"].str.strip(),
         "away": frame["AwayTeam"].str.strip(),
     })
-    return fixtures[fixtures.date >= today].reset_index(drop=True)
+    # Only matches still to start. Without a usable kick-off time we can't tell whether a
+    # match today has started, so those count only from the day after.
+    today = pd.Timestamp(now.date())
+    ahead = (fixtures.kickoff > now) | (fixtures.kickoff.isna() & (fixtures.date > today))
+    fixtures = fixtures[ahead].drop_duplicates(KEY)
+    fixtures["kickoff"] = fixtures.kickoff.dt.strftime("%Y-%m-%d %H:%M UTC")
+    return fixtures.reset_index(drop=True)
 
 
 def predict(model, rho, newcomer, fixtures):
@@ -66,9 +91,12 @@ def add_to_ledger(predictions, stamp):
     if not LEDGER.exists():
         return predictions, len(predictions)
     ledger = pd.read_csv(LEDGER, parse_dates=["date"])
-    known = set(zip(ledger.date, ledger.home, ledger.away))
-    new = predictions[[(d, h, a) not in known for d, h, a in
-                       zip(predictions.date, predictions.home, predictions.away)]]
+    if ledger.empty:  # also: an empty file's date column isn't read as dates
+        return predictions, len(predictions)
+    if "season" not in ledger:  # ledgers written before predictions were keyed by season
+        ledger.insert(1, "season", season_of(pd.to_datetime(ledger.date)))
+    known = set(map(tuple, ledger[KEY].to_numpy()))
+    new = predictions[[key not in known for key in map(tuple, predictions[KEY].to_numpy())]]
     if len(new):
         ledger = pd.concat([ledger, new], ignore_index=True)
     return ledger, len(new)
@@ -130,12 +158,23 @@ def main():
     ratings = ratings.sort_values("overall", ascending=False).reset_index(drop=True)
     ratings.to_csv(LIVE / "ratings.csv", index=False, float_format="%.4f")
 
-    fixtures = upcoming_fixtures(today)
+    fixtures = upcoming_fixtures(now)
     predictions = predict(model, rho, fit_settings["newcomer"], fixtures)
     ledger, added = add_to_ledger(predictions, stamp)
     ledger = score_ledger(ledger, matches)
-    ledger.sort_values(KEY).to_csv(LEDGER, index=False, float_format="%.4f")
+    ledger.sort_values(["date", "competition", "home"]).to_csv(LEDGER, index=False, float_format="%.4f")
     write_scorecard(ledger, ratings, stamp)
+
+    # What the dashboard needs to describe the ratings honestly.
+    this_season = matches[matches.competition.isin(LEAGUES) & (matches.season == matches.season.max())]
+    big_five = ratings[ratings.club.isin(set(this_season.home) | set(this_season.away))]
+    meta = {
+        "refitted_at": stamp,
+        "fitted_through": f"{matches.date.max():%Y-%m-%d}",
+        "window_days": inspect.signature(fit).parameters["window_days"].default,
+        "big_five_average": round(float(big_five.overall.mean()), 3),
+    }
+    (LIVE / "meta.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
 
     print(f"{stamp}: fitted on {len(matches)} matches up to {matches.date.max():%d %b %Y}; "
           f"{len(fixtures)} upcoming fixtures, {added} new predictions; "

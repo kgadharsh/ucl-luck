@@ -1,5 +1,5 @@
 {
- "built": "03 Nov 2026",
+ "built": "04 Nov 2026",
  "headline": {
   "ties": 226,
   "first_season": "2012-13",
@@ -2581,13 +2581,16 @@
  ],
  "matches": 30331,
  "live": {
-  "updated": "03 Nov 2026",
+  "updated": "04 Nov 2026",
+  "fitted_through": "02 Nov 2026",
+  "window_years": 3,
+  "big_five_average": 0.1,
   "ratings": [
    {
     "club": "Arsenal",
-    "attack": 0.373,
-    "defence": 0.875,
-    "overall": 1.248
+    "attack": 0.372,
+    "defence": 0.871,
+    "overall": 1.244
    },
    {
     "club": "Bayern Munich",
@@ -2597,9 +2600,9 @@
    },
    {
     "club": "Paris SG",
-    "attack": 0.54,
+    "attack": 0.543,
     "defence": 0.469,
-    "overall": 1.009
+    "overall": 1.012
    },
    {
     "club": "Barcelona",
@@ -2609,39 +2612,39 @@
    },
    {
     "club": "Man City",
-    "attack": 0.446,
-    "defence": 0.417,
+    "attack": 0.445,
+    "defence": 0.416,
     "overall": 0.862
    },
    {
     "club": "Real Madrid",
     "attack": 0.452,
-    "defence": 0.405,
-    "overall": 0.857
+    "defence": 0.404,
+    "overall": 0.856
    },
    {
     "club": "Inter",
     "attack": 0.423,
-    "defence": 0.32,
-    "overall": 0.743
+    "defence": 0.318,
+    "overall": 0.74
    },
    {
     "club": "Liverpool",
     "attack": 0.336,
-    "defence": 0.368,
-    "overall": 0.704
+    "defence": 0.367,
+    "overall": 0.703
    },
    {
     "club": "Brighton",
     "attack": 0.288,
-    "defence": 0.319,
-    "overall": 0.607
+    "defence": 0.318,
+    "overall": 0.606
    },
    {
     "club": "Roma",
     "attack": 0.227,
-    "defence": 0.368,
-    "overall": 0.595
+    "defence": 0.367,
+    "overall": 0.594
    },
    {
     "club": "Ath Madrid",
@@ -2659,49 +2662,49 @@
     "club": "Como",
     "attack": 0.132,
     "defence": 0.382,
-    "overall": 0.515
+    "overall": 0.514
    },
    {
     "club": "Chelsea",
-    "attack": 0.318,
-    "defence": 0.155,
+    "attack": 0.317,
+    "defence": 0.154,
     "overall": 0.472
    },
    {
     "club": "Lille",
-    "attack": 0.043,
-    "defence": 0.42,
-    "overall": 0.463
+    "attack": 0.044,
+    "defence": 0.421,
+    "overall": 0.465
    },
    {
     "club": "Brentford",
     "attack": 0.227,
     "defence": 0.212,
-    "overall": 0.44
+    "overall": 0.439
    },
    {
     "club": "Bournemouth",
-    "attack": 0.209,
+    "attack": 0.208,
     "defence": 0.224,
-    "overall": 0.433
+    "overall": 0.432
+   },
+   {
+    "club": "Lyon",
+    "attack": 0.181,
+    "defence": 0.248,
+    "overall": 0.428
    },
    {
     "club": "Aston Villa",
     "attack": 0.189,
-    "defence": 0.238,
-    "overall": 0.427
-   },
-   {
-    "club": "Lyon",
-    "attack": 0.18,
-    "defence": 0.247,
-    "overall": 0.427
+    "defence": 0.237,
+    "overall": 0.426
    },
    {
     "club": "Lens",
     "attack": 0.174,
-    "defence": 0.241,
-    "overall": 0.415
+    "defence": 0.242,
+    "overall": 0.416
    }
   ],
   "predictions": 0,

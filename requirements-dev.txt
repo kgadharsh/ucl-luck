@@ -1,0 +1,6 @@
+# For running the tests: pytest, and Playwright to drive Chromium, Firefox and WebKit.
+-r requirements.txt
+pytest==8.4.2
+pytest-playwright==0.7.1
+playwright==1.60.0
+pypdf==6.21.4

@@ -22,6 +22,10 @@ from outcomes import outcome_codes
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "results"
 SITE = ROOT / "site"
+# The week 1-2 evaluation behind the scores table (README) ran on matches up to this date.
+# The calibration chart uses exactly the same matches, so the two agree and neither drifts
+# as the season in progress adds games.
+EVALUATED_THROUGH = pd.Timestamp("2026-11-02")
 
 
 def calibration_points(p_home, won, bins=10, minimum=30):
@@ -41,7 +45,7 @@ def calibration_points(p_home, won, bins=10, minimum=30):
 def calibration(matches):
     settings = pd.read_csv(RESULTS / "dixon_coles_settings.csv").iloc[0]
     test_seasons = sorted(set(matches.season) - {WARM_UP} - set(TUNE))
-    inside = matches.season.isin(test_seasons)
+    inside = matches.season.isin(test_seasons) & (matches.date <= EVALUATED_THROUGH)
     start, end = matches.date[inside].min(), matches.date[inside].max() + pd.Timedelta(days=1)
     lam, nu = walk_forward_goals(matches, start, end, xi=settings.xi,
                                  prior_weight=settings.prior_weight, newcomer=settings.newcomer)
@@ -117,8 +121,16 @@ def live_section():
     scored = ledger.dropna(subset=["brier"]) if "brier" in ledger else ledger
     both = scored.dropna(subset=["book_brier"]) if "book_brier" in scored else scored
     upcoming = ledger[ledger["brier"].isna()] if "brier" in ledger else ledger
+    # When and on what the ratings were fitted, as written by update.py. A file's modification
+    # time is no substitute: a fresh git clone resets it to the day of the clone.
+    meta_path = RESULTS / "live" / "meta.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+    day = lambda text: datetime.strptime(text[:10], "%Y-%m-%d").strftime("%d %b %Y")
     return {
-        "updated": datetime.fromtimestamp(ratings_path.stat().st_mtime, timezone.utc).strftime("%d %b %Y"),
+        "updated": day(meta["refitted_at"]) if "refitted_at" in meta else None,
+        "fitted_through": day(meta["fitted_through"]) if "fitted_through" in meta else None,
+        "window_years": round(meta["window_days"] / 365) if "window_days" in meta else None,
+        "big_five_average": meta.get("big_five_average"),
         "ratings": ratings.round(3).to_dict("records"),
         "predictions": int(len(ledger)),
         "scored": int(len(scored)),

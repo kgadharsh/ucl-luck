@@ -16,6 +16,7 @@ function svg(tag, attrs = {}, parent) {
 }
 
 function canvas(container, height) {
+  if (tipOwner && container.contains(tipOwner)) hideTip(); // its element is about to be redrawn away
   container.innerHTML = "";
   const width = Math.max(container.clientWidth, 280);
   const root = svg("svg", { viewBox: `0 0 ${width} ${height}`, width, height }, container);
@@ -23,8 +24,13 @@ function canvas(container, height) {
 }
 
 // ---------- tooltip ----------
+// A tooltip belongs to the element that opened it, and hides as soon as the pointer is
+// anywhere else. "pointerleave" alone isn't enough: it never comes if the pointer leaves the
+// window quickly or the chart is redrawn under it, and the tooltip would stay up.
 const tip = document.getElementById("tip");
-function showTip(html, event) {
+let tipOwner = null;
+function showTip(html, event, owner = event.currentTarget) {
+  tipOwner = owner;
   tip.innerHTML = html;
   tip.classList.add("on");
   const pad = 14;
@@ -36,12 +42,27 @@ function showTip(html, event) {
   tip.style.left = `${Math.max(8, x)}px`;
   tip.style.top = `${Math.max(8, y)}px`;
 }
-const hideTip = () => tip.classList.remove("on");
+function hideTip() {
+  tipOwner = null;
+  tip.classList.remove("on");
+}
+document.addEventListener("pointermove", (e) => {
+  if (tipOwner && e.pointerType !== "touch" && (!tipOwner.isConnected || !tipOwner.contains(e.target))) hideTip();
+}, { passive: true });
+// (A finger "leaves" the page whenever it lifts, so touch is left to the tap-elsewhere rule.)
+document.documentElement.addEventListener("pointerleave", (e) => { if (e.pointerType !== "touch") hideTip(); });
+window.addEventListener("blur", hideTip);
+// Mouse: the tooltip follows the pointer. Touch sends no pointermove for a tap and leaves as
+// soon as the finger lifts, so a tap shows the tooltip and it stays until the next tap or scroll.
+// `html` can be a function, for tooltips whose text depends on the moment they are shown.
 function hover(node, html, onPick) {
-  node.addEventListener("pointermove", (e) => showTip(html, e));
-  node.addEventListener("pointerleave", hideTip);
+  const text = () => (typeof html === "function" ? html() : html);
+  node.addEventListener("pointermove", (e) => { if (e.pointerType !== "touch") showTip(text(), e); });
+  node.addEventListener("pointerleave", (e) => { if (e.pointerType !== "touch") hideTip(); });
+  node.addEventListener("pointerdown", (e) => { if (e.pointerType === "touch") showTip(text(), e); });
   if (onPick) node.addEventListener("click", onPick);
 }
+document.addEventListener("pointerdown", (e) => { if (e.pointerType === "touch" && !e.target.closest(".chart")) hideTip(); });
 
 function legend(id, items) {
   document.getElementById(id).innerHTML = items
@@ -51,11 +72,29 @@ function legend(id, items) {
 
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
+// "1 in N": how rarely a club would win at least as many ties as it did if the model's tie
+// chances were right. Exact (the tail of a Poisson-binomial distribution), not a normal
+// approximation, which says 1 in 13,000 for Real Madrid instead of 1 in 11,500.
+function oddsOfDoingAsWell(ties, club) {
+  const mine = ties.filter((t) => t.team_a === club || t.team_b === club);
+  let dist = [1]; // dist[k]: chance of exactly k ties won so far
+  for (const t of mine) {
+    const p = t.team_a === club ? t.p_a : 1 - t.p_a;
+    const next = new Array(dist.length + 1).fill(0);
+    dist.forEach((q, k) => { next[k] += q * (1 - p); next[k + 1] += q * p; });
+    dist = next;
+  }
+  const won = mine.filter((t) => t.winner === club).length;
+  const tail = dist.slice(won).reduce((a, b) => a + b, 0);
+  return tail > 0 ? Number((1 / tail).toPrecision(3)).toLocaleString("en-GB") : "";
+}
+
 // ---------- headline ----------
 function fillHeadline(data) {
   const h = data.headline;
   const fills = {
     seasons: `${h.first_season} to ${h.last_season} · ${h.ties} ties`,
+    ties: h.ties,
     underdog: pct(h.underdog),
     "median-run": pct(h.median_champion_run),
     real: `${h.real_won} of ${h.real_ties}`,
@@ -63,16 +102,198 @@ function fillHeadline(data) {
     "real-won": `${h.real_won} of ${h.real_ties}`,
     "real-expected": h.real_expected.toFixed(1),
     "test-matches": data.scores[0].matches.toLocaleString("en-GB"),
+    finals: data.rounds.find((r) => r.round === "Final")?.ties ?? "",
+    "real-odds": oddsOfDoingAsWell(data.ties, "Real Madrid"),
     built: data.built,
   };
   document.querySelectorAll("[data-fill]").forEach((node) => { node.textContent = fills[node.dataset.fill] ?? ""; });
+}
+
+// ---------- season strip ----------
+const ROUND_TINY = { "Playoffs": "PO", "Round of 16": "L16", "Quarterfinals": "QF", "Semifinals": "SF", "Final": "F" };
+// Every tie side by side, season by season, grouped by round (play-offs to final) within a
+// season. Choosing a season, here or in the Season filter, zooms the strip into it: the same
+// bars spread out to fill the width and are labelled with who went through. Changing season
+// pans across; "All seasons" zooms back out. The club, round and upsets filters fade the
+// ties that don't match, so the strip always shows what the list below shows.
+function setupTicker(data) {
+  const box = document.getElementById("ticker-chart");
+  const nav = document.getElementById("strip-nav");
+  const f = { season: document.getElementById("f-season"), round: document.getElementById("f-round"),
+    club: document.getElementById("f-club"), upsets: document.getElementById("f-upsets") };
+  const seasons = [...new Set(data.ties.map((t) => t.season))].sort();
+  const ties = data.ties.map((t) => ({ ...t, p: winnerChance(t) }))
+    .sort((a, b) => a.season.localeCompare(b.season) || ROUND_ORDER[a.round] - ROUND_ORDER[b.round] || b.p - a.p);
+  // Positions in "tie units": each bar is 0.8 wide, with wider gaps between rounds and seasons.
+  let u = 0;
+  ties.forEach((t, i) => {
+    const prev = ties[i - 1];
+    if (prev) u += prev.season !== t.season ? 4 : prev.round !== t.round ? 1.7 : 1;
+    t.u = u;
+  });
+  const bounds = (season) => {
+    const mine = ties.filter((t) => !season || t.season === season);
+    return [mine[0].u, mine[mine.length - 1].u + 0.8];
+  };
+  let view = f.season.value || null, nodes = null, geo = null, frame = 0;
+
+  // The vertical scale never changes, so the axis and the 50% line stay put while bars move.
+  function layout(season) {
+    // Below 420px the zoomed bars are too thin to name, so there's no room kept for names.
+    const W = Math.max(box.clientWidth, 280), narrow = W < 560, names = W >= 420;
+    const m = { l: 38, r: 6, t: 22, b: names ? 100 : 46 };
+    const H = names ? 270 : 210;
+    const [a, b] = bounds(season);
+    const k = (W - m.l - m.r) / (b - a); // pixels per tie unit
+    return { W, H, m, k, narrow, names, zoom: Boolean(season), x: (v) => m.l + (v - a) * k, y: (v) => m.t + (1 - v) * (H - m.t - m.b) };
+  }
+  const geometry = (L) => ties.map((t) => ({ x: L.x(t.u), w: Math.max(0.8 * L.k, 0.7), y: L.y(t.p), h: L.y(0) - L.y(t.p) }));
+  function place(g) {
+    nodes.rects.forEach((r, i) => {
+      r.setAttribute("x", g[i].x);
+      r.setAttribute("width", g[i].w);
+      r.setAttribute("y", g[i].y);
+      r.setAttribute("height", g[i].h);
+    });
+  }
+
+  function build() {
+    cancelAnimationFrame(frame);
+    const L = layout(view);
+    const { root } = canvas(box, L.H);
+    const clip = svg("clipPath", { id: "strip-clip" }, svg("defs", {}, root));
+    svg("rect", { x: L.m.l - 1, y: 0, width: L.W - L.m.l - L.m.r + 2, height: L.H }, clip);
+    // Axis: 0, 50% (dotted, the line between favourite and underdog) and 100%.
+    [0, 0.5, 1].forEach((v) => {
+      svg("line", { x1: L.m.l, x2: L.W - L.m.r, y1: L.y(v), y2: L.y(v), stroke: v === 0.5 ? css("--ink") : css("--grid"),
+        "stroke-dasharray": v === 0.5 ? "2 3" : "none", opacity: v === 0.5 ? 0.5 : 1 }, root);
+      svg("text", { x: L.m.l - 6, y: L.y(v) + 4, "text-anchor": "end" }, root).textContent = pct(v);
+    });
+    const bars = svg("g", { "clip-path": "url(#strip-clip)" }, root);
+    nodes = { root, labels: svg("g", {}, root), names: [] };
+    nodes.rects = ties.map((t) => {
+      const r = svg("rect", { fill: t.p < 0.5 ? css("--s2") : css("--s1"), class: "grow strip-bar", style: `--d:${seasons.indexOf(t.season) * 55}ms` }, bars);
+      hover(r, () => `<b>${t.season}, ${ROUND_SHORT[t.round]}</b><br>${clean(t.winner)} beat ${clean(loserOf(t))}<br>` +
+        `${pct(t.p)} chance beforehand${t.p < 0.35 ? " · an upset" : t.p < 0.5 ? " · the underdog" : ""}` +
+        (view ? "" : `<br><span style="opacity:.6">Click to zoom into this season</span>`),
+        () => { if (!view) filterTies({ season: t.season }); });
+      return r;
+    });
+    geo = geometry(L);
+    place(geo);
+    label(L);
+    update();
+  }
+
+  // Labels for the current view: season names when zoomed out; rounds, winners and chances when in.
+  function label(L) {
+    nodes.labels.innerHTML = "";
+    nodes.names = [];
+    const g = nodes.labels;
+    const base = L.y(0);
+    if (!L.zoom) {
+      seasons.forEach((season, i) => {
+        if (L.narrow && i % 2) return;
+        const [a, b] = bounds(season);
+        svg("text", { x: (L.x(a) + L.x(b)) / 2, y: base + 15, "text-anchor": "middle", class: "strip-label" }, g).textContent = L.narrow ? `’${season.slice(5)}` : season;
+      });
+      svg("text", { x: (L.m.l + L.W - L.m.r) / 2, y: base + (L.narrow ? 36 : 44), "text-anchor": "middle", class: "strip-label" }, g)
+        .textContent = "Click a season to zoom in";
+      return;
+    }
+    const mine = ties.filter((t) => t.season === view);
+    [...new Set(mine.map((t) => t.round))].forEach((round) => {
+      const inRound = mine.filter((t) => t.round === round);
+      const a = L.x(inRound[0].u), b = L.x(inRound[inRound.length - 1].u + 0.8);
+      svg("line", { x1: a, x2: b, y1: base + 5, y2: base + 5, stroke: css("--axis") }, g);
+      const text = b - a > ROUND_SHORT[round].length * 7 ? ROUND_SHORT[round] : ROUND_TINY[round];
+      svg("text", { x: (a + b) / 2, y: L.H - 6, "text-anchor": "middle", class: "strip-label label-strong" }, g).textContent = text;
+    });
+    const w = 0.8 * L.k;
+    mine.forEach((t) => {
+      const i = ties.indexOf(t), cx = L.x(t.u) + w / 2;
+      const name = L.names && w >= 14 ? svg("text", { x: cx + 3, y: base + 14, "text-anchor": "end", transform: `rotate(-55 ${cx + 3} ${base + 14})`, class: "strip-label strip-name" }, g) : null;
+      if (name) name.textContent = shortClub(t.winner).slice(0, 10);
+      const chanceLabel = w >= 24 ? svg("text", { x: cx, y: L.y(t.p) - 5, "text-anchor": "middle", class: "strip-label" }, g) : null;
+      if (chanceLabel) chanceLabel.textContent = pct(t.p);
+      nodes.names[i] = [name, chanceLabel].filter(Boolean);
+    });
+  }
+
+  // Fade what the other filters exclude, and show the season controls when zoomed in.
+  function update() {
+    const q = f.club.value.trim().toLowerCase(), round = f.round.value, upsets = f.upsets.checked;
+    ties.forEach((t, i) => {
+      const match = (!round || t.round === round) && (!upsets || t.p < 0.35) &&
+        (!q || clean(t.team_a).toLowerCase().includes(q) || clean(t.team_b).toLowerCase().includes(q));
+      nodes.rects[i].style.opacity = match ? 1 : 0.15;
+      (nodes.names[i] || []).forEach((n) => { n.style.opacity = match ? 1 : 0.3; });
+    });
+    nav.hidden = !view;
+    box.classList.toggle("zoomed", Boolean(view));
+    if (view) {
+      const at = seasons.indexOf(view);
+      const [prev, next] = [seasons[at - 1], seasons[at + 1]];
+      nav.querySelector("[data-step='-1']").disabled = !prev;
+      nav.querySelector("[data-step='-1'] span").textContent = prev || "";
+      nav.querySelector("[data-step='1']").disabled = !next;
+      nav.querySelector("[data-step='1'] span").textContent = next || "";
+      nav.querySelector("b").textContent = view;
+    }
+  }
+
+  // Zoom (or pan) from wherever the bars are now to the new view.
+  function show(season) {
+    if (season === view) return update();
+    view = season;
+    const L = layout(view);
+    const from = geo, to = geometry(L);
+    geo = to;
+    nodes.labels.innerHTML = ""; // the old labels go at once; the new ones arrive with the bars
+    nodes.names = [];
+    update();
+    cancelAnimationFrame(frame);
+    const start = performance.now(), duration = STILL ? 0 : 750;
+    const ease = (q) => (q < 0.5 ? 4 * q ** 3 : 1 - (-2 * q + 2) ** 3 / 2);
+    const step = (now) => {
+      const q = duration ? Math.min(1, (now - start) / duration) : 1, e = ease(q);
+      place(from.map((a, i) => ({ x: a.x + (to[i].x - a.x) * e, w: a.w + (to[i].w - a.w) * e, y: to[i].y, h: to[i].h })));
+      if (q < 1) frame = requestAnimationFrame(step);
+      else { label(L); update(); }
+    };
+    if (duration) frame = requestAnimationFrame(step);
+    else step(start);
+  }
+
+  f.season.addEventListener("change", () => show(f.season.value || null));
+  [f.round, f.upsets].forEach((n) => n.addEventListener("change", update));
+  f.club.addEventListener("input", update);
+  nav.addEventListener("click", (e) => {
+    const button = e.target.closest("button");
+    if (!button) return;
+    const at = seasons.indexOf(view);
+    filterTies({ season: button.dataset.all !== undefined ? "" : seasons[at + Number(button.dataset.step)] });
+  });
+  return build;
+}
+
+// Point the tie explorer somewhere, as if the reader had picked it. Only the fields given
+// change, so clicking a season keeps the reader's own club search and other filters.
+function filterTies(changes, scroll = false) {
+  const fields = { season: "f-season", round: "f-round", club: "f-club" };
+  for (const [key, id] of Object.entries(fields)) if (key in changes) document.getElementById(id).value = changes[key];
+  if ("upsets" in changes) document.getElementById("f-upsets").checked = changes.upsets;
+  document.getElementById("f-season").dispatchEvent(new Event("change"));
+  hideTip();
+  if (scroll) document.querySelector("#ties .ticker").scrollIntoView({ behavior: STILL ? "auto" : "smooth" });
 }
 
 // ---------- champions' runs ----------
 function drawRuns(data) {
   const box = document.getElementById("runs-chart");
   const runs = data.champions;
-  const narrow = box.clientWidth < 560;
+  // Full season and club labels need about 66px per bar; otherwise fall back to "’13".
+  const narrow = (box.clientWidth - 44) / runs.length < 66;
   const { root, width, height } = canvas(box, narrow ? 260 : 300);
   const m = { l: 36, r: 8, t: 22, b: narrow ? 46 : 52 };
   const top = Math.ceil(Math.max(...runs.map((r) => r.probability)) * 10) / 10;
@@ -92,13 +313,9 @@ function drawRuns(data) {
     const cx = m.l + step * (i + 0.5);
     const top_y = y(run.probability);
     const h = y(0) - top_y;
-    const r = Math.min(4, h, barWidth / 2);
-    // Rounded top, square base anchored to the baseline.
-    const x0 = cx - barWidth / 2, x1 = cx + barWidth / 2;
-    svg("path", {
-      d: `M${x0},${y(0)} V${top_y + r} Q${x0},${top_y} ${x0 + r},${top_y} H${x1 - r} Q${x1},${top_y} ${x1},${top_y + r} V${y(0)} Z`,
-      fill: css("--s1"),
-    }, root);
+    // Each bar, its labels and its hover zone share a group, so CSS can fade the other bars.
+    const col = svg("g", { class: "bar-col" }, root);
+    svg("rect", { x: cx - barWidth / 2, y: top_y, width: barWidth, height: h, fill: run === least ? css("--s2") : css("--s1"), class: "grow bar", style: `--d:${i * 45}ms` }, col);
     if (run === most || run === least) {
       svg("text", { x: cx, y: top_y - 6, "text-anchor": "middle", class: "label-strong" }, root).textContent = pct(run.probability);
     }
@@ -108,11 +325,14 @@ function drawRuns(data) {
       const name = svg("text", { x: cx, y: y(0) + 31, "text-anchor": "middle" }, root);
       name.textContent = shortClub(run.champion);
     }
-    const hit = svg("rect", { x: cx - step / 2, y: m.t, width: step, height: height - m.t, class: "hit" }, root);
+    // The hover zone is the bar plus a little room above it and the labels below, not the
+    // whole column: the empty space above a short bar shouldn't count as the bar.
+    const hit = svg("rect", { x: cx - step / 2, y: top_y - 12, width: step, height: height - top_y + 12, class: "hit" }, col);
     hover(hit, `<b>${run.season}: ${clean(run.champion)}</b><br>${pct(run.probability, 1)} chance of winning every tie<br>${run.ties.map((t) => `${ROUND_SHORT[t.round]} v ${clean(t.opponent)}: ${pct(t.probability)}`).join("<br>")}`,
       () => showPath(run));
   });
-  showPath(least);
+  if (chosenRun) showPath(chosenRun, true);
+  else showPath(least);
 }
 
 function shortClub(name) {
@@ -120,10 +340,29 @@ function shortClub(name) {
   return map[name] || clean(name);
 }
 
-function showPath(run) {
-  const steps = run.ties.map((t) => `<span class="path-step">${ROUND_SHORT[t.round]} v ${clean(t.opponent)}: <b>${pct(t.probability)}</b></span>`).join("");
+// A champion's run as a funnel: each tie multiplies the chance down, and the bars drain in turn.
+let chosenRun = null;
+function setupRunPicker(data) {
+  const select = document.getElementById("runs-pick");
+  select.innerHTML = data.champions.map((r) => `<option value="${r.season}">${r.season}: ${clean(r.champion)}</option>`).join("");
+  select.addEventListener("change", () => showPath(data.champions.find((r) => r.season === select.value)));
+}
+
+function showPath(run, quiet) {
+  chosenRun = run;
+  document.getElementById("runs-pick").value = run.season;
+  let left = 1;
+  const rows = run.ties.map((t, i) => {
+    const from = left;
+    const last = i === run.ties.length - 1;
+    left = last ? run.probability : left * t.probability; // the stored product, unrounded, so every label agrees
+    return `<li class="${last ? "f-end" : ""}" style="--from:${(from * 100).toFixed(2)}%;--to:${(left * 100).toFixed(2)}%;--d:${200 + i * 420}ms">
+      <span class="f-label">${ROUND_SHORT[t.round]} v ${clean(t.opponent)} <em>× ${pct(t.probability)}</em></span>
+      <span class="f-bar"><s></s><i></i></span><b>${left < 0.1 ? pct(left, 1) : pct(left)}</b></li>`;
+  }).join("");
   document.getElementById("runs-path").innerHTML =
-    `<b style="color:var(--ink)">${run.season}, ${clean(run.champion)}:</b> ${pct(run.probability, 1)} to win every tie it played. Multiply the chances of each step:<div class="path-steps">${steps}</div>`;
+    `<p class="funnel-head"><b>${run.season}, ${clean(run.champion)}</b> had to win ${run.ties.length} ties in a row. Multiply the chances and watch the luck drain away:</p>
+    <ol class="funnel${quiet ? " quiet" : ""}"><li style="--from:100%;--to:100%"><span class="f-label">Before the first tie</span><span class="f-bar"><s></s><i></i></span><b>100%</b></li>${rows}</ol>`;
 }
 
 // ---------- favourites by round ----------
@@ -143,9 +382,9 @@ function drawRounds(data) {
   rows.forEach((row, i) => {
     const cx = m.l + step * (i + 0.5);
     const lo = Math.max(low, row.won - row.error), hi = Math.min(high, row.won + row.error);
-    svg("line", { x1: cx + 7, x2: cx + 7, y1: y(lo), y2: y(hi), stroke: css("--s1"), "stroke-width": 2 }, root);
-    svg("circle", { cx: cx + 7, cy: y(row.won), r: 5, fill: css("--s1"), stroke: css("--surface"), "stroke-width": 2 }, root);
-    svg("circle", { cx: cx - 7, cy: y(row.expected), r: 5, fill: "none", stroke: css("--muted"), "stroke-width": 2 }, root);
+    svg("line", { x1: cx + 7, x2: cx + 7, y1: y(lo), y2: y(hi), stroke: css("--s1"), "stroke-width": 2, class: "grow-c", style: `--d:${300 + i * 110}ms` }, root);
+    svg("circle", { cx: cx + 7, cy: y(row.won), r: 5, fill: css("--s1"), stroke: css("--surface"), "stroke-width": 2, class: "pop", style: `--d:${500 + i * 110}ms` }, root);
+    svg("circle", { cx: cx - 7, cy: y(row.expected), r: 5, fill: "none", stroke: css("--muted"), "stroke-width": 2, class: "pop", style: `--d:${200 + i * 110}ms` }, root);
     svg("text", { x: cx, y: height - 8, "text-anchor": "middle" }, root).textContent = ROUND_SHORT[row.round];
     const hit = svg("rect", { x: cx - step / 2, y: m.t, width: step, height: height - m.t - m.b, class: "hit" }, root);
     hover(hit, `<b>${row.round}</b> (${row.ties} ties)<br>Model expected the favourite through: ${pct(row.expected)}<br>Actually went through: ${pct(row.won)} (±${pct(row.error)})`);
@@ -173,44 +412,97 @@ function drawClubs(data) {
     const real = club.club === "Real Madrid";
     const color = real ? css("--s2") : css("--s1");
     svg("text", { x: m.l - 10, y: cy + 4, "text-anchor": "end", class: real ? "label-strong" : "" }, root).textContent = clean(club.club);
-    svg("line", { x1: x(club.expected), x2: x(club.won), y1: cy, y2: cy, stroke: color, "stroke-width": 2 }, root);
-    svg("circle", { cx: x(club.expected), cy, r: 5, fill: css("--surface"), stroke: css("--muted"), "stroke-width": 2 }, root);
-    svg("circle", { cx: x(club.won), cy, r: 5, fill: color, stroke: css("--surface"), "stroke-width": 2 }, root);
+    svg("line", { x1: x(club.expected), x2: x(club.won), y1: cy, y2: cy, stroke: color, "stroke-width": 2, pathLength: 1, class: "draw", style: `--d:${400 + i * 45}ms` }, root);
+    svg("circle", { cx: x(club.expected), cy, r: 5, fill: css("--surface"), stroke: css("--muted"), "stroke-width": 2, class: "pop", style: `--d:${200 + i * 45}ms` }, root);
+    svg("circle", { cx: x(club.won), cy, r: 5, fill: color, stroke: css("--surface"), "stroke-width": 2, class: "pop", style: `--d:${real ? 1500 : 900 + i * 45}ms` }, root);
     const hit = svg("rect", { x: 0, y: cy - rowH / 2, width, height: rowH, class: "hit" }, root);
     hover(hit, `<b>${clean(club.club)}</b><br>Won ${club.won} of ${club.ties} ties<br>Model expected ${club.expected.toFixed(1)}`);
   });
 }
 
 // ---------- calibration ----------
+// Two views of the same bins. "Gap" plots how far each model was from honest, which is
+// where the differences between models are visible; "full" is the classic diagonal chart.
+let calView = "gap";
 function drawCalibration(data) {
   const box = document.getElementById("cal-chart");
-  const size = Math.min(box.clientWidth, 460);
-  const { root, width, height } = canvas(box, size);
-  const m = { l: 40, r: 12, t: 12, b: 40 };
-  const x = (v) => m.l + v * (width - m.l - m.r);
-  const y = (v) => m.t + (1 - v) * (height - m.t - m.b);
-  for (let v = 0; v <= 1.0001; v += 0.2) {
-    svg("line", { x1: x(v), x2: x(v), y1: y(0), y2: y(1), stroke: css("--grid") }, root);
-    svg("line", { x1: x(0), x2: x(1), y1: y(v), y2: y(v), stroke: css("--grid") }, root);
-    svg("text", { x: x(v), y: y(0) + 16, "text-anchor": "middle" }, root).textContent = pct(v);
-    svg("text", { x: x(0) - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = pct(v);
-  }
-  svg("line", { x1: x(0), y1: y(0), x2: x(1), y2: y(1), stroke: css("--axis"), "stroke-dasharray": "4 4" }, root);
-  svg("text", { x: x(0.5), y: height - 4, "text-anchor": "middle" }, root).textContent = "Predicted chance of a home win";
+  const gapView = calView === "gap";
+  const across = Math.max(box.clientWidth, 280);
+  const { root, width, height } = canvas(box, gapView ? Math.round(Math.min(across * 0.72, 360)) : Math.min(across, 460));
+  const m = { l: 52, r: gapView ? 58 : 14, t: 14, b: 42 }; // room on the right for the "Honest" label
   const colors = { "Dixon–Coles": css("--s1"), "Elo": css("--s3"), "Bookmakers": css("--s2") };
-  legend("cal-legend", [...data.calibration.map((s) => [s.name, colors[s.name], "line"]), ["Perfectly honest", css("--axis"), "line"]]);
+  const dashed = { "Elo": "5 3" }; // so Elo never reads as the reference line
+  const x = (v) => m.l + v * (width - m.l - m.r);
+  const all = data.calibration.flatMap((s) => s.points);
+  const span = gapView ? Math.min(0.2, Math.ceil(Math.max(...all.map((p) => Math.abs(p.actual - p.predicted) + p.error)) * 20) / 20) : 1;
+  const value = (p) => (gapView ? p.actual - p.predicted : p.actual);
+  const y = gapView ? (v) => m.t + (0.5 - v / (2 * span)) * (height - m.t - m.b) : (v) => m.t + (1 - v) * (height - m.t - m.b);
+  const clamp = (v) => (gapView ? Math.max(-span, Math.min(span, v)) : Math.max(0, Math.min(1, v)));
+
+  for (let v = 0; v <= 1.0001; v += 0.2) {
+    svg("line", { x1: x(v), x2: x(v), y1: m.t, y2: height - m.b, stroke: css("--grid") }, root);
+    svg("text", { x: x(v), y: height - m.b + 16, "text-anchor": "middle" }, root).textContent = pct(v);
+  }
+  const step = gapView ? 0.05 : 0.2;
+  for (let v = gapView ? -span : 0; v <= (gapView ? span : 1) + 1e-9; v += step) {
+    svg("line", { x1: x(0), x2: x(1), y1: y(v), y2: y(v), stroke: css("--grid") }, root);
+    const label = gapView ? (Math.abs(v) < 1e-9 ? "0" : `${v > 0 ? "+" : "−"}${Math.round(Math.abs(v) * 100)}`) : pct(v);
+    svg("text", { x: x(0) - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = label;
+  }
+  svg("text", { x: x(0.5), y: height - 4, "text-anchor": "middle" }, root).textContent = "Predicted chance of a home win";
+  const mid = m.t + (height - m.t - m.b) / 2;
+  svg("text", { x: 12, y: mid, "text-anchor": "middle", transform: `rotate(-90 12 ${mid})` }, root).textContent =
+    gapView ? "Actual minus predicted (points)" : "How often the home team actually won";
+
+  if (gapView) {
+    svg("line", { x1: x(0), x2: x(1), y1: y(0), y2: y(0), stroke: css("--ink-2"), "stroke-width": 1.5 }, root);
+    svg("text", { x: x(1) + 6, y: y(0) + 4, class: "label-strong" }, root).textContent = "Honest";
+    // The long wording needs about 280px; narrow screens get the short one.
+    const roomy = x(1) - x(0) - 16 > 42 * 6.7;
+    svg("text", { x: x(0) + 8, y: m.t + 14 }, root).textContent = roomy ? "↑ Home side won more often than predicted" : "↑ Won more than predicted";
+    svg("text", { x: x(0) + 8, y: height - m.b - 8 }, root).textContent = roomy ? "↓ Home side won less often than predicted" : "↓ Won less than predicted";
+  } else {
+    svg("line", { x1: x(0), y1: y(0), x2: x(1), y2: y(1), stroke: css("--ink-2"), "stroke-width": 1.5, "stroke-dasharray": "2 4" }, root);
+    svg("text", { x: x(0.62), y: y(0.62) + 18, "text-anchor": "start", class: "label-strong" }, root).textContent = "Perfectly honest";
+  }
+  legend("cal-legend", data.calibration.map((s) => [s.name, colors[s.name], dashed[s.name] ? "line dash" : "line"]));
+
   data.calibration.forEach((series, k) => {
     const color = colors[series.name];
     const nudge = (k - 1) * 3; // keep error bars from sitting on top of each other
-    svg("polyline", { points: series.points.map((p) => `${x(p.predicted) + nudge},${y(p.actual)}`).join(" "), fill: "none", stroke: color, "stroke-width": 2 }, root);
-    series.points.forEach((p) => {
-      const px = x(p.predicted) + nudge;
-      svg("line", { x1: px, x2: px, y1: y(Math.min(1, p.actual + p.error)), y2: y(Math.max(0, p.actual - p.error)), stroke: color, "stroke-width": 1.5, opacity: 0.7 }, root);
-      svg("circle", { cx: px, cy: y(p.actual), r: 4, fill: color, stroke: css("--surface"), "stroke-width": 2 }, root);
-      const hit = svg("circle", { cx: px, cy: y(p.actual), r: 12, class: "hit" }, root);
-      hover(hit, `<b>${series.name}</b><br>Said ${pct(p.predicted)} on average<br>Home team won ${pct(p.actual)} (±${pct(p.error)})<br>${p.n.toLocaleString("en-GB")} matches`);
+    svg("polyline", {
+      points: series.points.map((p) => `${x(p.predicted) + nudge},${y(clamp(value(p)))}`).join(" "),
+      fill: "none", stroke: color, "stroke-width": 2, "stroke-dasharray": dashed[series.name] || "none",
+    }, root);
+    series.points.forEach((p, j) => {
+      const px = x(p.predicted) + nudge, v = value(p);
+      svg("line", { x1: px, x2: px, y1: y(clamp(v + p.error)), y2: y(clamp(v - p.error)), stroke: color, "stroke-width": 1.5, opacity: 0.7, class: "fade", style: `--d:${k * 280 + j * 90}ms` }, root);
+      svg("circle", { cx: px, cy: y(clamp(v)), r: 4, fill: dashed[series.name] ? css("--surface") : color, stroke: color, "stroke-width": 2, class: "pop", style: `--d:${k * 280 + j * 90}ms` }, root);
+      const hit = svg("circle", { cx: px, cy: y(clamp(v)), r: 12, class: "hit" }, root);
+      const gap = Math.round((p.actual - p.predicted) * 1000) / 10;
+      hover(hit, `<b>${series.name}</b><br>Said ${pct(p.predicted)} on average<br>Home team won ${pct(p.actual)} (±${pct(p.error)})<br>` +
+        `${gap === 0 ? "Exactly honest" : `${Math.abs(gap)} points ${gap > 0 ? "more" : "less"} often than predicted`}<br>${p.n.toLocaleString("en-GB")} matches`);
     });
   });
+
+  // The takeaway in words: each model's average miss, weighted by matches.
+  const misses = data.calibration.map((s) => {
+    const n = s.points.reduce((t, p) => t + p.n, 0);
+    return { name: s.name, miss: s.points.reduce((t, p) => t + p.n * Math.abs(p.actual - p.predicted), 0) / n };
+  }).sort((a, b) => a.miss - b.miss);
+  document.getElementById("cal-note").innerHTML = `On average, the home side's real win rate was off from the prediction by ` +
+    misses.map((s) => `<b>${(s.miss * 100).toFixed(1)} points</b> for ${s.name === "Bookmakers" ? "the bookmakers" : s.name}`)
+      .join(", ").replace(/, ([^,]*)$/, " and $1") +
+    `. Gaps that small mean all three are honest. Near 0% and 100% there are few matches, so the error bars are wide.`;
+}
+
+function setupCalibration(data) {
+  const buttons = document.querySelectorAll(".cal-view button");
+  buttons.forEach((button) => button.addEventListener("click", () => {
+    calView = button.dataset.view;
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+    drawCalibration(data);
+  }));
 }
 
 function fillScores(data) {
@@ -255,7 +547,7 @@ function setupTies(data) {
       return `<div class="tie">
         <div class="tie-meta">${t.season}<br>${ROUND_SHORT[t.round]}${upset}</div>
         <div class="team-a ${t.winner === t.team_a ? "through" : ""}">${clean(t.team_a)}</div>
-        <div class="split-bar" aria-label="${clean(t.team_a)} ${a}%, ${clean(t.team_b)} ${100 - a}%">
+        <div class="split-bar" role="img" aria-label="${clean(t.team_a)} ${a}%, ${clean(t.team_b)} ${100 - a}%">
           <span class="a" style="flex:${Math.max(a, 1)}">${a >= 12 ? a + "%" : ""}</span>
           <span class="b" style="flex:${Math.max(100 - a, 1)}">${100 - a >= 12 ? 100 - a + "%" : ""}</span>
         </div>
@@ -340,6 +632,9 @@ function setupButterfly(data) {
     else locks[nodeId] = team;
     clearAbove(nodeId);
     render();
+    // The bracket is rebuilt, which drops keyboard focus; put it back on the button just pressed.
+    const again = [...document.querySelectorAll("#bf-bracket .bf-pick")].find((b) => Number(b.dataset.node) === nodeId && b.dataset.team === team);
+    if (again) again.focus({ preventScroll: true });
   }
 
   function waitingText(node, dist) {
@@ -402,10 +697,10 @@ function setupButterfly(data) {
       const color = Math.abs(delta) < 0.005 ? css("--axis") : delta > 0 ? css("--s1") : css("--s2");
       svg("text", { x: m.l - 8, y: cy + 4, "text-anchor": "end", class: Math.abs(delta) >= 0.005 ? "label-strong" : "" }, root).textContent = shortClub(team);
       if (delta <= -0.005) { // what was lost, as a faded band from now back to before
-        svg("rect", { x: x(after), y: cy - 7, width: x(before) - x(after), height: 14, rx: 3, fill: css("--s2"), opacity: 0.35 }, root);
+        svg("rect", { x: x(after), y: cy - 7, width: x(before) - x(after), height: 14, fill: css("--s2"), opacity: 0.35 }, root);
       }
       const w = Math.max(x(after) - x(0), after > 0 ? 2 : 0);
-      if (w > 0) svg("rect", { x: x(0), y: cy - 7, width: w, height: 14, rx: Math.min(4, w / 2), fill: color }, root);
+      if (w > 0) svg("rect", { x: x(0), y: cy - 7, width: w, height: 14, fill: color, class: "grow-x", style: `--d:${i * 30}ms` }, root);
       svg("line", { x1: x(before), x2: x(before), y1: cy - 9, y2: cy + 9, stroke: css("--ink-2"), "stroke-width": 2 }, root);
       const label = Math.abs(delta) >= 0.005 ? `${delta > 0 ? "+" : "−"}${Math.round(Math.abs(delta) * 100)}` : pct(after);
       svg("text", { x: width - 4, y: cy + 4, "text-anchor": "end", class: Math.abs(delta) >= 0.005 ? "label-strong" : "" }, root).textContent = label;
@@ -439,7 +734,7 @@ function setupButterfly(data) {
 const RHO = -0.05;       // Dixon–Coles low-score correction, tuned in week 2
 const HOME_EDGE = 0.29;  // home advantage in log-goals, from the Dixon–Coles fit
 const MAX = 10;
-const RAMP = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]; // sequential blue, light to dark
+const RAMP = ["#ebe5d6", "#d6cbb1", "#b9aa88", "#94866a", "#6b604c", "#433c30", "#1c1a15"]; // sequential paper to ink
 
 function poissonPmf(lambda) {
   const out = [Math.exp(-lambda)];
@@ -493,8 +788,10 @@ function throughChance({ venue, us, them, strength, awayRule, base }) {
   return chance;
 }
 
-function historyFor(ties, venue, us, them) {
-  const matching = ties.filter((t) => (venue === "home" ? t[0] === us && t[1] === them : t[1] === us && t[0] === them));
+// Real ties that started this way, played under the chosen rules (t[3] is 1 for away goals).
+function historyFor(ties, venue, us, them, awayRule) {
+  const matching = ties.filter((t) => t[3] === (awayRule ? 1 : 0) &&
+    (venue === "home" ? t[0] === us && t[1] === them : t[1] === us && t[0] === them));
   const through = matching.filter((t) => (venue === "home" ? t[2] === 1 : t[2] === 0)).length;
   return { n: matching.length, through };
 }
@@ -515,6 +812,16 @@ function rampColor(t) {
   return `rgb(${a.map((v, j) => Math.round(v + (b[j] - v) * f)).join(",")})`;
 }
 
+// Ink or paper text, whichever has more contrast on this cell colour.
+function textOn(fill) {
+  const [r, g, b] = fill.match(/\d+/g).map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  const l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return (l + 0.05) / 0.0568 > 0.9 / (l + 0.05) ? "#16140f" : "#f2eee4"; // 0.0568, 0.9: ink and paper luminance + 0.05
+}
+
 function setupComeback(data) {
   const history = data.comebacks;
   const base = Math.sqrt(history.second_leg_home_goals * history.second_leg_away_goals);
@@ -529,9 +836,10 @@ function setupComeback(data) {
   function render() {
     usSelect.value = state.us;
     themSelect.value = state.them;
-    document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.venue === state.venue)));
+    document.querySelectorAll(".cb-controls .seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.venue === state.venue)));
     const model = throughChance({ ...settings(), us: state.us, them: state.them });
-    const real = historyFor(history.ties, state.venue, state.us, state.them);
+    const real = historyFor(history.ties, state.venue, state.us, state.them, settings().awayRule);
+    const era = settings().awayRule ? "with away goals" : "under today's rules";
     document.getElementById("cb-model").textContent = chance(model);
     document.getElementById("cb-model-bar").style.width = pct(model, 1);
     const histBar = document.getElementById("cb-hist-bar"), range = document.getElementById("cb-hist-range");
@@ -539,14 +847,14 @@ function setupComeback(data) {
       const rate = real.through / real.n;
       const [lo, hi] = wilson(real.through, real.n);
       document.getElementById("cb-hist").textContent = pct(rate);
-      document.getElementById("cb-hist-label").textContent = `Real ties: ${real.through} of ${real.n} went through`;
+      document.getElementById("cb-hist-label").textContent = `Real ties ${era}: ${real.through} of ${real.n} went through`;
       histBar.style.width = pct(rate, 1);
       range.style.left = pct(lo, 1);
       range.style.width = pct(hi - lo, 1);
       range.hidden = false;
     } else {
       document.getElementById("cb-hist").textContent = "–";
-      document.getElementById("cb-hist-label").textContent = "Real ties: none started this way";
+      document.getElementById("cb-hist-label").textContent = `Real ties ${era}: none started this way`;
       histBar.style.width = "0%";
       range.hidden = true;
     }
@@ -582,13 +890,13 @@ function setupComeback(data) {
       for (let them = 0; them < n; them++) {
         const p = throughChance({ ...settings(), us, them });
         const x = m.l + them * cell, y = m.t + us * cell;
-        const rect = svg("rect", { x: x + 1, y: y + 1, width: cell - 2, height: cell - 2, rx: 4, fill: rampColor(p), class: "cell" }, root);
-        const dark = p > 0.45;
-        svg("text", { x: x + cell / 2, y: y + cell / 2 + 4, "text-anchor": "middle", style: `fill:${dark ? "#fff" : "#0b0b0b"};font-weight:600;pointer-events:none` }, root).textContent = chance(p);
+        const wave = `--d:${(us + them) * 70}ms`;
+        const rect = svg("rect", { x: x + 1, y: y + 1, width: cell - 2, height: cell - 2, fill: rampColor(p), class: "cell pop", style: wave }, root);
+        svg("text", { x: x + cell / 2, y: y + cell / 2 + 4, "text-anchor": "middle", style: `fill:${textOn(rampColor(p))};font-weight:500;pointer-events:none;${wave}`, class: "fade" }, root).textContent = chance(p);
         if (us === state.us && them === state.them) {
-          svg("rect", { x: x + 1, y: y + 1, width: cell - 2, height: cell - 2, rx: 4, fill: "none", stroke: css("--s2"), "stroke-width": 3, "pointer-events": "none" }, root);
+          svg("rect", { x: x + 1, y: y + 1, width: cell - 2, height: cell - 2, fill: "none", stroke: css("--s2"), "stroke-width": 3, "pointer-events": "none" }, root);
         }
-        const real = historyFor(history.ties, state.venue, us, them);
+        const real = historyFor(history.ties, state.venue, us, them, settings().awayRule);
         hover(rect, `<b>${us}-${them} ${state.venue === "home" ? "at home" : "away"}</b><br>Model: ${chance(p)} chance to go through<br>` +
           (real.n ? `Real ties: ${real.through} of ${real.n}` : "No real ties started this way"),
           () => { state.us = us; state.them = them; render(); });
@@ -596,7 +904,7 @@ function setupComeback(data) {
     }
   }
 
-  document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => { state.venue = b.dataset.venue; render(); }));
+  document.querySelectorAll(".cb-controls .seg button").forEach((b) => b.addEventListener("click", () => { state.venue = b.dataset.venue; render(); }));
   usSelect.addEventListener("change", () => { state.us = Number(usSelect.value); render(); });
   themSelect.addEventListener("change", () => { state.them = Number(themSelect.value); render(); });
   [strength, rules].forEach((s) => s.addEventListener("change", render));
@@ -608,12 +916,20 @@ function setupComeback(data) {
 function fillLive(data) {
   const live = data.live;
   const section = document.getElementById("live");
-  if (!live) { section.hidden = true; return; }
-  document.getElementById("live-sub").textContent =
-    `Attack and defence strengths from the goals model, refitted on every match up to ${live.updated}. Higher is better; 0 is an average big-five club.`;
+  if (!live) {
+    section.hidden = true;
+    document.querySelector('nav a[href="#live"]').hidden = true;
+    return;
+  }
   const sign = (v) => (v >= 0 ? "+" : "") + v.toFixed(2);
+  document.getElementById("live-sub").textContent =
+    `Attack and defence strengths from the goals model${live.updated ? `, refitted on ${live.updated}` : ""}` +
+    ` on ${live.window_years ? `the last ${live.window_years} years of matches` : "recent matches"}${live.fitted_through ? ` up to ${live.fitted_through}` : ""},` +
+    ` with recent matches counting more. Higher is better` +
+    (live.big_five_average != null ? `; the average big-five club this season rates ${sign(live.big_five_average)} overall.` : ".");
+  const top = Math.max(...live.ratings.map((r) => r.overall));
   document.querySelector("#ratings-table tbody").innerHTML = live.ratings.map((r, i) =>
-    `<tr><td class="num">${i + 1}</td><td>${clean(r.club)}</td><td class="num">${sign(r.attack)}</td><td class="num">${sign(r.defence)}</td><td class="num"><b>${sign(r.overall)}</b></td></tr>`).join("");
+    `<tr><td class="num">${i + 1}</td><td>${clean(r.club)}</td><td class="num">${sign(r.attack)}</td><td class="num">${sign(r.defence)}</td><td class="num"><b>${sign(r.overall)}</b></td><td class="rbar-cell"><span class="rbar" style="width:${Math.max(0, r.overall / top) * 100}%"></span></td></tr>`).join("");
   const cell = (value, label) => `<div class="stat"><span class="stat-value">${value}</span><span class="stat-label">${label}</span></div>`;
   document.getElementById("ledger").innerHTML =
     cell(live.predictions, "predictions saved") +
@@ -623,42 +939,110 @@ function fillLive(data) {
 }
 
 // ---------- theme ----------
+// Charts bake their colours in when drawn, so they are redrawn whenever the theme really
+// changes, however it changed: the button, the system switching, or another tab. A saved
+// choice is applied in index.html, before anything draws.
 function setupTheme(redraw) {
+  const root = document.documentElement;
   const button = document.getElementById("theme");
-  try {
-    const saved = localStorage.getItem("theme");
-    if (saved) document.documentElement.dataset.theme = saved;
-  } catch (e) { /* storage unavailable: follow the system setting */ }
-  button.addEventListener("click", () => {
-    const dark = document.documentElement.dataset.theme
-      ? document.documentElement.dataset.theme === "dark"
-      : matchMedia("(prefers-color-scheme: dark)").matches;
-    const next = dark ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    try { localStorage.setItem("theme", next); } catch (e) { /* ignore */ }
+  const system = matchMedia("(prefers-color-scheme: dark)");
+  const isDark = () => (root.dataset.theme ? root.dataset.theme === "dark" : system.matches);
+  let drawnDark = isDark();
+  const sync = () => {
+    button.setAttribute("aria-pressed", String(isDark()));
+    if (isDark() === drawnDark) return;
+    drawnDark = isDark();
     redraw();
+  };
+  button.addEventListener("click", () => {
+    const next = isDark() ? "light" : "dark";
+    root.dataset.theme = next;
+    try { localStorage.setItem("theme", next); } catch (e) { /* storage unavailable */ }
   });
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw);
+  new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+  if (system.addEventListener) system.addEventListener("change", sync);
+  else system.addListener(sync); // Safari 13
+  // Paper is white and most printers skip backgrounds, so print in the light theme.
+  let screenTheme;
+  addEventListener("beforeprint", () => {
+    screenTheme = root.dataset.theme;
+    if (isDark()) { root.dataset.theme = "light"; sync(); }
+  });
+  addEventListener("afterprint", () => {
+    if (screenTheme === undefined) delete root.dataset.theme;
+    else root.dataset.theme = screenTheme;
+    sync();
+  });
+  addEventListener("storage", (e) => {
+    if (e.key !== "theme") return;
+    if (e.newValue) root.dataset.theme = e.newValue;
+    else delete root.dataset.theme;
+  });
+  sync();
 }
 
 // ---------- start ----------
-fetch("data.json")
-  .then((r) => r.json())
-  .then((data) => {
-    fillHeadline(data);
-    fillScores(data);
-    setupTies(data);
-    fillLive(data);
-    const redrawButterfly = setupButterfly(data);
-    const redrawHeat = setupComeback(data);
-    const drawAll = () => { drawRuns(data); drawRounds(data); drawClubs(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
-    drawAll();
-    setupTheme(drawAll);
-    let pending;
-    window.addEventListener("resize", () => { clearTimeout(pending); pending = setTimeout(drawAll, 120); });
-    window.addEventListener("scroll", hideTip, { passive: true });
-  })
-  .catch(() => {
-    document.querySelector("main").insertAdjacentHTML("afterbegin",
-      `<p class="card">Couldn't load data.json. Open this page through a web server (for example <code>python3 -m http.server</code> in the site folder), not as a file.</p>`);
+setupReveal();
+setupNav();
+let drawAll = () => {}; // replaced once the data has arrived
+setupTheme(() => drawAll());
+
+function start(data) {
+  fillHeadline(data);
+  document.querySelectorAll(".hero .stat-value").forEach((node, i) => roll(node, 650 + i * 260));
+  fillScores(data);
+  setupRunPicker(data);
+  setupCalibration(data);
+  setupTies(data);
+  fillLive(data);
+  const redrawButterfly = setupButterfly(data);
+  const redrawHeat = setupComeback(data);
+  setupWire(data);
+  const redrawMachine = setupMachine(data);
+  const redrawTicker = setupTicker(data);
+  drawAll = () => { redrawMachine(); redrawTicker(); drawRuns(data); drawRounds(data); drawClubs(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
+  drawAll();
+  const luck = document.querySelector("h1 em");
+  document.fonts.ready.then(() => setTimeout(() => scramble(luck), 500));
+  luck.addEventListener("pointerenter", () => scramble(luck));
+  // Only a change of width changes the charts. Phones fire resize as the address bar
+  // slides in and out, and redrawing everything then would stutter the scroll.
+  let pending, drawnWidth = innerWidth;
+  window.addEventListener("resize", () => {
+    if (innerWidth === drawnWidth) return;
+    drawnWidth = innerWidth;
+    clearTimeout(pending);
+    pending = setTimeout(drawAll, 120);
   });
+  // The browser jumps to a #section link before the charts exist, so it lands short. Jump
+  // again now they are drawn, and keep the section in place while web fonts arrive and reflow
+  // the page (on a first visit they come after this), until the reader scrolls themself.
+  let target = null;
+  try { target = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch (e) { /* malformed hash */ }
+  if (target) {
+    const pin = () => target.scrollIntoView({ behavior: "instant" });
+    const keep = new ResizeObserver(pin);
+    keep.observe(document.querySelector("main"));
+    const stop = () => keep.disconnect();
+    ["wheel", "touchstart", "keydown", "pointerdown"].forEach((type) => addEventListener(type, stop, { once: true, passive: true }));
+    setTimeout(stop, 5000);
+  }
+  window.addEventListener("scroll", hideTip, { passive: true });
+}
+
+function problem(html, error) {
+  console.error(error);
+  document.querySelector("main").insertAdjacentHTML("afterbegin", `<p class="load-error">${html}</p>`);
+}
+
+// "no-cache" still uses the browser's copy, but only after checking it is current: the daily
+// update rewrites data.json, and readers should never see yesterday's numbers.
+fetch("data.json", { cache: "no-cache" })
+  .then((r) => {
+    if (!r.ok) throw new Error(`data.json: HTTP ${r.status}`);
+    return r.json();
+  })
+  .then(start, (error) => problem(location.protocol === "file:"
+    ? "Couldn't load data.json. Open this page through a web server (for example <code>python3 -m http.server</code> in the site folder), not as a file."
+    : `Couldn't load data.json (${error.message}). Create it with <code>python src/export_site.py</code>.`, error))
+  .catch((error) => problem("Something went wrong while drawing this page. Try reloading; if it keeps happening, data.json may have changed shape.", error));

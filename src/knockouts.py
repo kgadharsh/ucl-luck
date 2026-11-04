@@ -121,6 +121,8 @@ def main():
     rows = []
     for season, rnd, legs in ties_table(matches):
         first = legs.iloc[0]
+        if len(legs) == 1 and not first.neutral:
+            continue  # a two-legged tie whose second leg hasn't been played yet
         when = first.date
         if when not in fits:
             fits[when] = fit(matches[matches.date < when], when, **fit_settings)

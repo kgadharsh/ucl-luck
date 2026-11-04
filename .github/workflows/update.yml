@@ -10,6 +10,11 @@ on:
 permissions:
   contents: write
 
+# A manual run and the scheduled one must not overlap: the second push would be rejected.
+concurrency:
+  group: daily-update
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -40,10 +45,18 @@ jobs:
       - name: Refresh dashboard data
         run: python src/export_site.py
 
+      # Never commit a data.json that disagrees with itself. (README wording is checked by the
+      # Tests workflow instead: a stale README shouldn't stop the day's predictions being saved.)
+      - name: Check the results
+        run: |
+          pip install pytest==8.4.2
+          pytest tests/test_pipeline.py tests/test_data.py -m "not readme" -o addopts=""
+
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add results/live site/data.json
           git diff --cached --quiet || git commit -m "Daily update: predictions and scorecard"
+          git pull --rebase   # in case something was pushed while this job ran
           git push
