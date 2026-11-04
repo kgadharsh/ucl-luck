@@ -340,8 +340,11 @@ function drawRuns(data) {
     hover(hit, `<b>${run.season}: ${clean(run.champion)}</b><br>${pct(run.probability, 1)} chance of winning every tie<br>${run.ties.map((t) => `${ROUND_SHORT[t.round]} v ${clean(t.opponent)}: ${pct(t.probability)}`).join("<br>")}`,
       () => showPath(run));
     // Fade the other bars while this one is pointed at. (A CSS :has(:hover) rule did this, but
-    // WebKit doesn't always re-check it when the pointer moves.)
-    hit.addEventListener("pointerenter", () => { root.classList.add("focusing"); col.classList.add("lit"); });
+    // WebKit on Linux doesn't re-check it, nor always send pointerenter, as the pointer moves;
+    // pointermove, which the tooltip uses, always arrives.)
+    const light = () => { root.classList.add("focusing"); col.classList.add("lit"); };
+    hit.addEventListener("pointerenter", light);
+    hit.addEventListener("pointermove", light);
     hit.addEventListener("pointerleave", () => { root.classList.remove("focusing"); col.classList.remove("lit"); });
   });
   if (chosenRun) showPath(chosenRun, true);
