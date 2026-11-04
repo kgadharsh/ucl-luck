@@ -73,7 +73,7 @@ It works on phones, in light and dark mode, with a keyboard, and printed or save
 python3 -m http.server 8123 --directory site     # then open http://localhost:8123
 ```
 
-The daily workflow refreshes `site/data.json`, so the page can be hosted free on GitHub Pages or Netlify and stay up to date.
+**Live at [kgadharsh.github.io/ucl-luck](https://kgadharsh.github.io/ucl-luck/).** The daily workflow refreshes `site/data.json`, and `.github/workflows/pages.yml` republishes `site/` to GitHub Pages after every daily update and every push to `main` that changes it.
 
 ## Tests
 
@@ -103,7 +103,7 @@ GitHub Actions runs them on every push and pull request and after each daily upd
 .venv/bin/python src/update.py
 ```
 
-`.github/workflows/update.yml` runs this every morning on GitHub Actions and commits the results, once the project is pushed to GitHub.
+`.github/workflows/update.yml` runs this every morning on GitHub Actions and commits the results.
 
 **Not covered yet:** the 2026-27 Champions League. openfootball has no 2026-27 Champions League data (it stopped updating in September 2026), and I found no free source that works without a key. The football-data.org API has a free plan that needs a personal key; check that its free plan covers the Champions League before relying on it.
 
