@@ -1,31 +1,33 @@
 # Live scorecard
 
-Last updated 2026-11-04 08:09 UTC. Predictions are made before kick-off and never changed afterwards.
+Last updated 2026-11-04 16:34 UTC. Predictions are made before kick-off and never changed afterwards.
 
 - Predictions in the ledger: 0
 - Matches played and scored: 0
 
-## Strongest clubs now (attack + defence, in log-goals)
+## Strongest clubs now
 
-| Rank | Club | Attack | Defence | Overall |
+Against an average big-five club this season, on a neutral pitch.
+
+| Rank | Club | Would score | Would concede | Chance of winning |
 |---|---|---|---|---|
-| 1 | Arsenal | +0.37 | +0.87 | +1.24 |
-| 2 | Bayern Munich | +0.72 | +0.30 | +1.02 |
-| 3 | Paris SG | +0.54 | +0.47 | +1.01 |
-| 4 | Barcelona | +0.69 | +0.25 | +0.93 |
-| 5 | Man City | +0.45 | +0.42 | +0.86 |
-| 6 | Real Madrid | +0.45 | +0.40 | +0.86 |
-| 7 | Inter | +0.42 | +0.32 | +0.74 |
-| 8 | Liverpool | +0.34 | +0.37 | +0.70 |
-| 9 | Brighton | +0.29 | +0.32 | +0.61 |
-| 10 | Roma | +0.23 | +0.37 | +0.59 |
-| 11 | Ath Madrid | +0.28 | +0.31 | +0.59 |
-| 12 | Dortmund | +0.27 | +0.28 | +0.56 |
-| 13 | Como | +0.13 | +0.38 | +0.51 |
-| 14 | Chelsea | +0.32 | +0.15 | +0.47 |
-| 15 | Lille | +0.04 | +0.42 | +0.47 |
-| 16 | Brentford | +0.23 | +0.21 | +0.44 |
-| 17 | Bournemouth | +0.21 | +0.22 | +0.43 |
-| 18 | Lyon | +0.18 | +0.25 | +0.43 |
-| 19 | Aston Villa | +0.19 | +0.24 | +0.43 |
-| 20 | Lens | +0.17 | +0.24 | +0.42 |
+| 1 | Bayern Munich | 2.5 | 1.0 | 70% |
+| 2 | Barcelona | 2.4 | 1.1 | 67% |
+| 3 | Arsenal | 1.8 | 0.6 | 66% |
+| 4 | Paris SG | 2.1 | 0.8 | 66% |
+| 5 | Real Madrid | 1.9 | 0.9 | 61% |
+| 6 | Man City | 1.9 | 0.9 | 61% |
+| 7 | Inter | 1.9 | 1.0 | 57% |
+| 8 | Liverpool | 1.7 | 0.9 | 55% |
+| 9 | Brighton | 1.6 | 1.0 | 52% |
+| 10 | Ath Madrid | 1.6 | 1.0 | 51% |
+| 11 | Roma | 1.5 | 0.9 | 51% |
+| 12 | Dortmund | 1.6 | 1.0 | 50% |
+| 13 | Chelsea | 1.7 | 1.2 | 49% |
+| 14 | Como | 1.4 | 0.9 | 47% |
+| 15 | Brentford | 1.5 | 1.1 | 47% |
+| 16 | Bournemouth | 1.5 | 1.1 | 46% |
+| 17 | Newcastle | 1.6 | 1.2 | 46% |
+| 18 | Aston Villa | 1.5 | 1.1 | 46% |
+| 19 | Lyon | 1.5 | 1.1 | 46% |
+| 20 | Man United | 1.5 | 1.1 | 46% |

@@ -6,7 +6,8 @@ Each run:
    stamped with the time of prediction (a prediction already in the ledger is never changed,
    even if the match is moved to another date),
 3. scores ledger predictions whose matches have now been played, against the bookmakers,
-4. writes current ratings and a scorecard.
+4. writes current ratings (also in football terms: goals and win chance against an average
+   big-five club) and a scorecard.
 
 Run after scripts/download_data.py --refresh-current, by hand or on a schedule.
 """
@@ -121,6 +122,21 @@ def score_ledger(ledger, matches):
     return ledger
 
 
+def rate_clubs(model, rho, big_five_clubs):
+    """Each club's strengths, and the same thing in football terms: the goals it would score and
+    concede, and its chances of winning, drawing and losing, against an average big-five club
+    this season on a neutral pitch."""
+    ratings = pd.DataFrame({"club": list(model.index), "attack": model.attack, "defence": model.defence})
+    ratings["overall"] = ratings.attack + ratings.defence
+    average = ratings[ratings.club.isin(big_five_clubs)]
+    scores = np.exp(model.mu + ratings.attack - average.defence.mean()).to_numpy()
+    concedes = np.exp(model.mu + average.attack.mean() - ratings.defence).to_numpy()
+    probs = outcome_probs(scores, concedes, rho)
+    ratings["scores"], ratings["concedes"] = scores, concedes
+    ratings["win"], ratings["draw"], ratings["lose"] = probs.T
+    return ratings.sort_values("win", ascending=False).reset_index(drop=True)
+
+
 def write_scorecard(ledger, ratings, stamp):
     scored = ledger.dropna(subset=["brier"])
     both = scored.dropna(subset=["book_brier"])
@@ -135,10 +151,11 @@ def write_scorecard(ledger, ratings, stamp):
     if len(both):
         lines.append(f"- Brier on {len(both)} matches with closing odds: model {both.brier.mean():.4f}, "
                      f"bookmakers {both.book_brier.mean():.4f} (lower is better)")
-    lines += ["", "## Strongest clubs now (attack + defence, in log-goals)", "",
-              "| Rank | Club | Attack | Defence | Overall |", "|---|---|---|---|---|"]
+    lines += ["", "## Strongest clubs now", "",
+              "Against an average big-five club this season, on a neutral pitch.", "",
+              "| Rank | Club | Would score | Would concede | Chance of winning |", "|---|---|---|---|---|"]
     for rank, row in enumerate(ratings.head(20).itertuples(), start=1):
-        lines.append(f"| {rank} | {row.club} | {row.attack:+.2f} | {row.defence:+.2f} | {row.overall:+.2f} |")
+        lines.append(f"| {rank} | {row.club} | {row.scores:.1f} | {row.concedes:.1f} | {row.win:.0%} |")
     (LIVE / "scorecard.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
@@ -152,10 +169,8 @@ def main():
     matches = load_matches()
     model = fit(matches, today + pd.Timedelta(days=1), **fit_settings)
 
-    clubs = list(model.index)
-    ratings = pd.DataFrame({"club": clubs, "attack": model.attack, "defence": model.defence})
-    ratings["overall"] = ratings.attack + ratings.defence
-    ratings = ratings.sort_values("overall", ascending=False).reset_index(drop=True)
+    this_season = matches[matches.competition.isin(LEAGUES) & (matches.season == matches.season.max())]
+    ratings = rate_clubs(model, rho, set(this_season.home) | set(this_season.away))
     ratings.to_csv(LIVE / "ratings.csv", index=False, float_format="%.4f")
 
     fixtures = upcoming_fixtures(now)
@@ -166,7 +181,6 @@ def main():
     write_scorecard(ledger, ratings, stamp)
 
     # What the dashboard needs to describe the ratings honestly.
-    this_season = matches[matches.competition.isin(LEAGUES) & (matches.season == matches.season.max())]
     big_five = ratings[ratings.club.isin(set(this_season.home) | set(this_season.away))]
     meta = {
         "refitted_at": stamp,

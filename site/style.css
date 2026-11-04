@@ -366,6 +366,17 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
 .meter span.alt { background: var(--s2); }
 .meter i { position: absolute; top: 5px; height: 4px; background: var(--ink); opacity: .45; }
 #cb-heat .cell { cursor: pointer; }
+.gap-closed { margin: 18px 0 6px; }
+.gap-closed .meter-row { margin-bottom: 14px; }
+.gap-closed .meter-row .meter-head b { font-size: 32px; color: var(--ink); }
+.gap-closed .meter-row.book .meter span { background: var(--s3); }
+.nerds { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 10px; }
+.nerds summary { cursor: pointer; font: 12px var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--ink-2); min-height: 32px; display: flex; align-items: center; }
+.nerds summary:focus-visible { outline: 2px solid var(--s2); outline-offset: 2px; }
+.nerds summary::-webkit-details-marker { display: none; }
+.nerds summary::before { content: "+"; width: 1.4em; font-size: 16px; color: var(--s2); }
+.nerds[open] summary::before { content: "−"; }
+.nerds[open] summary { margin-bottom: 8px; }
 
 /* ---------- tables ---------- */
 .split { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; }

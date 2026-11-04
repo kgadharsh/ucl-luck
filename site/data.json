@@ -2587,124 +2587,224 @@
   "big_five_average": 0.1,
   "ratings": [
    {
-    "club": "Arsenal",
-    "attack": 0.372,
-    "defence": 0.871,
-    "overall": 1.244
-   },
-   {
     "club": "Bayern Munich",
     "attack": 0.716,
     "defence": 0.304,
-    "overall": 1.02
-   },
-   {
-    "club": "Paris SG",
-    "attack": 0.543,
-    "defence": 0.469,
-    "overall": 1.012
+    "overall": 1.02,
+    "scores": 2.494,
+    "concedes": 0.993,
+    "win": 0.697,
+    "draw": 0.176,
+    "lose": 0.127
    },
    {
     "club": "Barcelona",
     "attack": 0.687,
     "defence": 0.245,
-    "overall": 0.932
+    "overall": 0.932,
+    "scores": 2.422,
+    "concedes": 1.054,
+    "win": 0.671,
+    "draw": 0.185,
+    "lose": 0.144
    },
    {
-    "club": "Man City",
-    "attack": 0.445,
-    "defence": 0.416,
-    "overall": 0.862
+    "club": "Arsenal",
+    "attack": 0.372,
+    "defence": 0.871,
+    "overall": 1.244,
+    "scores": 1.768,
+    "concedes": 0.563,
+    "win": 0.662,
+    "draw": 0.23,
+    "lose": 0.108
+   },
+   {
+    "club": "Paris SG",
+    "attack": 0.543,
+    "defence": 0.469,
+    "overall": 1.012,
+    "scores": 2.098,
+    "concedes": 0.842,
+    "win": 0.659,
+    "draw": 0.206,
+    "lose": 0.135
    },
    {
     "club": "Real Madrid",
     "attack": 0.452,
     "defence": 0.404,
-    "overall": 0.856
+    "overall": 0.856,
+    "scores": 1.915,
+    "concedes": 0.899,
+    "win": 0.607,
+    "draw": 0.227,
+    "lose": 0.166
+   },
+   {
+    "club": "Man City",
+    "attack": 0.445,
+    "defence": 0.416,
+    "overall": 0.862,
+    "scores": 1.902,
+    "concedes": 0.888,
+    "win": 0.607,
+    "draw": 0.228,
+    "lose": 0.165
    },
    {
     "club": "Inter",
     "attack": 0.423,
     "defence": 0.318,
-    "overall": 0.74
+    "overall": 0.74,
+    "scores": 1.86,
+    "concedes": 0.98,
+    "win": 0.575,
+    "draw": 0.235,
+    "lose": 0.19
    },
    {
     "club": "Liverpool",
     "attack": 0.336,
     "defence": 0.367,
-    "overall": 0.703
+    "overall": 0.703,
+    "scores": 1.706,
+    "concedes": 0.932,
+    "win": 0.55,
+    "draw": 0.251,
+    "lose": 0.199
    },
    {
     "club": "Brighton",
     "attack": 0.288,
     "defence": 0.318,
-    "overall": 0.606
-   },
-   {
-    "club": "Roma",
-    "attack": 0.227,
-    "defence": 0.367,
-    "overall": 0.594
+    "overall": 0.606,
+    "scores": 1.626,
+    "concedes": 0.979,
+    "win": 0.519,
+    "draw": 0.259,
+    "lose": 0.222
    },
    {
     "club": "Ath Madrid",
     "attack": 0.278,
     "defence": 0.31,
-    "overall": 0.588
+    "overall": 0.588,
+    "scores": 1.609,
+    "concedes": 0.987,
+    "win": 0.513,
+    "draw": 0.261,
+    "lose": 0.226
+   },
+   {
+    "club": "Roma",
+    "attack": 0.227,
+    "defence": 0.367,
+    "overall": 0.594,
+    "scores": 1.529,
+    "concedes": 0.933,
+    "win": 0.506,
+    "draw": 0.27,
+    "lose": 0.224
    },
    {
     "club": "Dortmund",
     "attack": 0.274,
     "defence": 0.283,
-    "overall": 0.557
-   },
-   {
-    "club": "Como",
-    "attack": 0.132,
-    "defence": 0.382,
-    "overall": 0.514
+    "overall": 0.557,
+    "scores": 1.603,
+    "concedes": 1.014,
+    "win": 0.505,
+    "draw": 0.261,
+    "lose": 0.234
    },
    {
     "club": "Chelsea",
     "attack": 0.317,
     "defence": 0.154,
-    "overall": 0.472
+    "overall": 0.472,
+    "scores": 1.674,
+    "concedes": 1.154,
+    "win": 0.49,
+    "draw": 0.253,
+    "lose": 0.257
    },
    {
-    "club": "Lille",
-    "attack": 0.044,
-    "defence": 0.421,
-    "overall": 0.465
+    "club": "Como",
+    "attack": 0.132,
+    "defence": 0.382,
+    "overall": 0.514,
+    "scores": 1.391,
+    "concedes": 0.919,
+    "win": 0.472,
+    "draw": 0.286,
+    "lose": 0.242
    },
    {
     "club": "Brentford",
     "attack": 0.227,
     "defence": 0.212,
-    "overall": 0.439
+    "overall": 0.439,
+    "scores": 1.529,
+    "concedes": 1.089,
+    "win": 0.468,
+    "draw": 0.268,
+    "lose": 0.264
    },
    {
     "club": "Bournemouth",
     "attack": 0.208,
     "defence": 0.224,
-    "overall": 0.432
+    "overall": 0.432,
+    "scores": 1.501,
+    "concedes": 1.076,
+    "win": 0.464,
+    "draw": 0.27,
+    "lose": 0.266
    },
    {
-    "club": "Lyon",
-    "attack": 0.181,
-    "defence": 0.248,
-    "overall": 0.428
+    "club": "Newcastle",
+    "attack": 0.257,
+    "defence": 0.136,
+    "overall": 0.394,
+    "scores": 1.576,
+    "concedes": 1.174,
+    "win": 0.461,
+    "draw": 0.261,
+    "lose": 0.278
    },
    {
     "club": "Aston Villa",
     "attack": 0.189,
     "defence": 0.237,
-    "overall": 0.426
+    "overall": 0.426,
+    "scores": 1.472,
+    "concedes": 1.062,
+    "win": 0.46,
+    "draw": 0.274,
+    "lose": 0.267
    },
    {
-    "club": "Lens",
-    "attack": 0.174,
-    "defence": 0.242,
-    "overall": 0.416
+    "club": "Lyon",
+    "attack": 0.181,
+    "defence": 0.248,
+    "overall": 0.428,
+    "scores": 1.46,
+    "concedes": 1.051,
+    "win": 0.459,
+    "draw": 0.275,
+    "lose": 0.266
+   },
+   {
+    "club": "Man United",
+    "attack": 0.216,
+    "defence": 0.181,
+    "overall": 0.396,
+    "scores": 1.512,
+    "concedes": 1.124,
+    "win": 0.456,
+    "draw": 0.268,
+    "lose": 0.276
    }
   ],
   "predictions": 0,

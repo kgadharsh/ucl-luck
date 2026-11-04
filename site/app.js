@@ -89,6 +89,15 @@ function oddsOfDoingAsWell(ties, club) {
   return tail > 0 ? Number((1 / tail).toPrecision(3)).toLocaleString("en-GB") : "";
 }
 
+// Plain names for the models, wherever a reader sees them.
+const MODEL_NAMES = {
+  "Dixon–Coles": "Our model",
+  "Elo": "Simple ratings (Elo)",
+  "Base rates": "Knowing nothing",
+  "Average of Elo and Dixon–Coles": "Our model and Elo, averaged",
+  "Bookmakers (closing)": "Bookmakers",
+};
+
 // ---------- headline ----------
 function fillHeadline(data) {
   const h = data.headline;
@@ -98,7 +107,7 @@ function fillHeadline(data) {
     underdog: pct(h.underdog),
     "median-run": pct(h.median_champion_run),
     real: `${h.real_won} of ${h.real_ties}`,
-    "real-label": `ties won by Real Madrid, when the model expected ${h.real_expected.toFixed(1)}`,
+    "real-label": `ties won by Real Madrid, when the model expected about ${Math.round(h.real_expected)}`,
     "real-won": `${h.real_won} of ${h.real_ties}`,
     "real-expected": h.real_expected.toFixed(1),
     "test-matches": data.scores[0].matches.toLocaleString("en-GB"),
@@ -378,7 +387,7 @@ function drawRounds(data) {
     svg("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v), stroke: css("--grid") }, root);
     svg("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = pct(v);
   }
-  legend("rounds-legend", [["Actually went through (95% range)", css("--s1")], ["Model expected", css("--muted")]]);
+  legend("rounds-legend", [["Favourite actually went through (likely range)", css("--s1")], ["Model expected", css("--muted")]]);
   rows.forEach((row, i) => {
     const cx = m.l + step * (i + 0.5);
     const lo = Math.max(low, row.won - row.error), hi = Math.min(high, row.won + row.error);
@@ -387,7 +396,7 @@ function drawRounds(data) {
     svg("circle", { cx: cx - 7, cy: y(row.expected), r: 5, fill: "none", stroke: css("--muted"), "stroke-width": 2, class: "pop", style: `--d:${200 + i * 110}ms` }, root);
     svg("text", { x: cx, y: height - 8, "text-anchor": "middle" }, root).textContent = ROUND_SHORT[row.round];
     const hit = svg("rect", { x: cx - step / 2, y: m.t, width: step, height: height - m.t - m.b, class: "hit" }, root);
-    hover(hit, `<b>${row.round}</b> (${row.ties} ties)<br>Model expected the favourite through: ${pct(row.expected)}<br>Actually went through: ${pct(row.won)} (±${pct(row.error)})`);
+    hover(hit, `<b>${row.round}</b> (${row.ties} ties)<br>Model expected the favourite through: ${pct(row.expected)}<br>Actually went through: ${pct(row.won)}, give or take ${pct(row.error)}`);
   });
 }
 
@@ -452,7 +461,7 @@ function drawCalibration(data) {
   svg("text", { x: x(0.5), y: height - 4, "text-anchor": "middle" }, root).textContent = "Predicted chance of a home win";
   const mid = m.t + (height - m.t - m.b) / 2;
   svg("text", { x: 12, y: mid, "text-anchor": "middle", transform: `rotate(-90 12 ${mid})` }, root).textContent =
-    gapView ? "Actual minus predicted (points)" : "How often the home team actually won";
+    gapView ? "How far off (percentage points)" : "How often the home team actually won";
 
   if (gapView) {
     svg("line", { x1: x(0), x2: x(1), y1: y(0), y2: y(0), stroke: css("--ink-2"), "stroke-width": 1.5 }, root);
@@ -465,7 +474,7 @@ function drawCalibration(data) {
     svg("line", { x1: x(0), y1: y(0), x2: x(1), y2: y(1), stroke: css("--ink-2"), "stroke-width": 1.5, "stroke-dasharray": "2 4" }, root);
     svg("text", { x: x(0.62), y: y(0.62) + 18, "text-anchor": "start", class: "label-strong" }, root).textContent = "Perfectly honest";
   }
-  legend("cal-legend", data.calibration.map((s) => [s.name, colors[s.name], dashed[s.name] ? "line dash" : "line"]));
+  legend("cal-legend", data.calibration.map((s) => [MODEL_NAMES[s.name] || s.name, colors[s.name], dashed[s.name] ? "line dash" : "line"]));
 
   data.calibration.forEach((series, k) => {
     const color = colors[series.name];
@@ -480,7 +489,7 @@ function drawCalibration(data) {
       svg("circle", { cx: px, cy: y(clamp(v)), r: 4, fill: dashed[series.name] ? css("--surface") : color, stroke: color, "stroke-width": 2, class: "pop", style: `--d:${k * 280 + j * 90}ms` }, root);
       const hit = svg("circle", { cx: px, cy: y(clamp(v)), r: 12, class: "hit" }, root);
       const gap = Math.round((p.actual - p.predicted) * 1000) / 10;
-      hover(hit, `<b>${series.name}</b><br>Said ${pct(p.predicted)} on average<br>Home team won ${pct(p.actual)} (±${pct(p.error)})<br>` +
+      hover(hit, `<b>${MODEL_NAMES[series.name] || series.name}</b><br>Said ${pct(p.predicted)} on average<br>Home team won ${pct(p.actual)}, give or take ${pct(p.error)}<br>` +
         `${gap === 0 ? "Exactly honest" : `${Math.abs(gap)} points ${gap > 0 ? "more" : "less"} often than predicted`}<br>${p.n.toLocaleString("en-GB")} matches`);
     });
   });
@@ -491,9 +500,9 @@ function drawCalibration(data) {
     return { name: s.name, miss: s.points.reduce((t, p) => t + p.n * Math.abs(p.actual - p.predicted), 0) / n };
   }).sort((a, b) => a.miss - b.miss);
   document.getElementById("cal-note").innerHTML = `On average, the home side's real win rate was off from the prediction by ` +
-    misses.map((s) => `<b>${(s.miss * 100).toFixed(1)} points</b> for ${s.name === "Bookmakers" ? "the bookmakers" : s.name}`)
+    misses.map((s) => `<b>${(s.miss * 100).toFixed(1)} points</b> for ${s.name === "Bookmakers" ? "the bookmakers" : (MODEL_NAMES[s.name] || s.name).toLowerCase()}`)
       .join(", ").replace(/, ([^,]*)$/, " and $1") +
-    `. Gaps that small mean all three are honest. Near 0% and 100% there are few matches, so the error bars are wide.`;
+    `. Gaps that small mean all three are honest. Near 0% and 100% there are few matches, so the lines showing the likely range get long.`;
 }
 
 function setupCalibration(data) {
@@ -507,8 +516,16 @@ function setupCalibration(data) {
 
 function fillScores(data) {
   const best = Math.min(...data.scores.map((s) => s.brier));
+  const name = (model) => MODEL_NAMES[model] || model;
   document.querySelector("#scores-table tbody").innerHTML = data.scores.map((s) =>
-    `<tr class="${s.brier === best ? "best" : ""}"><td>${s.model === "Base rates" ? "Knowing nothing (base rates)" : s.model}</td><td class="num">${s.brier.toFixed(4)}</td><td class="num">${s.log_loss.toFixed(4)}</td></tr>`).join("");
+    `<tr class="${s.brier === best ? "best" : ""}"><td>${name(s.model)}</td><td class="num">${s.brier.toFixed(4)}</td><td class="num">${s.log_loss.toFixed(4)}</td></tr>`).join("");
+  // The same scores as a share of the distance from knowing nothing to the bookmakers.
+  const floor = data.scores.find((s) => s.model === "Base rates"), book = data.scores.find((s) => s.brier === best);
+  document.getElementById("gap-closed").innerHTML = data.scores.filter((s) => s !== floor).map((s) => {
+    const share = (floor.brier - s.brier) / (floor.brier - book.brier);
+    return `<div class="meter-row${s === book ? " book" : ""}"><div class="meter-head"><span>${name(s.model)}</span><b>${pct(share)}</b></div>` +
+      `<div class="meter" role="img" aria-label="${name(s.model)}: ${pct(share)} of the way"><span style="width:${pct(share, 1)}"></span></div></div>`;
+  }).join("");
 }
 
 // ---------- tie explorer ----------
@@ -921,21 +938,20 @@ function fillLive(data) {
     document.querySelector('nav a[href="#live"]').hidden = true;
     return;
   }
-  const sign = (v) => (v >= 0 ? "+" : "") + v.toFixed(2);
   document.getElementById("live-sub").textContent =
-    `Attack and defence strengths from the goals model${live.updated ? `, refitted on ${live.updated}` : ""}` +
-    ` on ${live.window_years ? `the last ${live.window_years} years of matches` : "recent matches"}${live.fitted_through ? ` up to ${live.fitted_through}` : ""},` +
-    ` with recent matches counting more. Higher is better` +
-    (live.big_five_average != null ? `; the average big-five club this season rates ${sign(live.big_five_average)} overall.` : ".");
-  const top = Math.max(...live.ratings.map((r) => r.overall));
+    `How each club would do in one match against an average club from this season's big five leagues, on a neutral pitch: ` +
+    `the goals it would score and concede on average, and its chance of winning. ` +
+    `From the goals model${live.updated ? `, updated ${live.updated}` : ""}, using ${live.window_years ? `the last ${live.window_years} years of matches` : "recent matches"}` +
+    `${live.fitted_through ? ` up to ${live.fitted_through}` : ""}, with recent matches counting more.`;
   document.querySelector("#ratings-table tbody").innerHTML = live.ratings.map((r, i) =>
-    `<tr><td class="num">${i + 1}</td><td>${clean(r.club)}</td><td class="num">${sign(r.attack)}</td><td class="num">${sign(r.defence)}</td><td class="num"><b>${sign(r.overall)}</b></td><td class="rbar-cell"><span class="rbar" style="width:${Math.max(0, r.overall / top) * 100}%"></span></td></tr>`).join("");
+    `<tr><td class="num">${i + 1}</td><td>${clean(r.club)}</td><td class="num">${r.scores.toFixed(1)}</td><td class="num">${r.concedes.toFixed(1)}</td><td class="num"><b>${pct(r.win)}</b></td>` +
+    `<td class="rbar-cell"><span class="rbar" style="width:${r.win * 100}%"></span></td></tr>`).join("");
   const cell = (value, label) => `<div class="stat"><span class="stat-value">${value}</span><span class="stat-label">${label}</span></div>`;
   document.getElementById("ledger").innerHTML =
     cell(live.predictions, "predictions saved") +
     cell(live.scored, "matches played and scored") +
-    (live.model_brier != null ? cell(live.model_brier.toFixed(3), "model Brier so far") + cell(live.book_brier.toFixed(3), "bookmakers' Brier so far")
-      : `<p class="small" style="grid-column:1/-1">No predictions scored yet. The ledger fills as upcoming fixtures are published and played.</p>`);
+    (live.model_brier != null ? cell(live.model_brier.toFixed(3), "the model's error score so far (lower is better)") + cell(live.book_brier.toFixed(3), "the bookmakers' error score so far")
+      : `<p class="small" style="grid-column:1/-1">No predictions scored yet. The ledger fills as each weekend's league fixtures are published and played.</p>`);
 }
 
 // ---------- theme ----------
@@ -964,11 +980,16 @@ function setupTheme(redraw) {
   else system.addListener(sync); // Safari 13
   // Paper is white and most printers skip backgrounds, so print in the light theme.
   let screenTheme;
+  // A printout can't be clicked open, so every fold-out prints open.
+  let closedFolds = [];
   addEventListener("beforeprint", () => {
+    closedFolds = [...document.querySelectorAll("details:not([open])")];
+    closedFolds.forEach((d) => { d.open = true; });
     screenTheme = root.dataset.theme;
     if (isDark()) { root.dataset.theme = "light"; sync(); }
   });
   addEventListener("afterprint", () => {
+    closedFolds.forEach((d) => { d.open = false; });
     if (screenTheme === undefined) delete root.dataset.theme;
     else root.dataset.theme = screenTheme;
     sync();

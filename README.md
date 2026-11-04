@@ -61,8 +61,10 @@ python3 -m venv .venv
 - favourites by round, with uncertainty;
 - an explorer for all 226 ties, with a season-by-season strip and filters for season, round, club and upsets;
 - the Real Madrid blind spot;
-- calibration against the bookmakers, shown as each model's gap from honest (or on the full scale), plus the scores;
-- the live ratings and the prediction ledger.
+- calibration against the bookmakers, shown as each model's gap from honest (or on the full scale), plus how much of the way from knowing nothing to the bookmakers each model gets (the exact Brier and log-loss scores are in a fold-out);
+- the live ratings, in football terms (goals scored and conceded, and the chance of winning, against an average big-five club on a neutral pitch), and the prediction ledger.
+
+The page is written for football fans, not statisticians: the one idea it relies on, each team's chance of going through before the first leg, is introduced once as the **pre-match chance**.
 
 It works on phones, in light and dark mode, with a keyboard, and printed or saved as PDF (every section prints, in the light palette). Readers who ask their system for reduced motion get the finished page without animation.
 

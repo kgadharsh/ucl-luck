@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-  <link rel="stylesheet" href="style.css?v=20">
+  <link rel="stylesheet" href="style.css?v=21">
   <script>
     // Before anything paints or draws: mark that JS is on, and apply a saved light/dark choice,
     // so charts are never drawn in the system theme's colours and the page doesn't flash.
@@ -56,7 +56,7 @@
       <h1>How much of a Champions League knockout is <em>luck?</em></h1>
       <div class="hero-grid">
         <div class="hero-text">
-          <p class="lede">For every knockout tie, a model worked out each team's chance of going through <b>before the first leg</b>, using only matches played earlier. Then we checked what actually happened.</p>
+          <p class="lede">Before the first leg of every knockout tie, a model worked out each team's chance of going through, using only matches played earlier. We call it the <b>pre-match chance</b>. Then we checked what actually happened.</p>
           <div class="stats">
             <div class="stat">
               <span class="stat-value" data-fill="underdog"></span>
@@ -86,14 +86,14 @@
             <div class="ms-under"><b id="ms-under">0</b><span>underdogs went through</span></div>
             <div class="ms-fav"><b id="ms-fav">0</b><span>favourites went through</span></div>
           </div>
-          <figcaption>Each ball is one of the <span data-fill="ties"></span> ties, dropped in the order they were played. The route through the pegs is random; where it lands is not. It lands on the chance the team that went through had before the first leg, so <span class="red">everything left of the red line went to the underdog</span>.</figcaption>
+          <figcaption>Each ball is one of the <span data-fill="ties"></span> ties, dropped in the order they were played. The route through the pegs is random; where it lands is not. It lands on the winner's pre-match chance, so <span class="red">everything left of the red line was won by the underdog</span>.</figcaption>
         </figure>
       </div>
     </section>
 
     <section id="runs" class="card">
       <h2>Even champions mostly got lucky</h2>
-      <p class="sub">The chance each champion had of winning every tie it actually played, judged before each tie. Hover or tap a bar, or pick a champion below, to see its route.</p>
+      <p class="sub">To lift the trophy, a champion has to win every tie on its way. Multiply its pre-match chances together and you get the odds of that whole run. Hover or tap a bar, or pick a champion below, to see its route.</p>
       <div class="chart" id="runs-chart" role="img" aria-label="Bar chart of each champion's chance of winning its run"></div>
       <div class="filters run-pick"><label>Show the run of <select id="runs-pick"></select></label></div>
       <div class="path" id="runs-path" aria-live="polite"></div>
@@ -101,7 +101,7 @@
 
     <section id="butterfly" class="card">
       <h2>Change one result, change the whole tournament</h2>
-      <p class="sub">Pick the winner of any tie and watch every club's chance of lifting the trophy move. Strengths are frozen just before the round of 16, so the only thing changing is the results you choose.</p>
+      <p class="sub">Pick the winner of any tie and watch every club's chance of lifting the trophy move. Team strengths stay as they were before the round of 16, so the only thing that changes is the results you pick.</p>
       <div class="filters">
         <label>Season <select id="bf-season"></select></label>
         <button class="more" id="bf-real" type="button">Play it as it happened</button>
@@ -121,7 +121,7 @@
 
     <section id="comeback" class="card">
       <h2>Comeback meter</h2>
-      <p class="sub">Pick a first-leg score. How likely is your team to still go through? The model's estimate sits next to every real two-legged tie that started the same way (Champions League knockouts since 2011-12, and Europa League knockouts from 2020-21 to 2024-25).</p>
+      <p class="sub">Pick a first-leg score. How likely is your team to still go through? The model's answer sits next to what really happened in every two-legged tie that started the same way (Champions League knockouts since 2011-12, and Europa League knockouts from 2020-21 to 2024-25).</p>
       <div class="cb-controls">
         <div class="seg" role="group" aria-label="Where your team played the first leg">
           <span class="seg-label">First leg</span>
@@ -164,16 +164,16 @@
 
     <section id="rounds" class="card">
       <h2>The later the round, the closer the contest</h2>
-      <p class="sub">How often the model's favourite went through, against how often the model expected it to. The bars show 95% uncertainty: with only <span data-fill="finals"></span> finals, every round is a small sample.</p>
+      <p class="sub">In the round of 16, the favourite usually goes through. By the final it's not far off a coin toss. The hollow dot is how often the model expected its favourite to go through; the solid dot is how often it really did. There have only been <span data-fill="finals"></span> finals, so each round is a small sample, and the line through the solid dot shows where the true rate probably lies.</p>
       <div class="legend" id="rounds-legend"></div>
       <div class="chart" id="rounds-chart" role="img" aria-label="Favourite win rate by round, expected and actual"></div>
     </section>
 
     <section id="ties" class="card">
       <h2>Every knockout tie</h2>
-      <p class="sub">Each bar splits the chances between the two teams before the first leg. ✓ marks the team that went through.</p>
+      <p class="sub">Each bar splits the pre-match chances between the two teams. ✓ marks the team that went through.</p>
       <figure class="ticker">
-        <figcaption><b>Season by season.</b> One bar per tie, grouped by round within each season, from the play-offs to the final. A bar's height is the chance the team that went through had before the first leg; the dotted line is 50%, so <span class="red">red bars, below it, are ties the underdog won</span>. Click a season, or choose one below, to zoom in.</figcaption>
+        <figcaption><b>Season by season.</b> One bar per tie, grouped by round within each season, from the play-offs to the final. A bar's height is the winner's pre-match chance; the dotted line is 50%, so <span class="red">red bars, below it, are ties the underdog won</span>. Click a season, or choose one below, to zoom in.</figcaption>
         <div class="strip-nav" id="strip-nav" hidden>
           <button type="button" class="more" data-step="-1">‹ <span></span></button>
           <b></b>
@@ -195,7 +195,7 @@
 
     <section id="blind-spot" class="card">
       <h2>Luck, or a blind spot? Real Madrid</h2>
-      <p class="sub">Ties won against ties the model expected each club to win, for clubs with at least 8 ties. Most clubs sit close to what the model expected. One doesn't.</p>
+      <p class="sub">How many ties each club won, against how many the model expected it to win (clubs with at least 8 ties). Most clubs sit close to what the model expected. One doesn't.</p>
       <div class="legend" id="clubs-legend"></div>
       <div class="chart" id="clubs-chart" role="img" aria-label="Expected and actual ties won per club"></div>
       <div class="note">
@@ -206,54 +206,61 @@
 
     <section id="honest" class="card">
       <h2>Is the model honest?</h2>
-      <p class="sub">Tested on <span data-fill="test-matches"></span> league matches from seasons it never saw (2017-18 onwards), against the bookmakers' closing odds.</p>
+      <p class="sub">A luck study is only as good as its chances. So the model was tested on <span data-fill="test-matches"></span> league matches from seasons it never saw (2017-18 onwards), against the bookmakers' final odds just before kick-off, which are the toughest benchmark there is.</p>
       <div class="split">
         <div>
           <h3>When it says 60%, does it happen 60% of the time?</h3>
+          <p class="small">Home teams are grouped by the chance they were given, then we count how often they actually won. A point on the "honest" line means the chances were right.</p>
           <div class="seg cal-view" role="group" aria-label="Chart view">
-            <button type="button" data-view="gap" aria-pressed="true">Gap from honest</button>
-            <button type="button" data-view="full" aria-pressed="false">Full scale</button>
+            <button type="button" data-view="gap" aria-pressed="true">Zoom in on the gap</button>
+            <button type="button" data-view="full" aria-pressed="false">Whole picture</button>
           </div>
           <div class="legend" id="cal-legend"></div>
           <div class="chart" id="cal-chart" role="img" aria-label="Calibration chart: for each model, how often the home team actually won against how likely the model said it was"></div>
           <p class="small" id="cal-note"></p>
         </div>
         <div>
-          <h3>Accuracy scores (lower is better)</h3>
-          <table class="table" id="scores-table">
-            <thead><tr><th>Model</th><th class="num">Brier</th><th class="num">Log loss</th></tr></thead>
-            <tbody></tbody>
-          </table>
-          <p class="small">The bookmakers win, as expected: closing odds include team news and the betting market's money. The model closes most of the gap between knowing nothing and the bookmakers.</p>
+          <h3>How close does it get to the bookmakers?</h3>
+          <p class="small">0% is knowing nothing: giving every match the same average home, draw and away chances. 100% is matching the bookmakers.</p>
+          <div class="gap-closed" id="gap-closed"></div>
+          <p class="small">The bookmakers win, as expected: their odds include team news, injuries and the betting market's money. The model gets most of the way there using nothing but past results.</p>
+          <details class="nerds" id="scores-details">
+            <summary>The exact scores</summary>
+            <table class="table" id="scores-table">
+              <thead><tr><th>Model</th><th class="num">Brier</th><th class="num">Log loss</th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <p class="small">Both are standard accuracy scores for probability forecasts; lower is better. Brier is the average squared gap between the chances given and what happened; log loss punishes confident mistakes harder.</p>
+          </details>
         </div>
       </div>
     </section>
 
     <section id="live" class="card">
-      <h2>Live: strongest clubs now</h2>
+      <h2>Live: the strongest clubs right now</h2>
       <p class="sub" id="live-sub"></p>
       <div class="split">
         <div>
           <table class="table" id="ratings-table">
-            <thead><tr><th>#</th><th>Club</th><th class="num">Attack</th><th class="num">Defence</th><th class="num">Overall</th><th class="rbar-head"><span class="sr">Overall, as a bar</span></th></tr></thead>
+            <thead><tr><th>#</th><th>Club</th><th class="num">Would score</th><th class="num">Would concede</th><th class="num">Would win</th><th class="rbar-head"><span class="sr">Chance of winning, as a bar</span></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
         <div>
           <h3>The prediction ledger</h3>
-          <p class="small">Every prediction is saved before kick-off and never changed afterwards, then scored once the match is played.</p>
+          <p class="small">The real test: the model predicts upcoming league matches, and every prediction is saved before kick-off and never changed afterwards. Once a match is played, the prediction is scored against the result and against the bookmakers.</p>
           <div class="ledger" id="ledger"></div>
         </div>
       </div>
     </section>
 
     <footer class="foot">
-      <p>Data: league results and closing odds from football-data.co.uk; Champions League results from openfootball (public domain). Models: Elo and Dixon–Coles, refitted on earlier matches only. Built <span data-fill="built"></span>.</p>
+      <p>Data: league results and closing odds from football-data.co.uk; Champions League results from openfootball (public domain). Models: a goals model (Dixon–Coles) and a simpler rating system (Elo), each only ever shown matches played before the one it predicts. Built <span data-fill="built"></span>.</p>
     </footer>
   </main>
 
   <div class="tip" id="tip" aria-hidden="true"></div>
   <script src="motion.js?v=9"></script>
-  <script src="app.js?v=24"></script>
+  <script src="app.js?v=25"></script>
 </body>
 </html>
