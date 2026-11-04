@@ -5,7 +5,8 @@ Each run:
 2. predicts big-five league fixtures that have not kicked off and adds them to a ledger,
    stamped with the time of prediction (a prediction already in the ledger is never changed,
    even if the match is moved to another date),
-3. scores ledger predictions whose matches have now been played, against the bookmakers,
+3. scores ledger predictions whose matches have now been played, against the bookmakers
+   (the odds at prediction time are saved too, as odds_home/odds_draw/odds_away),
 4. writes current ratings (also in football terms: goals and win chance against an average
    big-five club) and a scorecard.
 
@@ -67,6 +68,12 @@ def upcoming_fixtures(now):
         "home": frame["HomeTeam"].str.strip(),
         "away": frame["AwayTeam"].str.strip(),
     })
+    # The bookmakers' view when the prediction is made (market average, margin removed), so
+    # the dashboard can show where the model disagrees before kick-off. Closing odds come later.
+    odds = frame.reindex(columns=["AvgH", "AvgD", "AvgA"]).apply(pd.to_numeric, errors="coerce")
+    implied = 1 / odds.where(odds > 1)
+    implied = implied.div(implied.sum(axis=1), axis=0)
+    fixtures["odds_home"], fixtures["odds_draw"], fixtures["odds_away"] = implied.to_numpy().T
     # Only matches still to start. Without a usable kick-off time we can't tell whether a
     # match today has started, so those count only from the day after.
     today = pd.Timestamp(now.date())

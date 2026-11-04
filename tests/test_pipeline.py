@@ -191,3 +191,38 @@ def test_an_unfinished_two_legged_tie_is_skipped_not_decided(tmp_path, monkeypat
     full = pd.read_csv(ROOT / "results" / "knockout_ties.csv")
     assert len(ties) == len(full) - len(second_legs) == len(full) - 8
     assert not ((ties.season == "2025-26") & (ties["round"] == "Round of 16")).any()
+
+
+# ---------- what the dashboard gets about upcoming predictions ----------
+
+def test_bookmaker_odds_are_saved_as_chances(update, monkeypatch):
+    fixtures = ("Div,Date,Time,HomeTeam,AwayTeam,AvgH,AvgD,AvgA\n"
+                "E0,08/11/2026,16:30,Arsenal,Chelsea,2.0,3.5,4.0\n"
+                "E0,08/11/2026,14:00,Leeds,Wolves,,,\n")
+    monkeypatch.setattr(update.urllib.request, "urlopen", _replying(fixtures.encode()))
+    rows = update.upcoming_fixtures(datetime(2026, 11, 7, 12, 0, tzinfo=timezone.utc)).set_index("home")
+    arsenal = rows.loc["Arsenal", ["odds_home", "odds_draw", "odds_away"]].to_numpy(float)
+    assert arsenal.sum() == pytest.approx(1)  # the bookmakers' margin is taken out
+    assert arsenal[0] > arsenal[1] > arsenal[2]
+    assert rows.loc["Leeds", ["odds_home", "odds_draw", "odds_away"]].isna().all()  # no odds listed: left empty
+
+
+def test_upcoming_predictions_never_put_nan_in_data_json(tmp_path, monkeypatch):
+    # Upcoming rows have no result or score yet. A NaN in data.json would stop the page loading.
+    import json
+    import export_site
+    live = tmp_path / "live"
+    live.mkdir()
+    pd.DataFrame({"club": ["Arsenal"], "attack": [0.3], "defence": [0.8], "overall": [1.1], "scores": [1.8],
+                  "concedes": [0.6], "win": [0.66], "draw": [0.23], "lose": [0.11]}).to_csv(live / "ratings.csv", index=False)
+    pd.DataFrame({"competition": ["E0", "E0"], "season": ["2026-27"] * 2, "date": ["2026-11-08"] * 2,
+                  "kickoff": ["2026-11-08 16:30 UTC", None], "home": ["Arsenal", "Leeds"], "away": ["Chelsea", "Wolves"],
+                  "p_home": [0.5, 0.4], "p_draw": [0.25, 0.3], "p_away": [0.25, 0.3],
+                  "odds_home": [0.48, None], "odds_draw": [0.27, None], "odds_away": [0.25, None],
+                  "predicted_at": ["2026-11-05 05:30 UTC"] * 2, "home_goals": [None, None], "brier": [None, None],
+                  "book_brier": [None, None]}).to_csv(live / "prediction_ledger.csv", index=False)
+    monkeypatch.setattr(export_site, "RESULTS", tmp_path)
+    section = export_site.live_section()
+    json.dumps(section, allow_nan=False)  # raises on any NaN
+    assert len(section["upcoming"]) == 2
+    assert "odds_home" not in section["upcoming"][1] and "kickoff" not in section["upcoming"][1]

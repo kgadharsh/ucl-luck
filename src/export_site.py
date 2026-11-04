@@ -18,6 +18,7 @@ from evaluate_elo import TUNE, WARM_UP, walk_forward_probs
 from knockouts import LAST_AWAY_GOALS_SEASON, ROUNDS, actual_winner
 from matches import load_matches
 from outcomes import outcome_codes
+from preview import write_preview
 
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "results"
@@ -112,6 +113,11 @@ def first_legs(matches):
     }
 
 
+# What the dashboard shows for a prediction still waiting for kick-off.
+UPCOMING = ["competition", "date", "kickoff", "home", "away", "p_home", "p_draw", "p_away",
+            "odds_home", "odds_draw", "odds_away"]
+
+
 def live_section():
     ratings_path, ledger_path = RESULTS / "live" / "ratings.csv", RESULTS / "live" / "prediction_ledger.csv"
     if not ratings_path.exists():
@@ -136,7 +142,9 @@ def live_section():
         "scored": int(len(scored)),
         "model_brier": float(both.brier.mean()) if len(both) else None,
         "book_brier": float(both.book_brier.mean()) if len(both) else None,
-        "upcoming": upcoming.head(30).round(3).astype({"date": str}).to_dict("records") if len(upcoming) else [],
+        "upcoming": [{k: v for k, v in row.items() if pd.notna(v)}  # JSON has no NaN; leave missing values out
+                     for row in upcoming.reindex(columns=UPCOMING).head(30).round(3).astype({"date": str}).to_dict("records")]
+                    if len(upcoming) else [],
     }
 
 
@@ -183,8 +191,11 @@ def main():
         "comebacks": first_legs(matches),
         "brackets": build_brackets(matches, pd.read_csv(RESULTS / "dixon_coles_settings.csv").iloc[0]),
     }
-    (SITE / "data.json").write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+    # allow_nan=False: a NaN would be written as a bare NaN, which browsers refuse to parse,
+    # and the whole dashboard would fail to load. Better to fail here, loudly.
+    (SITE / "data.json").write_text(json.dumps(data, ensure_ascii=False, indent=1, allow_nan=False), encoding="utf-8")
     print(f"Wrote {SITE / 'data.json'} ({(SITE / 'data.json').stat().st_size // 1024} KB)")
+    write_preview(data, SITE / "preview.png")  # the picture a shared link shows
 
 
 if __name__ == "__main__":

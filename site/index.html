@@ -8,11 +8,20 @@
   <meta property="og:title" content="How much of a Champions League knockout is luck?">
   <meta property="og:description" content="Every knockout tie since 2012-13, with each team's chance before the first leg. Even champions mostly got lucky.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kgadharsh.github.io/ucl-luck/">
+  <meta property="og:image" content="https://kgadharsh.github.io/ucl-luck/preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="How much of a Champions League knockout is luck? 32% average underdog chance, and each champion's chance of its whole run.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How much of a Champions League knockout is luck?">
+  <meta name="twitter:description" content="Every knockout tie since 2012-13, with each team's chance before the first leg. Even champions mostly got lucky.">
+  <meta name="twitter:image" content="https://kgadharsh.github.io/ucl-luck/preview.png">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316140f'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23d23d1c'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-  <link rel="stylesheet" href="style.css?v=25">
+  <link rel="stylesheet" href="style.css?v=26">
   <script>
     // Before anything paints or draws: mark that JS is on, and apply a saved light/dark choice,
     // so charts are never drawn in the system theme's colours and the page doesn't flash.
@@ -106,6 +115,8 @@
         <label>Season <select id="bf-season"></select></label>
         <button class="more" id="bf-real" type="button">Play it as it happened</button>
         <button class="more" id="bf-reset" type="button">Clear my picks</button>
+        <button class="more" id="bf-share" type="button">Share these picks</button>
+        <span class="small" id="bf-share-status" role="status"></span>
       </div>
       <p class="small" id="bf-note"></p>
       <div class="bf-grid">
@@ -250,6 +261,11 @@
           <h3>The prediction ledger</h3>
           <p class="small">The real test: the model predicts upcoming league matches, and every prediction is saved before kick-off and never changed afterwards. Once a match is played, the prediction is scored against the result and against the bookmakers.</p>
           <div class="ledger" id="ledger"></div>
+          <div class="upcoming" id="watch" hidden>
+            <h3>Upsets watch</h3>
+            <p class="small">Upcoming games where the model rates a result well above the bookmakers do. If the model is right, these are the results to watch for; if the bookmakers are, the model is about to learn something.</p>
+            <div class="fixtures"></div>
+          </div>
           <div class="upcoming" id="upcoming" hidden>
             <h3>Coming up</h3>
             <p class="small">The model's chances for each result: home win, draw, away win.</p>
@@ -267,6 +283,6 @@
   <a class="to-top" id="to-top" href="#top" hidden>↑ Top</a>
   <div class="tip" id="tip" aria-hidden="true"></div>
   <script src="motion.js?v=10"></script>
-  <script src="app.js?v=29"></script>
+  <script src="app.js?v=31"></script>
 </body>
 </html>

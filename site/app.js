@@ -604,7 +604,35 @@ function setupButterfly(data) {
   const select = document.getElementById("bf-season");
   const brackets = [...data.brackets].reverse();
   select.innerHTML = brackets.map((b, i) => `<option value="${i}">${b.season}</option>`).join("");
-  let bracket, locks, baseline, parent, index;
+  let bracket, locks, baseline, parent, index, ready = false;
+
+  // The season and picks live in the address (?season=2021-22&picks=3.5-9.2#butterfly: node id
+  // and team number), so a set of picks can be sent to someone and opens exactly as it was.
+  function writeUrl() {
+    const params = new URLSearchParams(location.search);
+    const picks = bracket.nodes.filter((n) => locks[n.id]).map((n) => `${n.id}.${index[locks[n.id]]}`).join("-");
+    if (picks || select.value !== "0") params.set("season", bracket.season); else params.delete("season");
+    if (picks) params.set("picks", picks); else params.delete("picks");
+    const query = params.toString();
+    history.replaceState(null, "", location.pathname + (query ? `?${query}` : "") + location.hash);
+  }
+
+  function readUrl() {
+    const params = new URLSearchParams(location.search);
+    const i = brackets.findIndex((b) => b.season === params.get("season"));
+    if (i < 0) return;
+    select.value = String(i);
+    load(i);
+    // Applied in round order, and only where the club can really be in that tie, so a
+    // mangled or hand-edited link gives the valid part of the picks rather than nonsense.
+    const wanted = Object.fromEntries((params.get("picks") || "").split("-").map((p) => p.split(".").map(Number)));
+    for (const node of bracket.nodes) {
+      const team = bracket.teams[wanted[node.id]];
+      const both = sides(node);
+      if (team && both && both.includes(team)) locks[node.id] = team;
+    }
+    render();
+  }
 
   function load(i) {
     bracket = brackets[i];
@@ -707,6 +735,7 @@ function setupButterfly(data) {
     box.querySelectorAll(".bf-pick").forEach((button) =>
       button.addEventListener("click", () => pick(Number(button.dataset.node), button.dataset.team)));
     drawButterfly();
+    if (ready) writeUrl();
   }
 
   function firstSlot(node) {
@@ -763,7 +792,28 @@ function setupButterfly(data) {
     locks = Object.fromEntries(bracket.nodes.map((n) => [n.id, n.winner]));
     render();
   });
+  document.getElementById("bf-share").addEventListener("click", async () => {
+    const status = document.getElementById("bf-share-status");
+    const url = `${location.origin}${location.pathname}${location.search}#butterfly`;
+    const moved = Object.keys(locks).length;
+    const title = `What if? ${bracket.season} Champions League`;
+    try {
+      if (navigator.share && matchMedia("(pointer: coarse)").matches) {
+        await navigator.share({ title, text: moved ? "Look what my picks do to everyone's chances" : title, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      status.textContent = "Link copied";
+    } catch (e) {
+      if (e && e.name === "AbortError") return; // closed the share sheet
+      status.textContent = "Copy this link: " + url;
+    }
+    clearTimeout(status.timer);
+    status.timer = setTimeout(() => { status.textContent = ""; }, 4000);
+  });
   load(0);
+  readUrl();
+  ready = true;
   return () => drawButterfly();
 }
 
@@ -984,12 +1034,31 @@ function fillLive(data) {
     return at && !isNaN(at) ? at.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
       : new Date(`${String(m.date).slice(0, 10)}T12:00:00Z`).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
   };
+  const meta = (m) => `<div class="tie-meta">${LEAGUE_NAMES[m.competition] || m.competition} · ${when(m)}</div>`;
+  const hasOdds = (m) => [m.odds_home, m.odds_draw, m.odds_away].every((v) => typeof v === "number");
+
+  // Upsets watch: for each game, the result the model rates furthest above the bookmakers.
+  const watch = (live.upcoming || []).filter(hasOdds).map((m) => {
+    const options = [
+      { gap: m.p_home - m.odds_home, model: m.p_home, book: m.odds_home, text: `${clean(m.home)} win` },
+      { gap: m.p_draw - m.odds_draw, model: m.p_draw, book: m.odds_draw, text: "Draw" },
+      { gap: m.p_away - m.odds_away, model: m.p_away, book: m.odds_away, text: `${clean(m.away)} win` },
+    ];
+    return { m, ...options.reduce((a, b) => (b.gap > a.gap ? b : a)) };
+  }).filter((w) => w.gap >= 0.05).sort((a, b) => b.gap - a.gap).slice(0, 5);
+  const watchBox = document.getElementById("watch");
+  watchBox.hidden = !watch.length;
+  watchBox.querySelector(".fixtures").innerHTML = watch.map((w) =>
+    `<div class="fixture">${meta(w.m)}<div class="fixture-teams"><b>${clean(w.m.home)}</b> v <b>${clean(w.m.away)}</b></div>` +
+    `<p class="small watch-line"><b>${w.text}</b>: model ${pct(w.model)}, bookmakers ${pct(w.book)}</p></div>`).join("");
+
   box.querySelector(".fixtures").innerHTML = upcoming.map((m) => {
     const [h, d] = [Math.round(m.p_home * 100), Math.round(m.p_draw * 100)], a = 100 - h - d;
-    return `<div class="fixture"><div class="tie-meta">${LEAGUE_NAMES[m.competition] || m.competition} · ${when(m)}</div>` +
+    const book = hasOdds(m) ? `<div class="tie-meta">Bookmakers: ${pct(m.odds_home)} · ${pct(m.odds_draw)} · ${pct(m.odds_away)}</div>` : "";
+    return `<div class="fixture">${meta(m)}` +
       `<div class="fixture-teams"><b>${clean(m.home)}</b> v <b>${clean(m.away)}</b></div>` +
       `<div class="split-bar three" role="img" aria-label="${clean(m.home)} win ${h}%, draw ${d}%, ${clean(m.away)} win ${a}%">` +
-      `<span class="a" style="flex:${h}">${h}%</span><span class="d" style="flex:${d}">${d >= 12 ? `${d}%` : ""}</span><span class="b" style="flex:${a}">${a}%</span></div></div>`;
+      `<span class="a" style="flex:${h}">${h}%</span><span class="d" style="flex:${d}">${d >= 12 ? `${d}%` : ""}</span><span class="b" style="flex:${a}">${a}%</span></div>${book}</div>`;
   }).join("");
 }
 

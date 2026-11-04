@@ -56,7 +56,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add results/live site/data.json
+          git add results/live site/data.json site/preview.png
           git diff --cached --quiet || git commit -m "Daily update: predictions and scorecard"
           git pull --rebase   # in case something was pushed while this job ran
           git push

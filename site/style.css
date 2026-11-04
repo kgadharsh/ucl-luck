@@ -412,6 +412,8 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
 .fixtures { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
 .fixture { padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
 .fixture-teams { font-size: 15px; }
+.watch-line { margin: 0; }
+.watch-line b { color: var(--ink); }
 .split-bar.three .d { background: var(--grid); color: var(--ink-2); justify-content: center; }
 
 .tip {

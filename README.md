@@ -54,22 +54,23 @@ What's on it:
 - **The luck machine.** Every tie drops through a Galton board and lands on the winner's chance before the first leg, so the pile you end up with is the shape of the luck. Hover a ball to see its tie, or click it to jump to it in the explorer.
 - An upsets ticker (ties won by a side given under 35%) and the headline numbers.
 - Each champion's run, with a funnel showing its chances shrinking tie by tie.
-- **What if?** Pick the winner of any tie in any season since 2012-13 and every club's chance of winning the trophy is recalculated exactly (`src/brackets.py`). Strengths are frozen just before the round of 16. Before 2024-25 the later rounds were drawn one at a time, so for those seasons it uses the draws as they actually happened.
+- **What if?** Pick the winner of any tie in any season since 2012-13 and every club's chance of winning the trophy is recalculated exactly (`src/brackets.py`). Strengths are frozen just before the round of 16. Before 2024-25 the later rounds were drawn one at a time, so for those seasons it uses the draws as they actually happened. Your picks are saved in the page's address, so "Share these picks" gives you a link that opens with exactly the same bracket.
 - **A comeback meter.** Pick a first-leg score, where it was played, how strong your team is and which rules apply, and it gives you the exact chance of still going through (second leg, extra time, penalties, and away goals if you want them). Next to that is what actually happened in real ties that started the same way: 337 ties in all, from Champions League knockouts since 2011-12 and the Europa League seasons above. One thing it shows nicely: real teams that lost the first leg away usually went through more often than the "evenly matched" model says, because they were usually the seeded side and had the second leg at home.
 - How often the favourite went through in each round.
 - An explorer for all 226 ties, with a season-by-season strip and filters.
 - The Real Madrid section.
 - How honest the model is against the bookmakers, and the live ratings and prediction ledger.
+- An upsets watch: the upcoming league games where the model rates a result well above the bookmakers do, so you can see each weekend whether the model or the market was right.
 
 I tried to write the page for football fans rather than statisticians. The one idea it leans on, a team's chance of going through before the first leg, gets one name (the "pre-match chance") and is used everywhere. It works on phones, in light and dark mode, with a keyboard, and printed to PDF. If your system asks for reduced motion, you get the finished page without the animation.
 
-The daily workflow refreshes `site/data.json`, and `.github/workflows/pages.yml` republishes the site after each daily update and every push to `main` that touches `site/`.
+Shared links show a preview card (`site/preview.png`), which `src/preview.py` draws from the same numbers as the page. The daily workflow refreshes `site/data.json` and the preview, and `.github/workflows/pages.yml` republishes the site after each daily update and every push to `main` that touches `site/`.
 
 ## Live predictions
 
 To keep myself honest going forward, `src/update.py` refits Dixon–Coles every morning on the last three years of matches (recent ones count more) and predicts the big-five league fixtures that haven't kicked off yet. The predictions go into `results/live/prediction_ledger.csv` with a timestamp.
 
-Once a prediction is in the ledger it never changes, so I can't quietly improve the record afterwards. Each league meeting is predicted once a season, even if the match gets moved. When a match is played, the prediction is scored against the result and against the bookmakers' closing odds. If a download fails, the old copy of that season's data is kept. `results/live/scorecard.md` has the running score and the current strongest clubs.
+Once a prediction is in the ledger it never changes, so I can't quietly improve the record afterwards. Each league meeting is predicted once a season, even if the match gets moved. I also save the bookmakers' odds at the moment of each prediction. When a match is played, the prediction is scored against the result and against the bookmakers' closing odds. If a download fails, the old copy of that season's data is kept. `results/live/scorecard.md` has the running score and the current strongest clubs.
 
 ```bash
 .venv/bin/python scripts/download_data.py --refresh-current
