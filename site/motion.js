@@ -499,9 +499,20 @@ function setupReveal() {
     cards.forEach((card) => card.classList.add("in", "done"));
     return;
   }
+  // Arriving from a link to a section (#butterfly), the reader came for that section: show it,
+  // and anything else already on screen, finished at once rather than waiting for its entrance.
+  // The page re-pins the section as charts and fonts arrive, so "arriving" lasts until the reader
+  // scrolls themself (or 5 seconds); sections they scroll to after that still animate in.
+  let arriving = Boolean(location.hash);
+  if (arriving) {
+    const done = () => { arriving = false; };
+    ["wheel", "touchstart", "keydown", "pointerdown"].forEach((type) => addEventListener(type, done, { once: true, passive: true }));
+    setTimeout(done, 5000);
+  }
   const seen = new IntersectionObserver((entries) => entries.forEach((entry) => {
     if (!entry.isIntersecting) return;
     seen.unobserve(entry.target);
+    if (arriving) { entry.target.classList.add("instant", "in", "done"); return; }
     entry.target.classList.add("in");
     setTimeout(() => entry.target.classList.add("done"), 2800); // later redraws appear without animating
   }), { rootMargin: "0px 0px -12% 0px" });

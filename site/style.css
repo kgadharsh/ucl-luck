@@ -143,6 +143,19 @@ body::after {
 .brand { font: 800 19px/1 var(--display); font-stretch: 70%; text-transform: uppercase; letter-spacing: .01em; white-space: nowrap; }
 nav { display: flex; gap: 18px; overflow-x: auto; flex: 1; scrollbar-width: none; counter-reset: nav; padding: 6px 4px; margin: 0 -4px; }
 nav::-webkit-scrollbar { display: none; }
+/* On narrow screens the list runs off the edge: fade it there so it reads as scrollable. */
+@media (max-width: 760px) {
+  nav { -webkit-mask-image: linear-gradient(to right, #000 82%, transparent); mask-image: linear-gradient(to right, #000 82%, transparent); }
+  nav.at-end { -webkit-mask-image: none; mask-image: none; }
+}
+.to-top {
+  position: fixed; right: 16px; bottom: 16px; z-index: 6;
+  background: var(--ink); color: var(--page); text-decoration: none;
+  font: 13px var(--mono); padding: 10px 14px; min-height: 44px; display: inline-flex; align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .25);
+}
+.to-top[hidden] { display: none; }
+.to-top:focus-visible { outline: 2px solid var(--s2); outline-offset: 2px; }
 nav a { color: var(--ink-2); text-decoration: none; white-space: nowrap; font: 13px var(--mono); counter-increment: nav; }
 nav a::before { content: counter(nav, decimal-leading-zero) " "; color: var(--muted); }
 nav a { position: relative; padding: 4px 0; transition: color .2s; }
@@ -256,7 +269,7 @@ h3 { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .05e
 .chart text { font: 11px var(--mono); fill: var(--muted); pointer-events: none; } /* labels never block a hover zone beneath them */
 .chart .label-strong { fill: var(--ink); font-weight: 500; font-size: 12px; }
 .chart .hit { fill: transparent; cursor: pointer; }
-.chart .bar { transition: opacity .15s; }
+@media (prefers-reduced-motion: no-preference) { .chart .bar { transition: opacity .15s; } }
 .chart svg.focusing .bar-col:not(.lit) .bar { opacity: .35; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 10px; font: 12px var(--mono); color: var(--ink-2); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
@@ -394,6 +407,12 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
 .ledger { display: grid; grid-template-columns: 1fr 1fr; border-top: 2px solid var(--rule); }
 .ledger .stat { border-left: 0; border-top: 0; border-bottom: 1px solid var(--border); padding: 10px 8px 10px 0; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
 .ledger .stat-value { font-size: 40px; color: var(--ink); }
+.ledger-wait { grid-column: 1 / -1; margin: 12px 0 0; }
+.upcoming { margin-top: 26px; }
+.fixtures { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+.fixture { padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
+.fixture-teams { font-size: 15px; }
+.split-bar.three .d { background: var(--grid); color: var(--ink-2); justify-content: center; }
 
 .tip {
   position: fixed; z-index: 10; pointer-events: none; opacity: 0;
@@ -442,12 +461,13 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
 /* ---------- motion ---------- */
 @media (prefers-reduced-motion: no-preference) {
   /* The opening: everything in the hero rises into place in turn. */
-  .js .hero > :not(.hero-grid), .js .hero-text > *, .js .machine { animation: rise 1s cubic-bezier(.2,.7,.2,1) both; }
+  .js .hero > :not(.hero-grid), .js .hero-text > *, .js .machine { animation: rise .8s cubic-bezier(.2,.7,.2,1) both; }
   .js .hero > h1 { animation-delay: .08s; }
   .js .hero-text > .lede { animation-delay: .22s; }
   .js .hero-text > .stats { animation-delay: .34s; }
   .js .machine { animation-delay: .46s; }
-  .js .odo-roll > span { animation: odo 1.9s cubic-bezier(.12,.75,.18,1) var(--d, 0ms) both; }
+  /* Hidden until its roll starts, so a waiting digit never reads as "0". */
+  .js .odo-roll > span { animation: odo 1.9s cubic-bezier(.12,.75,.18,1) var(--d, 0ms) both, fade .25s ease var(--d, 0ms) both; }
 
   /* Sections: the rule draws across, then heading, intro and the rest follow. */
   .js .card { background-size: 0 3px; transition: background-size 1.3s cubic-bezier(.7,0,.2,1); }
@@ -457,6 +477,7 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
   .js .card.in > h2 { transition-delay: .15s; }
   .js .card.in > .sub { transition-delay: .27s; }
   .js .card.in > :not(h2):not(.sub) { transition-delay: .38s; }
+  .js .card.instant, .js .card.instant > * { transition: none; }
 
   /* Chart marks grow, pop and draw in once their section is on screen. */
   .js .card:not(.done) :is(.grow, .grow-c, .grow-x, .pop) { transform-box: fill-box; }
@@ -498,7 +519,7 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
     --red-text: #b8341a; --s3: #a39878; --bar-rest: #ddd5c2; --good: #2f6b3a;
   }
   body { background: #fff; }
-  body::after, .wire, .top, .theme, .machine-buttons, .tip, .more, .cal-view, .screen-only { display: none !important; }
+  body::after, .wire, .top, .to-top, .theme, .machine-buttons, .tip, .more, .cal-view, .screen-only { display: none !important; }
   h1 em[data-scramble] { color: var(--s2); }
   h1 em[data-scramble]::after { content: none; }
   *, *::before, *::after { animation: none !important; transition: none !important; }

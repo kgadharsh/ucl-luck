@@ -5,7 +5,16 @@ const SVG = "http://www.w3.org/2000/svg";
 const pct = (x, digits = 0) => `${(x * 100).toFixed(digits)}%`;
 // For chances shown to readers: never round a near-certainty up to 100% or down to 0%.
 const chance = (x) => (x > 0.995 && x < 1 ? ">99%" : x < 0.005 && x > 0 ? "<1%" : pct(x));
-const clean = (name) => name.replace(/ \([A-Z]{3}\)$/, "");
+// Club names as fans say them. The sources use their own spellings ("Ath Madrid", "FC Porto (POR)").
+const CLUB_NAMES = {
+  "AFC Ajax": "Ajax", "Ath Madrid": "Atlético Madrid", "Celtic FC": "Celtic", "Club Brugge KV": "Club Brugge",
+  "Dinamo Kiev": "Dynamo Kyiv", "Ein Frankfurt": "Eintracht Frankfurt", "FC Basel 1893": "Basel",
+  "FC København": "Copenhagen", "FC Porto": "Porto", "FK Bodø/Glimt": "Bodø/Glimt", "KAA Gent": "Gent",
+  "M'gladbach": "Gladbach", "Malaga": "Málaga", "Man City": "Manchester City", "Man United": "Manchester United",
+  "Olympiakos": "Olympiacos", "PSV": "PSV Eindhoven", "Paris SG": "Paris Saint-Germain", "Sociedad": "Real Sociedad",
+  "Zenit St. Petersburg": "Zenit", "Leicester": "Leicester City", "Newcastle": "Newcastle United",
+};
+const clean = (name) => { const plain = name.replace(/ \([A-Z]{3}\)$/, ""); return CLUB_NAMES[plain] || plain; };
 const ROUND_SHORT = { "Playoffs": "Play-offs", "Round of 16": "Last 16", "Quarterfinals": "Quarter-finals", "Semifinals": "Semi-finals", "Final": "Final" };
 
 function svg(tag, attrs = {}, parent) {
@@ -352,7 +361,11 @@ function drawRuns(data) {
 }
 
 function shortClub(name) {
-  const map = { "Bayern Munich": "Bayern", "Real Madrid": "Real", "Man City": "Man City", "Paris SG": "PSG", "Barcelona": "Barça" };
+  const map = {
+    "Bayern Munich": "Bayern", "Real Madrid": "Real", "Man City": "Man City", "Man United": "Man Utd", "Paris SG": "PSG",
+    "Barcelona": "Barça", "Ath Madrid": "Atlético", "Ein Frankfurt": "Frankfurt", "Newcastle": "Newcastle",
+    "Leicester": "Leicester", "PSV": "PSV", "Sociedad": "Sociedad", "Shakhtar Donetsk": "Shakhtar", "Zenit St. Petersburg": "Zenit",
+  };
   return map[name] || clean(name);
 }
 
@@ -427,7 +440,7 @@ function drawClubs(data) {
     const cy = m.t + rowH * (i + 0.5);
     const real = club.club === "Real Madrid";
     const color = real ? css("--s2") : css("--s1");
-    svg("text", { x: m.l - 10, y: cy + 4, "text-anchor": "end", class: real ? "label-strong" : "" }, root).textContent = clean(club.club);
+    svg("text", { x: m.l - 10, y: cy + 4, "text-anchor": "end", class: real ? "label-strong" : "" }, root).textContent = narrow && clean(club.club).length > 14 ? shortClub(club.club) : clean(club.club);
     svg("line", { x1: x(club.expected), x2: x(club.won), y1: cy, y2: cy, stroke: color, "stroke-width": 2, pathLength: 1, class: "draw", style: `--d:${400 + i * 45}ms` }, root);
     svg("circle", { cx: x(club.expected), cy, r: 5, fill: css("--surface"), stroke: css("--muted"), "stroke-width": 2, class: "pop", style: `--d:${200 + i * 45}ms` }, root);
     svg("circle", { cx: x(club.won), cy, r: 5, fill: color, stroke: css("--surface"), "stroke-width": 2, class: "pop", style: `--d:${real ? 1500 : 900 + i * 45}ms` }, root);
@@ -954,12 +967,33 @@ function fillLive(data) {
     `<tr><td class="num">${i + 1}</td><td>${clean(r.club)}</td><td class="num">${r.scores.toFixed(1)}</td><td class="num">${r.concedes.toFixed(1)}</td><td class="num"><b>${pct(r.win)}</b></td>` +
     `<td class="rbar-cell"><span class="rbar" style="width:${r.win * 100}%"></span></td></tr>`).join("");
   const cell = (value, label) => `<div class="stat"><span class="stat-value">${value}</span><span class="stat-label">${label}</span></div>`;
-  document.getElementById("ledger").innerHTML =
-    cell(live.predictions, "predictions saved") +
-    cell(live.scored, "matches played and scored") +
-    (live.model_brier != null ? cell(live.model_brier.toFixed(3), "the model's error score so far (lower is better)") + cell(live.book_brier.toFixed(3), "the bookmakers' error score so far")
-      : `<p class="small" style="grid-column:1/-1">No predictions scored yet. The ledger fills as each weekend's league fixtures are published and played.</p>`);
+  document.getElementById("ledger").innerHTML = !live.predictions
+    ? `<p class="small ledger-wait">No predictions yet this week. League fixtures are usually published a few days ahead, ` +
+      `and the model's predictions for them appear here the next morning${live.updated ? ` (last checked ${live.updated})` : ""}.</p>`
+    : cell(live.predictions, "predictions saved") +
+      cell(live.scored, "matches played and scored") +
+      (live.model_brier != null ? cell(live.model_brier.toFixed(3), "the model's error score so far (lower is better)") + cell(live.book_brier.toFixed(3), "the bookmakers' error score so far")
+        : `<p class="small" style="grid-column:1/-1">None of these matches has been played yet. Each is scored once it has.</p>`);
+  // The predictions waiting for kick-off, soonest first, in the reader's own time zone.
+  const upcoming = [...(live.upcoming || [])].sort((a, b) => String(a.kickoff || a.date).localeCompare(String(b.kickoff || b.date))).slice(0, 10);
+  const box = document.getElementById("upcoming");
+  box.hidden = !upcoming.length;
+  if (!upcoming.length) return;
+  const when = (m) => {
+    const at = m.kickoff ? new Date(m.kickoff.replace(" UTC", "Z").replace(" ", "T")) : null;
+    return at && !isNaN(at) ? at.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+      : new Date(`${String(m.date).slice(0, 10)}T12:00:00Z`).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+  };
+  box.querySelector(".fixtures").innerHTML = upcoming.map((m) => {
+    const [h, d] = [Math.round(m.p_home * 100), Math.round(m.p_draw * 100)], a = 100 - h - d;
+    return `<div class="fixture"><div class="tie-meta">${LEAGUE_NAMES[m.competition] || m.competition} · ${when(m)}</div>` +
+      `<div class="fixture-teams"><b>${clean(m.home)}</b> v <b>${clean(m.away)}</b></div>` +
+      `<div class="split-bar three" role="img" aria-label="${clean(m.home)} win ${h}%, draw ${d}%, ${clean(m.away)} win ${a}%">` +
+      `<span class="a" style="flex:${h}">${h}%</span><span class="d" style="flex:${d}">${d >= 12 ? `${d}%` : ""}</span><span class="b" style="flex:${a}">${a}%</span></div></div>`;
+  }).join("");
 }
+
+const LEAGUE_NAMES = { E0: "Premier League", SP1: "La Liga", D1: "Bundesliga", I1: "Serie A", F1: "Ligue 1" };
 
 // ---------- theme ----------
 // Charts bake their colours in when drawn, so they are redrawn whenever the theme really
@@ -1009,8 +1043,29 @@ function setupTheme(redraw) {
   sync();
 }
 
+// ---------- back to top ----------
+// The page is long on a phone; once the reader is two screens down, offer a way back up.
+function setupToTop() {
+  const button = document.getElementById("to-top");
+  const update = () => { button.hidden = scrollY < innerHeight * 2; };
+  addEventListener("scroll", update, { passive: true });
+  update();
+  // Drop the nav's edge fade once it is scrolled to the end, so the last link isn't faded.
+  const nav = document.querySelector("nav");
+  const edge = () => nav.classList.toggle("at-end", nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 2);
+  nav.addEventListener("scroll", edge, { passive: true });
+  addEventListener("resize", edge);
+  edge();
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+    scrollTo({ top: 0, behavior: STILL ? "auto" : "smooth" });
+    history.replaceState(null, "", location.pathname + location.search);
+  });
+}
+
 // ---------- start ----------
 setupReveal();
+setupToTop();
 setupNav();
 let drawAll = () => {}; // replaced once the data has arrived
 setupTheme(() => drawAll());
