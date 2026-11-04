@@ -68,6 +68,8 @@ The page is written for football fans, not statisticians: the one idea it relies
 
 It works on phones, in light and dark mode, with a keyboard, and printed or saved as PDF (every section prints, in the light palette). Readers who ask their system for reduced motion get the finished page without animation.
 
+The dashboard's UI design was done with help from Claude, an AI assistant.
+
 ```bash
 .venv/bin/python src/export_site.py              # writes site/data.json from results/
 python3 -m http.server 8123 --directory site     # then open http://localhost:8123
