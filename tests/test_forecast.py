@@ -549,4 +549,45 @@ def test_the_page_carries_the_saved_forecast_unless_it_is_stale(data, saved, tmp
 
 def test_the_page_data_is_the_saved_forecast(data, saved):
     # Not always there: the exporter leaves out a forecast that has gone stale.
-    assert data["forecast"] is None or data["forecast"] == saved
+    assert data["forecast"] is None or {k: v for k, v in data["forecast"].items() if k != "history"} == saved
+
+
+# ---------- the history of forecasts ----------
+
+def test_a_days_forecast_replaces_that_days_earlier_one_and_keeps_the_rest(made_up_season, tmp_path):
+    history = made_up_history()
+    path = tmp_path / "history.csv"
+    first = fc.forecast("2026-11-05", n=300, history=history)
+    fc.add_to_history(first, path)
+    fc.add_to_history(fc.forecast("2026-11-06", n=300, history=history), path)
+    fc.add_to_history(fc.forecast("2026-11-05", n=300, seed=9, history=history), path)  # run again the same day
+    table = pd.read_csv(path)
+    assert sorted(table.as_of.unique()) == ["2026-11-05", "2026-11-06"] and (table.groupby("as_of").size() == CLUBS).all()
+    same_day = table[table.as_of == "2026-11-05"].set_index("club").win
+    assert same_day.sum() == pytest.approx(1, abs=1e-4) and not same_day.equals(pd.Series({c["club"]: c["win"] for c in first["clubs"]}).sort_index())
+
+
+def test_a_backfill_starts_before_the_first_matchday_and_uses_only_matches_played_by_then(made_up_season, tmp_path, monkeypatch):
+    made_up_season["league"] = ring(played=72)  # two of the four made-up matchdays are done
+    monkeypatch.setattr(fc, "load_matches", lambda: made_up_history())
+    path = tmp_path / "history.csv"
+    fc.backfill("2026-27", n=300, path=path)
+    table = pd.read_csv(path)
+    assert table.as_of.nunique() == 1 + 4 or table.as_of.nunique() >= 3
+    played = table.groupby("as_of").played.sum().tolist()
+    assert played[0] == 0 and played == sorted(played) and played[-1] == 2 * 72  # more is known each day
+    assert (table.groupby("as_of").win.sum().round(3) == 1).all()
+
+
+def test_the_page_gets_each_clubs_title_odds_day_by_day(saved, tmp_path, monkeypatch):
+    import export_site
+    monkeypatch.setattr(export_site, "RESULTS", tmp_path)
+    (tmp_path / "forecast.json").write_text(json.dumps(saved), encoding="utf-8")
+    monkeypatch.setattr(export_site, "today", lambda: pd.Timestamp(saved["as_of"]))
+    rows = [{"season": saved["season"], "as_of": d, "club": c["club"], "win": c["win"] * k}
+            for d, k in (("2026-09-01", 0.5), (saved["as_of"], 1), ("2099-01-01", 3)) for c in saved["clubs"]]  # the last is in the future
+    pd.DataFrame(rows + [{"season": "2025-26", "as_of": "2026-01-01", "club": "Arsenal", "win": 0.9}]).to_csv(tmp_path / "forecast_history.csv", index=False)
+    history = export_site.forecast_section()["history"]
+    assert history["dates"] == ["2026-09-01", saved["as_of"]]  # this season, up to today
+    assert set(history["win"]) == {c["club"] for c in saved["clubs"]} and all(len(v) == 2 for v in history["win"].values())
+    assert history["win"][saved["clubs"][0]["club"]][1] == pytest.approx(saved["clubs"][0]["win"])

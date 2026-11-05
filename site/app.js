@@ -12,7 +12,9 @@ const CLUB_NAMES = {
   "FC København": "Copenhagen", "FC Porto": "Porto", "FK Bodø/Glimt": "Bodø/Glimt", "KAA Gent": "Gent",
   "M'gladbach": "Gladbach", "Malaga": "Málaga", "Man City": "Manchester City", "Man United": "Manchester United",
   "Olympiakos": "Olympiacos", "ŠK Slovan Bratislava": "Slovan Bratislava", "Slavia Praha": "Slavia Prague", "AEK Athen": "AEK Athens", "PSV": "PSV Eindhoven", "Paris SG": "Paris Saint-Germain", "Sociedad": "Real Sociedad",
-  "Zenit St. Petersburg": "Zenit", "Leicester": "Leicester City", "Newcastle": "Newcastle United",
+  "Zenit St. Petersburg": "Zenit",
+  "Inter": "Inter Milan", "Milan": "AC Milan",
+  "Leicester": "Leicester City", "Newcastle": "Newcastle United",
 };
 const clean = (name) => { const plain = name.replace(/ \([A-Z]{3}\)$/, ""); return CLUB_NAMES[plain] || plain; };
 // Does a club match what a fan typed? Either way of saying it works: "Man City" or "Manchester City".
@@ -1383,6 +1385,47 @@ const FORECAST_ROWS = 12;
 const forecastChance = (stage, p) => (stage === "win" && p > 0 && p < 0.1 ? (p < 0.0005 ? "<0.1%" : `${(p * 100).toFixed(1)}%`) : chance(p));
 const forecastDate = (iso) => new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 
+// The title chance of the leading clubs on every day the forecast was made, from before the first matchday on.
+function drawForecastHistory(data) {
+  const fc = data.forecast, box = document.getElementById("fc-hist-chart"), section = document.getElementById("fc-history");
+  const h = fc && fc.history;
+  section.hidden = !(h && h.dates.length >= 2);
+  if (section.hidden) return;
+  const lead = Object.keys(h.win).sort((a, b) => h.win[b].at(-1) - h.win[a].at(-1)).slice(0, 6);
+  const times = h.dates.map((d) => Date.parse(`${d}T12:00:00Z`));
+  const t0 = times[0], t1 = times.at(-1);
+  const top = Math.max(...lead.map((c) => Math.max(...h.win[c])));
+  const maxY = Math.ceil(top * 20) / 20;
+  const { root, width, height } = canvas(box, 260);
+  const m = { l: 36, r: width < 560 ? 100 : 150, t: 10, b: 28 };
+  const x = (i) => m.l + ((times[i] - t0) / (t1 - t0 || 1)) * (width - m.l - m.r);
+  const y = (v) => height - m.b - (v / maxY) * (height - m.t - m.b);
+  for (let v = 0; v <= maxY + 1e-9; v += 0.05) {
+    svg("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v), stroke: css("--grid") }, root);
+    svg("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = pct(v);
+  }
+  const day = (iso) => forecastDate(iso).replace(/ \d{4}$/, "");
+  [0, h.dates.length - 1].forEach((i) => svg("text", { x: x(i), y: height - 8, "text-anchor": i ? "end" : "start" }, root).textContent = i ? day(h.dates[i]) : "Before matchday 1");
+  const colours = [css("--s2"), css("--s1"), css("--s3"), css("--muted"), css("--ink-2"), css("--axis")];
+  const ends = [];
+  lead.forEach((club, k) => {
+    const pts = h.win[club].map((v, i) => `${x(i)},${y(v)}`).join(" ");
+    svg("polyline", { points: pts, fill: "none", stroke: colours[k], "stroke-width": k === 0 ? 3 : 2, "stroke-linejoin": "round" }, root);
+    h.win[club].forEach((v, i) => svg("circle", { cx: x(i), cy: y(v), r: 3, fill: colours[k] }, root));
+    ends.push({ club, y: y(h.win[club].at(-1)), colour: colours[k] });
+  });
+  ends.sort((a, b) => a.y - b.y);  // keep the end labels from landing on top of each other
+  for (let i = 1; i < ends.length; i++) ends[i].y = Math.max(ends[i].y, ends[i - 1].y + 14);
+  ends.forEach((e) => svg("text", { x: width - m.r + 8, y: e.y + 4, fill: e.colour === css("--axis") ? css("--ink-2") : e.colour }, root).textContent = width < 560 ? shortClub(e.club) : clean(e.club));
+  h.dates.forEach((d, i) => {
+    const left = i ? (x(i - 1) + x(i)) / 2 : 0, right = i < h.dates.length - 1 ? (x(i) + x(i + 1)) / 2 : width - m.r;
+    const hit = svg("rect", { x: left, y: 0, width: Math.max(right - left, 8), height, class: "hit" }, root);
+    hover(hit, () => `<b>${i ? `After ${day(d)}` : "Before matchday 1"}</b>` + lead.map((c) => `<br>${clean(c)} ${forecastChance("win", h.win[c][i])}`).join(""));
+  });
+  document.getElementById("fc-history-note").textContent =
+    `One forecast for each day of results so far, from before the first matchday to ${day(h.dates.at(-1))}. Each is made only from what was known on that day. The six clubs shown are today's most likely winners.`;
+}
+
 function fillForecast(data) {
   const fc = data.forecast;
   const section = document.getElementById("forecast");
@@ -1618,7 +1661,7 @@ function start(data) {
   setupWire(data);
   const redrawMachine = setupMachine(data);
   const redrawTicker = setupTicker(data);
-  drawAll = () => { redrawMachine(); redrawTicker(); drawRuns(data); redrawSkill(); drawRounds(data); drawWild(data); drawClubs(data); drawRmSplit(data); drawRmLast(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
+  drawAll = () => { drawForecastHistory(data); redrawMachine(); redrawTicker(); drawRuns(data); redrawSkill(); drawRounds(data); drawWild(data); drawClubs(data); drawRmSplit(data); drawRmLast(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
   drawAll();
   const luck = document.querySelector("h1 em");
   document.fonts.ready.then(() => setTimeout(() => scramble(luck), 500));

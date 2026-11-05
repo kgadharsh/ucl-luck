@@ -769,6 +769,30 @@ def test_a_cell_says_exactly_what_it_means(open_page, forecast):
     assert f"(about 1 in {one_in:g})" in tip
 
 
+def test_the_title_odds_chart_follows_the_history(open_page, data, forecast):
+    history = forecast.get("history")
+    if not history or len(history["dates"]) < 2:
+        pytest.skip("not enough days of forecasts yet")
+    page = open_page(reduced_motion="reduce")
+    assert page.locator("#fc-history").is_visible()
+    lead = sorted(history["win"], key=lambda c: -history["win"][c][-1])[:6]
+    assert page.locator("#fc-hist-chart polyline").count() == 6
+    assert page.locator("#fc-hist-chart circle").count() == 6 * len(history["dates"])
+    labels = page.evaluate("[...document.querySelectorAll('#fc-hist-chart text')].map((t) => t.textContent)")
+    assert "Before matchday 1" in labels and len(labels) >= 6 + 2
+    page.locator("#fc-hist-chart rect.hit").last.scroll_into_view_if_needed()
+    page.wait_for_timeout(150)
+    page.locator("#fc-hist-chart rect.hit").last.hover()
+    tip = page.locator("#tip").text_content()
+    assert "After " in tip and forecast_chance("win", history["win"][lead[0]][-1]) in tip
+
+
+def test_the_title_odds_chart_waits_for_a_second_forecast(open_page, data, forecast):
+    thin = {"dates": ["2026-11-05"], "win": {c["club"]: [c["win"]] for c in forecast["clubs"]}}
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, history=thin)))
+    assert page.locator("#fc-history").is_hidden()
+
+
 def test_clubs_with_no_history_are_marked_and_explained(open_page, data, forecast):
     page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, new_clubs=[forecast["clubs"][0]["club"], forecast["clubs"][1]["club"]])))
     assert page.locator("#fc-table tbody tr .fc-star").count() == 2

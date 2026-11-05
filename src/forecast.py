@@ -37,6 +37,7 @@ from update import season_of, settings
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "results" / "forecast.json"
+HISTORY = ROOT / "results" / "forecast_history.csv"  # every day's forecast, one row per club, kept so the odds can be charted
 NAMES = ROOT / "data" / "wikipedia_names.csv"
 
 SIMULATIONS = 100_000
@@ -299,12 +300,43 @@ def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None, le
         "clubs": clubs}
 
 
+def add_to_history(result, path=None):
+    """Put a forecast in the history, replacing any earlier one for the same season and day."""
+    path = path or HISTORY
+    rows = pd.DataFrame([{"season": result["season"], "as_of": result["as_of"], **{k: c[k] for k in ("club", "played", "points", *STAGES)}}
+                         for c in result["clubs"]])
+    if path.exists():
+        old = pd.read_csv(path, dtype={"season": str, "as_of": str})
+        old = old[~((old.season == result["season"]) & (old.as_of == result["as_of"]))]
+        rows = pd.concat([old, rows], ignore_index=True)
+    rows.sort_values(["season", "as_of", "club"]).to_csv(path, index=False, float_format="%.6f")
+
+
+def backfill(season, n=SIMULATIONS, path=None):
+    """Forecasts as they would have stood before the first matchday and after each one played so far,
+    so the history starts at the beginning of the season. Uses only what was known at each point."""
+    league = load_league_phase(season)
+    if league is None:
+        raise NoForecast(f"{data_path(season).name} has not been downloaded")
+    done = [d for d in sorted(league.matchday.unique()) if league[league.matchday == d].home_goals.notna().all()]
+    history = load_matches()
+    for after in [0] + done:
+        masked = league.copy()
+        masked.loc[masked.matchday > after, ["home_goals", "away_goals"]] = np.nan
+        as_of = league[league.matchday == after].date.max() if after else league.date.min() - pd.Timedelta(days=1)
+        add_to_history(forecast(as_of, n=n, season=season, history=history, league=masked), path)
+        print(f"{season}: forecast after matchday {after} ({as_of:%Y-%m-%d}) added to the history")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--as-of", help="forecast as of this date (YYYY-MM-DD); today by default")
     parser.add_argument("--simulations", type=int, default=SIMULATIONS)
+    parser.add_argument("--backfill", action="store_true", help="add the forecasts for every matchday played so far to the history")
     args = parser.parse_args(argv)
     try:
+        if args.backfill:
+            backfill(season_of(pd.Series([pd.Timestamp(args.as_of or datetime.now(timezone.utc).date())])).iloc[0], args.simulations)
         result = forecast(args.as_of, args.simulations)
     except NoForecast as problem:
         # Once the stage it covers is over, an old forecast must not stay on the page. Missing or broken
@@ -314,6 +346,7 @@ def main(argv=None):
         print(f"No forecast: {problem}")
         return 0 if problem.over else 1
     OUTPUT.write_text(json.dumps(result, ensure_ascii=False, indent=1, allow_nan=False) + "\n", encoding="utf-8")
+    add_to_history(result)
     top = result["clubs"][:3]
     print(f"{result['season']} forecast as of {result['as_of']}: {result['played']} of {result['matches']} league-phase "
           f"matches played, {result['simulations']:,} simulations. Favourites: "

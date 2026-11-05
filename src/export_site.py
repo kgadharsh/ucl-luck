@@ -157,6 +157,12 @@ def forecast_section():
     if age > FORECAST_FRESH_DAYS:
         print(f"Leaving out the season forecast: it is {age} days old (run src/forecast.py)")
         return None
+    history_path = RESULTS / "forecast_history.csv"
+    if history_path.exists():  # each club's chance of the title on every day it was forecast, this season's only
+        history = pd.read_csv(history_path, dtype={"season": str, "as_of": str})
+        history = history[(history.season == forecast["season"]) & (history.as_of <= forecast["as_of"])]
+        table = history.pivot(index="as_of", columns="club", values="win")
+        forecast = {**forecast, "history": {"dates": list(table.index), "win": {club: [round(float(v), 6) for v in table[club]] for club in table.columns}}}
     return forecast
 
 

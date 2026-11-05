@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-  <link rel="stylesheet" href="style.css?v=33">
+  <link rel="stylesheet" href="style.css?v=35">
   <script>
     // Before anything paints or draws: mark that JS is on, and apply a saved light/dark choice,
     // so charts are never drawn in the system theme's colours and the page doesn't flash.
@@ -124,6 +124,11 @@
       <button class="more" id="fc-more" type="button"></button>
       <p class="swing" id="fc-text"></p>
       <p class="small" id="fc-new" hidden></p>
+      <div class="fc-history" id="fc-history" hidden>
+        <h3>How the title odds have moved</h3>
+        <p class="small" id="fc-history-note"></p>
+        <div class="chart" id="fc-hist-chart" role="img" aria-label="Each leading club's chance of winning the trophy, forecast before the first matchday and after each day since"></div>
+      </div>
       <details class="nerds" id="fc-how">
         <summary>How this is worked out</summary>
         <ul class="fc-how" id="fc-how-list"></ul>
@@ -356,6 +361,6 @@
   <a class="to-top" id="to-top" href="#top" hidden>↑ Top</a>
   <div class="tip" id="tip" aria-hidden="true"></div>
   <script src="motion.js?v=12"></script>
-  <script src="app.js?v=38"></script>
+  <script src="app.js?v=44"></script>
 </body>
 </html>
