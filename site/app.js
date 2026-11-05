@@ -1265,11 +1265,16 @@ function wilson(k, n) {
   return [Math.max(0, centre - half), Math.min(1, centre + half)];
 }
 
-function rampColor(t) {
-  const x = Math.max(0, Math.min(1, t)) * (RAMP.length - 1);
-  const i = Math.min(Math.floor(x), RAMP.length - 2), f = x - i;
+// The more likely, the more ink: dark on the light page, and light on the dark one, where the
+// ramp runs the other way. (Left alone, the likeliest squares would melt into a dark page.)
+const onDarkPage = () => parseInt(css("--surface").slice(1, 3), 16) < 128;
+
+function rampColor(t, dark = onDarkPage()) {
+  const ramp = dark ? [...RAMP].reverse() : RAMP;
+  const x = Math.max(0, Math.min(1, t)) * (ramp.length - 1);
+  const i = Math.min(Math.floor(x), ramp.length - 2), f = x - i;
   const hex = (c) => [1, 3, 5].map((j) => parseInt(c.slice(j, j + 2), 16));
-  const [a, b] = [hex(RAMP[i]), hex(RAMP[i + 1])];
+  const [a, b] = [hex(ramp[i]), hex(ramp[i + 1])];
   return `rgb(${a.map((v, j) => Math.round(v + (b[j] - v) * f)).join(",")})`;
 }
 
@@ -1308,24 +1313,30 @@ function setupComeback(data) {
       const rate = real.through / real.n;
       const [lo, hi] = wilson(real.through, real.n);
       document.getElementById("cb-hist").textContent = pct(rate);
-      document.getElementById("cb-hist-label").textContent = `Real ties ${era}: ${real.through} of ${real.n} went through`;
+      document.getElementById("cb-hist-label").textContent = `Past ties that started this way, ${era}: ${real.through} of ${real.n} went through`;
       histBar.style.width = pct(rate, 1);
       range.style.left = pct(lo, 1);
       range.style.width = pct(hi - lo, 1);
       range.hidden = false;
     } else {
       document.getElementById("cb-hist").textContent = "–";
-      document.getElementById("cb-hist-label").textContent = `Real ties ${era}: none started this way`;
+      document.getElementById("cb-hist-label").textContent = `Past ties that started this way, ${era}: none`;
       histBar.style.width = "0%";
       range.hidden = true;
     }
     const where = state.venue === "home" ? "at home" : "away";
     const result = state.us > state.them ? "won" : state.us < state.them ? "lost" : "drew";
+    // The past-ties bar pools teams of every strength, so it does not move with "Your team is". In real
+    // ties the seeded, stronger side hosts the second leg, which makes one setting the fairer comparison.
+    const fairer = state.venue === "away"
+      ? "Past ties cover teams of every strength, but the side hosting the second leg was usually the stronger, seeded one, so “Stronger” is the fairer comparison. "
+      : "Past ties cover teams of every strength, but the side that hosted the first leg was usually the weaker, unseeded one, so “Weaker” is the fairer comparison. ";
+    const [lo, hi] = wilson(real.through, real.n);
     document.getElementById("cb-text").innerHTML =
       `You ${result} <b>${state.us}-${state.them} ${where}</b> in the first leg, so the second leg is ${state.venue === "home" ? "away" : "at home"}. ` +
-      (state.venue === "away" && real.n ? "Real teams in your spot usually host the second leg because they were seeded, so they tend to be the stronger side. Try \"Stronger\" to compare like with like. " : "") +
-      (real.n >= 10 ? `The grey line on the real-ties bar shows the 95% range: with ${real.n} ties, the true rate is probably between ${pct(wilson(real.through, real.n)[0])} and ${pct(wilson(real.through, real.n)[1])}.`
-        : real.n ? `Only ${real.n} real tie${real.n === 1 ? "" : "s"} started this way, so trust the model more than the history here.` : "");
+      (real.n ? fairer : "") +
+      (real.n >= 10 ? `The grey line on the past-ties bar shows where the true rate probably lies: with ${real.n} ties, between ${pct(lo)} and ${pct(hi)}.`
+        : real.n ? `Only ${real.n} past tie${real.n === 1 ? "" : "s"} started this way, so trust the model more than the history here.` : "");
     drawHeat();
   }
 
@@ -1339,7 +1350,7 @@ function setupComeback(data) {
     document.getElementById("cb-heat-sub").textContent =
       `Rows: your first-leg goals. Columns: theirs. First leg ${state.venue === "home" ? "at home" : "away"}; tap a square to choose that score.` +
       (rules.value === "1" ? " With away goals, a 2-2 draw is not the same as 0-0: the team that scored away has the edge."
-        : " Under today's rules only the goal difference matters, so each diagonal shows the same chance.");
+        : " Under today's rules only the goal difference counts, so 1-1 and 2-2 give the same chance as 0-0.");
     svg("text", { x: m.l + (cell * n) / 2, y: 12, "text-anchor": "middle" }, root).textContent = "Their goals";
     const yLabel = svg("text", { x: 12, y: m.t + (cell * n) / 2, "text-anchor": "middle", transform: `rotate(-90 12 ${m.t + (cell * n) / 2})` }, root);
     yLabel.textContent = "Your goals";
@@ -1347,13 +1358,19 @@ function setupComeback(data) {
       svg("text", { x: m.l + cell * (k + 0.5), y: m.t - 6, "text-anchor": "middle" }, root).textContent = k;
       svg("text", { x: m.l - 8, y: m.t + cell * (k + 0.5) + 4, "text-anchor": "end" }, root).textContent = k;
     }
+    const dark = onDarkPage();
+    // A key for the shading, since which way it runs is the first thing a reader has to guess.
+    const keyY = m.t + cell * n + 14;
+    svg("text", { x: m.l, y: keyY + 9 }, root).textContent = "Unlikely";
+    for (let k = 0; k < 5; k++) svg("rect", { x: m.l + 62 + k * 13, y: keyY, width: 12, height: 12, fill: rampColor(k / 4, dark), class: "key" }, root);
+    svg("text", { x: m.l + 62 + 5 * 13 + 6, y: keyY + 9 }, root).textContent = "Likely";
     for (let us = 0; us < n; us++) {
       for (let them = 0; them < n; them++) {
         const p = throughChance({ ...settings(), us, them });
         const x = m.l + them * cell, y = m.t + us * cell;
         const wave = `--d:${(us + them) * 70}ms`;
-        const rect = svg("rect", { x: x + 1, y: y + 1, width: cell - 2, height: cell - 2, fill: rampColor(p), class: "cell pop", style: wave }, root);
-        svg("text", { x: x + cell / 2, y: y + cell / 2 + 4, "text-anchor": "middle", style: `fill:${textOn(rampColor(p))};font-weight:500;pointer-events:none;${wave}`, class: "fade" }, root).textContent = chance(p);
+        const rect = svg("rect", { x: x + 1, y: y + 1, width: cell - 2, height: cell - 2, fill: rampColor(p, dark), class: "cell pop", style: wave }, root);
+        svg("text", { x: x + cell / 2, y: y + cell / 2 + 4, "text-anchor": "middle", style: `fill:${textOn(rampColor(p, dark))};font-weight:500;pointer-events:none;${wave}`, class: "fade" }, root).textContent = chance(p);
         if (us === state.us && them === state.them) {
           svg("rect", { x: x + 1, y: y + 1, width: cell - 2, height: cell - 2, fill: "none", stroke: css("--s2"), "stroke-width": 3, "pointer-events": "none" }, root);
         }

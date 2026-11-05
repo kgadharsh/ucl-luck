@@ -332,6 +332,33 @@ def test_comeback_compares_with_ties_played_under_the_same_rules(open_page):
     assert "today's rules" in today and "away goals" in away and today.split(":")[1] != away.split(":")[1]
 
 
+def test_comeback_says_why_past_ties_differ_from_the_model_whichever_leg_is_at_home(open_page):
+    """The past-ties bar pools every strength, so it can sit far from the model's number. Say why, both ways round."""
+    page = open_page(reduced_motion="reduce")  # opens on a 0-2 first leg away
+    away = page.text_content("#cb-text")
+    assert "side hosting the second leg was usually the stronger" in away and "“Stronger”" in away
+    page.click(".cb-controls .seg [data-venue='home']")
+    page.select_option("#cb-us", "1")
+    page.select_option("#cb-them", "0")
+    home = page.text_content("#cb-text")
+    assert "side that hosted the first leg was usually the weaker" in home and "“Weaker”" in home
+    words = page.text_content("#comeback").lower()
+    assert "real ties" not in words and "95%" not in words  # "Real" reads as Real Madrid on this page
+
+
+@pytest.mark.parametrize("system", ["light", "dark"])
+def test_the_comeback_shading_gets_stronger_with_the_chance_in_either_theme(open_page, system):
+    """More ink for a likelier result: dark squares on the light page, light squares on the dark one."""
+    page = open_page(color_scheme=system, reduced_motion="reduce")
+    shade = page.evaluate("""() => [...document.querySelectorAll('#cb-heat rect.cell')].map((r) =>
+      r.getAttribute('fill').match(/\\d+/g).map(Number).reduce((a, b) => a + b))""")
+    unlikely, likely = shade[4], shade[20]  # first row, last column / last row, first column
+    assert (likely < unlikely) == (system == "light")
+    keys = page.evaluate("[...document.querySelectorAll('#cb-heat rect.key')].map((r) => r.getAttribute('fill'))")
+    assert len(keys) == 5 and len(set(keys)) == 5  # five distinct shades, from unlikely to likely
+    assert {"Unlikely", "Likely"} <= set(page.evaluate("[...document.querySelectorAll('#cb-heat text')].map((t) => t.textContent)"))
+
+
 def test_calibration_view_switch_leaves_the_comeback_meter_alone(open_page):
     page = open_page(reduced_motion="reduce")
     venue = lambda: page.evaluate("[...document.querySelectorAll('.cb-controls .seg button')].map((b) => b.getAttribute('aria-pressed')).join()")
