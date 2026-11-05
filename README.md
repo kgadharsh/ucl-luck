@@ -106,10 +106,19 @@ How it works:
 
 What to keep in mind:
 
-- It's the model's view, not a price. Strengths are frozen at today's, and it knows nothing about injuries, transfers, line-ups or the betting market. Treating each club's strength as known also makes the favourites look a little surer than they should. I haven't compared the numbers with bookmakers' title odds (there's no free source), so I wouldn't read the top club's figure as better than that.
+- It's the model's view, not a price. Strengths are frozen at today's, and it knows nothing about injuries, transfers, line-ups or the betting market. Treating each club's strength as known also makes the favourites look a little surer than they should. I haven't compared the numbers with bookmakers' title odds (there's no free source), so I wouldn't read the top club's figure as better than that. The backtest below shows how the favourites fared in the two earlier seasons.
 - The 100,000 simulations leave each figure good to a few tenths of a point. A fixed random seed means rerunning on the same data gives the same numbers.
 - The forecast covers the league phase and the weeks before the play-offs. It reads no knockout results, so once the play-offs start it removes itself, and the page leaves it out if it hasn't been refreshed for two weeks.
 - Not done: using squad market values (Transfermarkt) to correct clubs the results can't tell apart yet, like a newly promoted side with a good start.
+
+### Does it hold up?
+
+`src/backtest_forecast.py` replays the forecast on 2024-25 and 2025-26, the two seasons in this format, as it would have looked before matchday 1 and after matchdays 2, 4, 6 and 8. It only uses what was known at each moment, and scores every club's chance of every stage against what happened (`results/forecast_backtest.json`). Two seasons is not much, and the forecasts overlap heavily (one upset moves a dozen clubs), so this catches gross mistakes and no more. Both seasons use the 2025-26 bracket, though 2024-25's quarter-finals were paired differently, so its later rounds are a little off.
+
+- **It beats giving every club the same chance, at every stage except the title.** The improvement in Brier score over that flat forecast ("skill") is +29% for finishing in the top eight, +45% for the top 24, +37% for the last 16, +41% for the quarter-finals, +34% for the semi-finals and +24% for the final, and +36% across all of them. The title is the exception, at +1%: there is one winner a season, so two seasons can't tell a good title forecast from a flat one.
+- **The favourites were too sure, and the long shots too unlikely.** Clubs given 75% to 90% did it 70 times out of 101, where 83 were expected; clubs given 2% to 10% did it 27 times against 19 expected. Most of the rest is close, for example 120 against 119 expected in the 50% to 75% band.
+- **The title favourite never won.** Arsenal or Man City were the favourite at all ten moments, and Paris SG won both seasons. They were given 3% to 5% in 2024-25 (6th to 10th favourite) and 10% to 14% in 2025-26 (2nd or 3rd). The model expected the favourite to win at 2.4 of the ten moments, so that proves little by itself.
+- **Letting the ratings be uncertain didn't help.** I nudged every club's attack and defence strength at random (by 0.08, 0.15 and 0.25 log-goals, over 20 versions of the ratings), which is the obvious fix for favourites being too sure. It narrowed the 75% to 90% gap, but it made the score slightly worse each time: skill +35.6%, +35.4% and +34.9% against +35.9% without it. So the page doesn't use it. `src/backtest_forecast.py --noise 0.15` reruns it, and another season or two of data would settle it.
 
 ## Tests
 
@@ -122,7 +131,7 @@ What to keep in mind:
 
 `tests/test_pipeline.py` covers the daily job: failed downloads keep the old data, only fixtures that haven't kicked off get predicted (in UK time), a moved match is never predicted twice, the season rolls over on 1 July, and unfinished two-legged ties are skipped.
 
-`tests/test_forecast.py` covers the season forecast: reading Wikipedia's league phase, the table's tie-breakers one by one, the bracket against what happened in 2025-26, simulations that must come out a known way (identical clubs get identical chances, a team that wins everything wins the trophy, every stage has the right number of clubs), and what happens when the data is missing or the season moves on.
+`tests/test_forecast_backtest.py` covers the backtest's scoring and what it counts as having happened. `tests/test_forecast.py` covers the season forecast: reading Wikipedia's league phase, the table's tie-breakers one by one, the bracket against what happened in 2025-26, simulations that must come out a known way (identical clubs get identical chances, a team that wins everything wins the trophy, every stage has the right number of clubs), and what happens when the data is missing or the season moves on.
 
 `tests/test_data.py` checks that `site/data.json` agrees with itself (each champion's run is the product of its ties, the calibration chart uses the same matches as the scores) and that the numbers in this README match the data.
 

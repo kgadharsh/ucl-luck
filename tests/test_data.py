@@ -217,3 +217,24 @@ def test_readme_line_up_check(readme):
     missing = [text for text in expected if text not in readme]
     assert not missing, missing
 
+
+
+@pytest.mark.readme
+def test_readme_forecast_backtest(readme):
+    """The numbers in the README's "Does it hold up?" are the saved backtest's."""
+    result = json.loads((ROOT / "results" / "forecast_backtest.json").read_text(encoding="utf-8"))
+    stage = {row["stage"]: row for row in result["by_stage"]}
+    for name in ("top8", "top24", "last16", "quarter", "semi", "final", "win"):
+        assert f"{stage[name]['skill']:+.0%}" in readme, name
+    assert f"{result['overall']['skill']:+.0%} across all of them" in readme
+    band = {round(row["low"], 2): row for row in result["calibration"]}
+    for low in (0.75, 0.02, 0.5):
+        assert f"{band[low]['count']} " in readme and f"{band[low]['expected_count']:.0f}" in readme
+    assert f"{band[0.75]['count']} times out of {band[0.75]['forecasts']}, where {band[0.75]['expected_count']:.0f} were expected" in readme
+    assert f"{band[0.02]['count']} times against {band[0.02]['expected_count']:.0f} expected" in readme
+    assert f"{band[0.5]['count']} against {band[0.5]['expected_count']:.0f} expected in the 50% to 75% band" in readme
+    assert f"{result['favourite_expected']:.1f} of the ten moments" in readme and result["favourite_won"] == 0 and result["moments"] == 10
+    skills = [json.loads(path.read_text(encoding="utf-8"))["overall"]["skill"]
+              for path in sorted((ROOT / "results").glob("forecast_backtest_noise_*.json"))]
+    assert len(skills) == 3 and f"skill {skills[0]:+.1%}, {skills[1]:+.1%} and {skills[2]:+.1%} against {result['overall']['skill']:+.1%} without it" in readme
+    assert all(skill < result["overall"]["skill"] for skill in skills)  # the claim: it made the score slightly worse each time

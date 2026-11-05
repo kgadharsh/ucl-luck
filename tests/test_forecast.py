@@ -423,6 +423,35 @@ def test_a_forecast_has_every_club_and_every_stage_adds_up(made_up_season):
     json.dumps(result, allow_nan=False)  # plain data
 
 
+def test_a_forecast_can_be_made_before_a_single_match_is_played(made_up_season):
+    made_up_season["league"] = ring(played=0)  # the draw has been made and the article lists the fixtures
+    result = fc.forecast("2026-09-01", n=500, history=made_up_history())
+    assert (result["played"], result["left"]) == (0, 144) and all(c["played"] == 0 and c["points"] == 0 for c in result["clubs"])
+    assert sum(c["win"] for c in result["clubs"]) == pytest.approx(1, abs=1e-4)
+
+
+def test_uncertain_ratings_split_the_simulations_over_nudged_worlds_and_flatten_the_favourites(made_up_season):
+    history = made_up_history()
+    plain = fc.forecast("2026-11-05", n=4000, history=history)
+    same = fc.forecast("2026-11-05", n=4000, history=history, noise=0.0, worlds=7)
+    assert same == plain  # no noise: the worlds make no difference
+    nudged = fc.forecast("2026-11-05", n=4003, history=history, noise=0.4, worlds=7)  # 4003 doesn't divide by 7
+    for stage, size in SUMS.items():
+        assert sum(c[stage] for c in nudged["clubs"]) == pytest.approx(size, abs=1e-4), stage  # still every simulation counted once
+    best = lambda result: max(c["win"] for c in result["clubs"])
+    assert best(nudged) < best(plain)  # a favourite whose strength is uncertain is less of a favourite
+
+
+def test_a_nudged_copy_of_the_ratings_leaves_the_original_alone():
+    from dixon_coles import fit
+    history = made_up_history()
+    model = fit(history, pd.Timestamp("2026-11-05"), xi=0.002, prior_weight=3.0, newcomer=0.2)
+    before = model.attack.copy()
+    other = fc.nudged(model, 0.3, np.random.default_rng(0))
+    assert (model.attack == before).all() and not np.allclose(other.attack, before) and other.index == model.index
+    assert np.std(other.attack - before) == pytest.approx(0.3, abs=0.08)
+
+
 def test_the_favourite_is_one_of_the_strongest_made_up_clubs(made_up_season):
     result = fc.forecast("2026-11-05", n=3000, history=made_up_history())
     assert int(result["clubs"][0]["club"][-2:]) < 8 and int(result["clubs"][-1]["club"][-2:]) > 27  # strongest first, weakest last

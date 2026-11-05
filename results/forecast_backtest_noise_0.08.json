@@ -1,0 +1,262 @@
+{
+ "overall": {
+  "brier": 0.08916285642887206,
+  "knowing_nothing": 0.1384913954358399,
+  "skill": 0.35618486514435255
+ },
+ "by_stage": [
+  {
+   "stage": "top8",
+   "clubs": 288,
+   "brier": 0.12316097585069447,
+   "knowing_nothing": 0.17283950617283952,
+   "skill": 0.287425782578125
+  },
+  {
+   "stage": "top24",
+   "clubs": 288,
+   "brier": 0.12173059130208334,
+   "knowing_nothing": 0.2222222222222222,
+   "skill": 0.452212339140625
+  },
+  {
+   "stage": "last16",
+   "clubs": 360,
+   "brier": 0.1555200773333333,
+   "knowing_nothing": 0.24691358024691357,
+   "skill": 0.3701436868
+  },
+  {
+   "stage": "quarter",
+   "clubs": 360,
+   "brier": 0.10270862568055555,
+   "knowing_nothing": 0.17283950617283952,
+   "skill": 0.40575723713392864
+  },
+  {
+   "stage": "semi",
+   "clubs": 360,
+   "brier": 0.06688735761111111,
+   "knowing_nothing": 0.09876543209876545,
+   "skill": 0.32276550418750016
+  },
+  {
+   "stage": "final",
+   "clubs": 360,
+   "brier": 0.040535509805555564,
+   "knowing_nothing": 0.05246913580246915,
+   "skill": 0.22744087194117657
+  },
+  {
+   "stage": "win",
+   "clubs": 360,
+   "brier": 0.02691002827777778,
+   "knowing_nothing": 0.02700617283950616,
+   "skill": 0.003560095771428129
+  }
+ ],
+ "by_moment": [
+  {
+   "after": 0,
+   "brier": 0.10716184855158732,
+   "knowing_nothing": 0.14186507936507936,
+   "skill": 0.24462137524475513
+  },
+  {
+   "after": 2,
+   "brier": 0.09827611892857142,
+   "knowing_nothing": 0.14186507936507936,
+   "skill": 0.30725644839160837
+  },
+  {
+   "after": 4,
+   "brier": 0.09119053575396827,
+   "knowing_nothing": 0.14186507936507936,
+   "skill": 0.35720237734265725
+  },
+  {
+   "after": 6,
+   "brier": 0.07852044802579365,
+   "knowing_nothing": 0.14186507936507936,
+   "skill": 0.4465132055244755
+  },
+  {
+   "after": 8,
+   "brier": 0.06326632066666667,
+   "knowing_nothing": 0.11959876543209877,
+   "skill": 0.4710119252645162
+  }
+ ],
+ "calibration": [
+  {
+   "low": 0,
+   "high": 0.02,
+   "forecasts": 915,
+   "given": 0.0032124590163934426,
+   "happened": 0.003278688524590164,
+   "expected_count": 2.9394,
+   "count": 3
+  },
+  {
+   "low": 0.02,
+   "high": 0.1,
+   "forecasts": 383,
+   "given": 0.052086553524804166,
+   "happened": 0.0783289817232376,
+   "expected_count": 19.949149999999996,
+   "count": 30
+  },
+  {
+   "low": 0.1,
+   "high": 0.25,
+   "forecasts": 311,
+   "given": 0.16623344051446945,
+   "happened": 0.17041800643086816,
+   "expected_count": 51.6986,
+   "count": 53
+  },
+  {
+   "low": 0.25,
+   "high": 0.5,
+   "forecasts": 283,
+   "given": 0.36186643109540634,
+   "happened": 0.3745583038869258,
+   "expected_count": 102.4082,
+   "count": 106
+  },
+  {
+   "low": 0.5,
+   "high": 0.75,
+   "forecasts": 190,
+   "given": 0.6225442105263158,
+   "happened": 0.6105263157894737,
+   "expected_count": 118.2834,
+   "count": 116
+  },
+  {
+   "low": 0.75,
+   "high": 0.9,
+   "forecasts": 106,
+   "given": 0.8266353773584905,
+   "happened": 0.7452830188679245,
+   "expected_count": 87.62334999999999,
+   "count": 79
+  },
+  {
+   "low": 0.9,
+   "high": 0.98,
+   "forecasts": 74,
+   "given": 0.9401594594594594,
+   "happened": 0.8918918918918919,
+   "expected_count": 69.5718,
+   "count": 66
+  },
+  {
+   "low": 0.98,
+   "high": 1.0,
+   "forecasts": 114,
+   "given": 0.9958429824561404,
+   "happened": 0.9912280701754386,
+   "expected_count": 113.52610000000001,
+   "count": 113
+  }
+ ],
+ "champion": [
+  {
+   "season": "2024-25",
+   "after": 0,
+   "champion": "Paris SG",
+   "p": 0.0594,
+   "rank": 6,
+   "favourite": "Man City",
+   "favourite_p": 0.2764
+  },
+  {
+   "season": "2024-25",
+   "after": 2,
+   "champion": "Paris SG",
+   "p": 0.045,
+   "rank": 7,
+   "favourite": "Man City",
+   "favourite_p": 0.2432
+  },
+  {
+   "season": "2024-25",
+   "after": 4,
+   "champion": "Paris SG",
+   "p": 0.0338,
+   "rank": 10,
+   "favourite": "Man City",
+   "favourite_p": 0.1966
+  },
+  {
+   "season": "2024-25",
+   "after": 6,
+   "champion": "Paris SG",
+   "p": 0.0307,
+   "rank": 10,
+   "favourite": "Arsenal",
+   "favourite_p": 0.1931
+  },
+  {
+   "season": "2024-25",
+   "after": 8,
+   "champion": "Paris SG",
+   "p": 0.0516,
+   "rank": 8,
+   "favourite": "Arsenal",
+   "favourite_p": 0.1999
+  },
+  {
+   "season": "2025-26",
+   "after": 0,
+   "champion": "Paris SG",
+   "p": 0.085,
+   "rank": 4,
+   "favourite": "Arsenal",
+   "favourite_p": 0.2121
+  },
+  {
+   "season": "2025-26",
+   "after": 2,
+   "champion": "Paris SG",
+   "p": 0.1128,
+   "rank": 3,
+   "favourite": "Arsenal",
+   "favourite_p": 0.2079
+  },
+  {
+   "season": "2025-26",
+   "after": 4,
+   "champion": "Paris SG",
+   "p": 0.0914,
+   "rank": 4,
+   "favourite": "Arsenal",
+   "favourite_p": 0.2629
+  },
+  {
+   "season": "2025-26",
+   "after": 6,
+   "champion": "Paris SG",
+   "p": 0.1406,
+   "rank": 3,
+   "favourite": "Arsenal",
+   "favourite_p": 0.2708
+  },
+  {
+   "season": "2025-26",
+   "after": 8,
+   "champion": "Paris SG",
+   "p": 0.0962,
+   "rank": 4,
+   "favourite": "Arsenal",
+   "favourite_p": 0.2756
+  }
+ ],
+ "favourite_won": 0,
+ "favourite_expected": 2.3385999999999996,
+ "moments": 10,
+ "simulations": 20000,
+ "noise": 0.08,
+ "worlds": 20
+}

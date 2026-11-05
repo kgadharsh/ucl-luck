@@ -20,6 +20,7 @@ Run after scripts/download_data.py, by hand or on a schedule; the output is resu
 """
 
 import argparse
+import copy
 import json
 import sys
 from datetime import datetime, timezone
@@ -207,6 +208,16 @@ def knockouts(order, through, final, rng):
         "final": np.stack(list(semi.values())), "win": champion[None, :]}
 
 
+def nudged(model, noise, rng):
+    """A copy of the model with every club's attack and defence strength moved by a random amount (a normal
+    with this standard deviation, in log-goals). The ratings are estimates, not facts: playing the season out
+    with them as exact makes the favourites too sure."""
+    other = copy.copy(model)
+    other.attack = model.attack + rng.normal(0, noise, len(model.attack))
+    other.defence = model.defence + rng.normal(0, noise, len(model.defence))
+    return other
+
+
 def simulate(table, fixtures, cdfs, through, final, n=SIMULATIONS, seed=SEED):
     """How often each team reaches each stage: {stage: array with one share per team}."""
     rng = np.random.default_rng(seed)
@@ -218,12 +229,14 @@ def simulate(table, fixtures, cdfs, through, final, n=SIMULATIONS, seed=SEED):
 
 # ---------- putting it together ----------
 
-def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None):
+def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None, league=None, noise=0.0, worlds=1):
     """The forecast as plain data, ready for results/forecast.json. Raises NoForecast when the season
-    is not at a stage this covers."""
+    is not at a stage this covers. `league` is the season's league phase as parse_league_phase reads it
+    (read from the downloaded article if not given); `history` is the matches to fit on. With `noise`, the
+    simulations are split over `worlds` versions of the ratings, each nudged at random by that much."""
     as_of = pd.Timestamp(as_of or datetime.now(timezone.utc).date())
     season = season or season_of(pd.Series([as_of])).iloc[0]
-    league = load_league_phase(season)
+    league = load_league_phase(season) if league is None else league
     if league is None:
         raise NoForecast(f"{data_path(season).name} has not been downloaded")
     problem = check_league_phase(league)
@@ -243,7 +256,7 @@ def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None):
 
     # Learn from this season's matches too, unless the main data already has them.
     have = set(zip(history.date, history.home, history.away))
-    new = played[[key not in have for key in zip(played.date, played.home, played.away)]]
+    new = played[np.array([key not in have for key in zip(played.date, played.home, played.away)], dtype=bool)]  # (a bare empty list would pick columns)
     this_season = pd.DataFrame({
         "competition": "CL", "season": season, "date": new.date, "home": new.home, "away": new.away,
         "home_goals": new.home_goals.astype(int), "away_goals": new.away_goals.astype(int), "neutral": False})
@@ -257,9 +270,15 @@ def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None):
     index = {team: i for i, team in enumerate(teams)}
     table = standings(league, teams)
     fixtures = np.array([(index[h], index[a]) for h, a in zip(left.home, left.away)], dtype=int).reshape(-1, 2)
-    cdfs = scoreline_cdfs(model, teams, fixtures, rho, newcomer) if len(fixtures) else np.empty((0, (MAX_GOALS + 1) ** 2))
-    through, final = tie_chances(model, teams, rho, newcomer)
-    reach = simulate(table, fixtures, cdfs, through, final, n, seed)
+    reach = {stage: np.zeros(len(teams)) for stage in STAGES}
+    for world in range(worlds if noise else 1):
+        version = nudged(model, noise, np.random.default_rng([seed, world])) if noise else model
+        share = n // (worlds if noise else 1) + (n % worlds if noise and world == worlds - 1 else 0)
+        cdfs = scoreline_cdfs(version, teams, fixtures, rho, newcomer) if len(fixtures) else np.empty((0, (MAX_GOALS + 1) ** 2))
+        through, final = tie_chances(version, teams, rho, newcomer)
+        found = simulate(table, fixtures, cdfs, through, final, share, seed + world)
+        for stage in STAGES:
+            reach[stage] += found[stage] * share / n
 
     country = {}
     for side in ("home", "away"):

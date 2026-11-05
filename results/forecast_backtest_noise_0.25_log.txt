@@ -1,0 +1,44 @@
+Forecast backtest: 2024-25 and 2025-26, as of five moments in each
+
+Every club's strength nudged by a random 0.25 (log-goals), over 20 versions of the ratings
+
+All open forecasts together: model 0.0902, knowing nothing 0.1385, skill +34.9%
+
+Brier score by stage (lower is better; 'knowing nothing' gives every club the same chance of each stage)
+  top8      288 forecasts  model 0.1229  knowing nothing 0.1728  skill +29%
+  top24     288 forecasts  model 0.1191  knowing nothing 0.2222  skill +46%
+  last16    360 forecasts  model 0.1527  knowing nothing 0.2469  skill +38%
+  quarter   360 forecasts  model 0.1073  knowing nothing 0.1728  skill +38%
+  semi      360 forecasts  model 0.0723  knowing nothing 0.0988  skill +27%
+  final     360 forecasts  model 0.0428  knowing nothing 0.0525  skill +18%
+  win       360 forecasts  model 0.0267  knowing nothing 0.0270  skill +1%
+
+By moment
+  after matchday 0: model 0.1077  knowing nothing 0.1419  skill +24%
+  after matchday 2: model 0.0999  knowing nothing 0.1419  skill +30%
+  after matchday 4: model 0.0921  knowing nothing 0.1419  skill +35%
+  after matchday 6: model 0.0784  knowing nothing 0.1419  skill +45%
+  after matchday 8: model 0.0662  knowing nothing 0.1196  skill +45%
+
+Calibration of every open forecast (a chance given, against how often it happened)
+    0% to   2%:  805 forecasts, given 0.4%, happened 0.2% (2 against 3.0 expected)
+    2% to  10%:  438 forecasts, given 5.1%, happened 4.8% (21 against 22.5 expected)
+   10% to  25%:  354 forecasts, given 16.5%, happened 16.7% (59 against 58.3 expected)
+   25% to  50%:  316 forecasts, given 36.4%, happened 39.6% (125 against 115.0 expected)
+   50% to  75%:  196 forecasts, given 62.6%, happened 60.7% (119 against 122.8 expected)
+   75% to  90%:  106 forecasts, given 82.6%, happened 79.2% (84 against 87.6 expected)
+   90% to  98%:   67 forecasts, given 94.3%, happened 94.0% (63 against 63.2 expected)
+   98% to 100%:   94 forecasts, given 99.6%, happened 98.9% (93 against 93.6 expected)
+
+The champion's chance of winning, as the season went on
+  2024-25 after matchday 0: Paris SG 10.3% (rank 2); favourite Man City 24.0%
+  2024-25 after matchday 2: Paris SG 5.6% (rank 7); favourite Man City 20.1%
+  2024-25 after matchday 4: Paris SG 4.5% (rank 10); favourite Man City 16.3%
+  2024-25 after matchday 6: Paris SG 4.3% (rank 9); favourite Arsenal 18.4%
+  2024-25 after matchday 8: Paris SG 3.9% (rank 10); favourite Inter 16.6%
+  2025-26 after matchday 0: Paris SG 6.0% (rank 6); favourite Arsenal 18.7%
+  2025-26 after matchday 2: Paris SG 5.3% (rank 7); favourite Arsenal 15.3%
+  2025-26 after matchday 4: Paris SG 4.6% (rank 7); favourite Arsenal 19.0%
+  2025-26 after matchday 6: Paris SG 13.0% (rank 2); favourite Arsenal 19.7%
+  2025-26 after matchday 8: Paris SG 9.6% (rank 4); favourite Arsenal 20.3%
+The favourite won the title at 0 of 10 moments; the model expected 1.9.
