@@ -279,15 +279,28 @@ def test_a_link_to_a_section_lands_on_it(open_page):
 
 
 def test_nav_highlights_the_section_you_are_reading(open_page):
+    """At every scroll position the nav marks the last section whose top has passed 40% down the screen.
+
+    The nav catches up on the next animation frame after a scroll, and a busy runner can delay that well
+    past a fixed wait: this test failed in WebKit on CI, on main, with a fixed 60 ms. A wrong highlight
+    stays wrong, so each position gets up to a second to settle before it counts as a mismatch."""
     page = open_page(reduced_motion="reduce")
     mismatches = page.evaluate("""async () => {
-      const max = document.documentElement.scrollHeight - innerHeight; let bad = 0;
-      for (let y = 0; y <= max; y += 350) {
-        window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60));
+      const maxScroll = () => document.documentElement.scrollHeight - innerHeight;
+      const expected = () => {
         const passed = [...document.querySelectorAll('main > section.card[id]')].filter((s) => !s.hidden && s.getBoundingClientRect().top <= innerHeight * 0.4);
-        const expected = scrollY >= max - 2 ? 'live' : passed.length ? passed[passed.length - 1].id : null;
-        const current = document.querySelector('nav a[aria-current]')?.hash.slice(1) ?? null;
-        if (current !== expected) bad++;
+        return scrollY >= maxScroll() - 2 ? 'live' : passed.length ? passed[passed.length - 1].id : null;
+      };
+      const current = () => document.querySelector('nav a[aria-current]')?.hash.slice(1) ?? null;
+      let bad = 0;
+      for (let y = 0; y <= maxScroll(); y += 350) {
+        window.scrollTo(0, y);
+        let settled = false;
+        for (let waited = 0; waited < 1000 && !settled; waited += 25) {
+          await new Promise((r) => setTimeout(r, 25));
+          settled = current() === expected();
+        }
+        if (!settled) bad++;
       }
       return bad;
     }""")
