@@ -384,6 +384,12 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
   .sk-stat span { font-size: 11px; letter-spacing: 0; }
 }
 
+/* ---------- Real Madrid: the checks ---------- */
+.rm { margin-top: 36px; }
+.rm .split { grid-template-columns: 1fr 1fr; margin-bottom: 8px; }
+.rm h4 { font: 600 17px/1.25 var(--font); margin: 0 0 6px; color: var(--ink); }
+@media (max-width: 760px) { .rm .split { grid-template-columns: 1fr; gap: 28px; } }
+
 /* ---------- glossary ---------- */
 .term {
   cursor: help; text-decoration: underline dotted var(--muted); text-decoration-thickness: 1.5px; text-underline-offset: 3px;

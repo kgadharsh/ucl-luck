@@ -36,9 +36,18 @@ KNOCKOUT = re.compile(
     re.IGNORECASE)
 
 
+# The 2019-20 competitions were suspended in March 2020 and finished in August 2020: the last
+# round-of-16 second legs and the single-match quarter-finals, semi-finals and final. Those
+# August dates belong to the season's second year, unlike every other season's July to December.
+FINISHED_LATE = {"2019-20": (7, 8)}
+
+
 def season_year(name, month):
-    """Matches from July to December belong to the season's first year."""
+    """Matches from July to December belong to the season's first year, except a season that
+    finished late."""
     first = int(name[:4])
+    if month in FINISHED_LATE.get(name, ()):
+        return first + 1
     return first if month >= 7 else first + 1
 
 

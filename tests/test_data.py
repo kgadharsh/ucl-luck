@@ -4,6 +4,7 @@ Numbers on the page are shown in several places (a tooltip and a funnel, a headl
 chart, the page and the README); these tests fail when any two of them drift apart.
 """
 
+import json
 import math
 import re
 
@@ -149,3 +150,34 @@ def test_readme_europa_league_coverage_matches_the_data():
         pytest.skip("needs data/raw")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert re.search(rf"Europa League results from {seasons[0]} to {seasons[-1]}", readme)
+
+
+@pytest.mark.readme
+def test_readme_real_madrid_checks(readme):
+    r = json.loads((ROOT / "results" / "real_madrid.json").read_text(encoding="utf-8"))
+    league, groups, knockouts = r["stages"]
+    other_groups, other_knockouts = r["other_clubs_stages"]
+    n, (h1, h2), f = r["normal_time"], r["halves"], r["forecast"]
+    others = [c for c in r["clubs"] if c["club"] != "Real Madrid"]
+    correlation = np.corrcoef([c["first"] for c in others], [c["second"] for c in others])[0, 1]
+    round_to = lambda x, digits: float(f"{x:.{digits}g}")
+    expected = [
+        f"{league['points']:.2f} points a match against {league['expected']:.2f}",
+        f"the gap was {groups['gap']:+.2f} a match ({groups['matches']} matches)",
+        f"{knockouts['gap']:+.2f} ({knockouts['points']:.2f} against {knockouts['expected']:.2f}, over {knockouts['matches']} matches)",
+        f"the gap is {other_groups['gap']:+.2f} over {other_groups['matches']:,} group matches and {other_knockouts['gap']:+.2f} over {other_knockouts['matches']:,} knockout matches",
+        f"none is further than {r['others']['largest_z']:.1f} standard deviations",
+        f"Barcelona won {r['spanish']['Barcelona']['won']} of {r['spanish']['Barcelona']['ties']} ties against {r['spanish']['Barcelona']['expected']:.1f} expected",
+        f"Atlético Madrid {r['spanish']['Ath Madrid']['won']} of {r['spanish']['Ath Madrid']['ties']} against {r['spanish']['Ath Madrid']['expected']:.1f}",
+        f"they won {n['won_normal']['actual']} when the model expected {n['won_normal']['expected']:.1f}, and lost {n['lost_normal']['actual']} when it expected {n['lost_normal']['expected']:.1f}",
+        f"({n['won_extra']['expected']:.1f} expected, about 1 in {round_to(1 / n['won_extra']['p_at_least'], 2):.0f})",
+        f"In the first Real won {h1['won']} of {h1['ties']} ties against {h1['expected']:.1f} expected, and in the second {h2['won']} of {h2['ties']} against {h2['expected']:.1f}",
+        f"ahead of the model in {r['seasons_above']} of {r['seasons']} seasons",
+        f"about once in {round_to(1 / h2['p_at_least'], 2):.0f} tries",
+        f"by about {math.exp(f['boost']):.1f})",
+        f"from {f['without']:.3f} to {f['with']:.3f}",
+        f"For the {len(others)} other clubs",
+        f"(the correlation is {correlation:.2f})",
+    ]
+    missing = [text for text in expected if text not in readme]
+    assert not missing, missing

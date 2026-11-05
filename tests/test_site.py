@@ -12,6 +12,8 @@ from math import comb
 import pytest
 from pypdf import PdfReader
 
+from test_data import odds_of_doing_as_well
+
 REVEAL = "document.querySelectorAll('.card').forEach((c) => c.classList.add('in', 'done'))"
 
 # Does anything on the page still use the *other* theme's colours?
@@ -85,7 +87,7 @@ def test_numbers_are_filled_from_the_data(open_page, data):
     h = data["headline"]
     assert page.locator(".hero .stat-value .sr").first.text_content() == f"{round(h['underdog'] * 100)}%"
     assert page.locator('[data-fill="finals"]').first.text_content() == str(len(data["champions"]))
-    assert page.locator('[data-fill="real-odds"]').first.text_content() == "11,500"
+    assert page.locator('[data-fill="real-odds"]').first.text_content() == odds_of_doing_as_well(data["ties"], "Real Madrid")
 
 
 def test_missing_data_says_why_and_the_theme_button_still_works(open_page):
@@ -586,6 +588,47 @@ def test_a_ball_in_the_luck_machine_shows_its_tie_and_score(open_page, data, bro
                 assert " beat " in tip.text_content() and "chance beforehand" in tip.text_content()
                 return
     pytest.fail("never found a ball to hover")
+
+
+# ---------- Real Madrid: the checks ----------
+
+def test_real_madrid_checks_are_drawn_from_the_analysis(open_page, data):
+    rm = data["real_madrid"]
+    page = open_page(reduced_motion="reduce")
+    assert page.locator("#rm").is_visible()
+    assert page.locator("#rm-split circle").count() == 8  # four kinds of ending, a hollow and a solid dot each
+    assert page.locator("#rm-last circle:not(.hit)").count() == len(rm["clubs"])
+    verdict = page.text_content("#rm-verdict")
+    h1, h2, n = rm["halves"][0], rm["halves"][1], rm["normal_time"]
+    assert f"{h1['won']} of {h1['ties']} ties won when {h1['expected']:.1f} were expected, then {h2['won']} of {h2['ties']} when {h2['expected']:.1f} were" in verdict
+    assert f"ahead of it in {rm['seasons_above']} of {rm['seasons']} seasons" in verdict
+    assert f"they won all {n['won_extra']['actual']}" in verdict and f"lost only {n['lost_normal']['actual']} ties in normal time" in verdict
+    assert f"error per tie {rm['forecast']['without']:.2f} down to {rm['forecast']['with']:.2f}" in verdict
+
+
+def test_real_madrid_dot_and_rows_explain_themselves(open_page, data):
+    rm = data["real_madrid"]
+    page = open_page(reduced_motion="reduce")
+    page.locator("#rm-last").scroll_into_view_if_needed()
+    page.wait_for_timeout(150)  # scrolling (correctly) hides tooltips
+    tip = page.locator("#tip")
+    page.locator("#rm-last circle.hit").last.hover()  # Real Madrid is drawn last, on top
+    real = next(c for c in rm["clubs"] if c["club"] == "Real Madrid")
+    assert "on" in tip.get_attribute("class")
+    assert "Real Madrid" in tip.text_content() and f"First seven seasons ({real['ties_first']} ties)" in tip.text_content()
+    page.mouse.move(5, 300)
+    page.locator("#rm-split rect.hit").first.hover()
+    n = rm["normal_time"]["won_normal"]
+    assert f"Won {n['actual']} ties in normal time; the model expected {n['expected']:.1f}" in tip.text_content()
+
+
+def test_without_the_analysis_the_page_keeps_its_short_explanation(open_page, data):
+    import json
+    without = json.dumps({**data, "real_madrid": None})
+    page = open_page(reduced_motion="reduce", routes={"**/data.json": lambda route: route.fulfill(body=without, content_type="application/json")})
+    assert page.locator("#rm").is_hidden()
+    assert "part of Real Madrid's" in page.text_content("#rm-lead")
+    assert page.locator("#rm-split circle").count() == 0 and page.locator("#rm-last circle").count() == 0
 
 
 # ---------- printing ----------

@@ -15,7 +15,7 @@ from dixon_coles import outcome_probs, walk_forward_goals
 from elo import run_elo
 from evaluate_dc import ELO_SETTINGS
 from evaluate_elo import TUNE, WARM_UP, walk_forward_probs
-from knockouts import LAST_AWAY_GOALS_SEASON, ROUNDS, actual_winner, goals_after, ties_table
+from knockouts import LAST_AWAY_GOALS_SEASON, ROUNDS, actual_winner, tie_scores
 from matches import load_matches
 from outcomes import outcome_codes
 from preview import write_preview
@@ -113,32 +113,18 @@ def first_legs(matches):
     }
 
 
-def tie_scores(matches):
-    """What happened in every knockout tie, keyed like knockout_ties.csv by (season, round,
-    team_a, team_b). `legs` has the score of each match with team_a's goals first, counting extra
-    time. `aet`: the last match went to extra time. `pens`: the shoot-out, team_a first. `away`:
-    the two legs finished level on goals and the away-goals rule decided it."""
-    scores = {}
-    for season, rnd, legs in ties_table(matches):
-        first, last = legs.iloc[0], legs.iloc[-1]
-        team_a = first.home
-
-        def goals(row):
-            home, away = goals_after(row, "home"), goals_after(row, "away")
-            return [home, away] if row.home == team_a else [away, home]
-
-        record = {"legs": [goals(row) for _, row in legs.iterrows()]}
-        if last.extra_time:
-            record["aet"] = True
-        if pd.notna(last.home_pens):
-            pens = [int(last.home_pens), int(last.away_pens)]
-            record["pens"] = pens if last.home == team_a else pens[::-1]
-        elif len(legs) == 2 and season <= LAST_AWAY_GOALS_SEASON:
-            (a1, b1), (a2, b2) = record["legs"]
-            if a1 + a2 == b1 + b2:  # level on goals: the team that scored more away goals went through
-                record["away"] = True
-        scores[(season, rnd, team_a, first.away)] = record
-    return scores
+def real_madrid_section(headline):
+    """The Real Madrid analysis (src/real_madrid.py), if it was run on the same ties as the rest of
+    the page. Left out otherwise: an analysis of 44 ties next to a page that says 50 would contradict itself."""
+    path = RESULTS / "real_madrid.json"
+    if not path.exists():
+        return None
+    analysis = json.loads(path.read_text(encoding="utf-8"))
+    if (analysis["won"], analysis["ties"]) != (headline["real_won"], headline["real_ties"]):
+        print(f"Warning: results/real_madrid.json is out of date ({analysis['won']} of {analysis['ties']} ties, "
+              f"the page has {headline['real_won']} of {headline['real_ties']}). Run src/real_madrid.py. Leaving it out.")
+        return None
+    return analysis
 
 
 # What the dashboard shows for a prediction still waiting for kick-off.
@@ -217,6 +203,7 @@ def main():
         "ties": tie_rows,
         "rounds": rounds_table(ties),
         "clubs": clubs,
+        "real_madrid": None,  # filled in below, once the headline numbers exist
         "scores": scores.round(4).to_dict("records"),
         "calibration": calibration(matches),
         "matches": int(len(matches)),
@@ -224,6 +211,7 @@ def main():
         "comebacks": first_legs(matches),
         "brackets": build_brackets(matches, pd.read_csv(RESULTS / "dixon_coles_settings.csv").iloc[0]),
     }
+    data["real_madrid"] = real_madrid_section(data["headline"])
     # allow_nan=False: a NaN would be written as a bare NaN, which browsers refuse to parse,
     # and the whole dashboard would fail to load. Better to fail here, loudly.
     (SITE / "data.json").write_text(json.dumps(data, ensure_ascii=False, indent=1, allow_nan=False), encoding="utf-8")

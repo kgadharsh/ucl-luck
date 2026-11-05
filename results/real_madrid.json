@@ -1,0 +1,228 @@
+{
+ "club": "Real Madrid",
+ "ties": 44,
+ "won": 36,
+ "expected": 24.346700000000002,
+ "p_at_least": 9.821560112431895e-05,
+ "stages": [
+  {
+   "label": "La Liga",
+   "matches": 529,
+   "points": 2.2438563327032135,
+   "expected": 2.1744918066128385,
+   "gap": 0.06936452609037508,
+   "error": 0.09300632571405974,
+   "scored": 2.3194706994328924,
+   "expected_scored": 2.331488244639552,
+   "conceded": 0.943289224952741,
+   "expected_conceded": 0.9336401285014012
+  },
+  {
+   "label": "Champions League groups",
+   "matches": 88,
+   "points": 2.215909090909091,
+   "expected": 2.0518976507704254,
+   "gap": 0.16401144013866517,
+   "error": 0.23798372268341794,
+   "scored": 2.5681818181818183,
+   "expected_scored": 2.352904814306512,
+   "conceded": 1.1136363636363635,
+   "expected_conceded": 1.0732867577531582
+  },
+  {
+   "label": "Champions League knockouts",
+   "matches": 82,
+   "points": 1.853658536585366,
+   "expected": 1.5105447683996314,
+   "gap": 0.3431137681857345,
+   "error": 0.28702492818236375,
+   "scored": 1.8170731707317074,
+   "expected_scored": 1.6564366391355503,
+   "conceded": 1.2073170731707317,
+   "expected_conceded": 1.4184354483219601
+  }
+ ],
+ "other_clubs_stages": [
+  {
+   "label": "Champions League groups",
+   "matches": 2792,
+   "points": 1.3728510028653296,
+   "expected": 1.373410504213959,
+   "gap": -0.0005595013486295547,
+   "error": 0.04276905959482592,
+   "scored": 1.505730659025788,
+   "expected_scored": 1.5160842462463815,
+   "conceded": 1.5515759312320916,
+   "expected_conceded": 1.5564160474557995
+  },
+  {
+   "label": "Champions League knockouts",
+   "matches": 782,
+   "points": 1.354219948849105,
+   "expected": 1.3674646856914878,
+   "gap": -0.013244736842382948,
+   "error": 0.08751785709594288,
+   "scored": 1.4514066496163682,
+   "expected_scored": 1.4699044662389829,
+   "conceded": 1.5153452685421995,
+   "expected_conceded": 1.4948611128460345
+  }
+ ],
+ "normal_time": {
+  "ties": 44,
+  "won_normal": {
+   "actual": 29,
+   "expected": 21.657349978002298,
+   "p_at_least": 0.01308941527649552
+  },
+  "lost_normal": {
+   "actual": 8,
+   "expected": 17.059635004041237,
+   "p_at_most": 0.0018373862430011833
+  },
+  "extra_time": {
+   "actual": 7,
+   "expected": 5.28301501795646
+  },
+  "won_extra": {
+   "actual": 7,
+   "expected": 2.689368770944573,
+   "p_at_least": 0.0060415895492207826
+  }
+ },
+ "halves": [
+  {
+   "seasons": "2012-13 to 2018-19",
+   "ties": 23,
+   "won": 20,
+   "expected": 14.162199999999999,
+   "z": 2.680542913407857,
+   "p_at_least": 0.004987775642127279
+  },
+  {
+   "seasons": "2019-20 to 2025-26",
+   "ties": 21,
+   "won": 16,
+   "expected": 10.1845,
+   "z": 2.6315466978196738,
+   "p_at_least": 0.007372504142122137
+  }
+ ],
+ "seasons_above": 11,
+ "seasons": 14,
+ "forecast": {
+  "boost": 1.572943936783239,
+  "ties": 21,
+  "without": 0.6416558401392525,
+  "with": 0.4764762560450911,
+  "all_seasons_boost": 1.4154703068246617,
+  "all_seasons_range": [
+   0.675,
+   2.275
+  ]
+ },
+ "clubs": [
+  {
+   "club": "Arsenal",
+   "ties_first": 5,
+   "ties_second": 9,
+   "first": -1.4135276340789062,
+   "second": -0.36884241259634076
+  },
+  {
+   "club": "Ath Madrid",
+   "ties_first": 14,
+   "ties_second": 12,
+   "first": 0.5767124135520345,
+   "second": 0.5606922694574945
+  },
+  {
+   "club": "Barcelona",
+   "ties_first": 18,
+   "ties_second": 10,
+   "first": 0.05398029511680438,
+   "second": -0.38604982248093705
+  },
+  {
+   "club": "Bayern Munich",
+   "ties_first": 19,
+   "ties_second": 19,
+   "first": -0.27142224680419624,
+   "second": 0.32258952239511185
+  },
+  {
+   "club": "Chelsea",
+   "ties_first": 6,
+   "ties_second": 10,
+   "first": -0.6251618010715022,
+   "second": 0.9285883958781443
+  },
+  {
+   "club": "Dortmund",
+   "ties_first": 10,
+   "ties_second": 12,
+   "first": -0.2860597724178037,
+   "second": 0.4235035400868439
+  },
+  {
+   "club": "FC Porto (POR)",
+   "ties_first": 7,
+   "ties_second": 4,
+   "first": -0.2247623654755659,
+   "second": -0.5574374638018276
+  },
+  {
+   "club": "Juventus",
+   "ties_first": 15,
+   "ties_second": 5,
+   "first": 0.17180009554189538,
+   "second": -3.0480805662453463
+  },
+  {
+   "club": "Liverpool",
+   "ties_first": 8,
+   "ties_second": 11,
+   "first": 1.83915216025849,
+   "second": -1.4098030120781853
+  },
+  {
+   "club": "Man City",
+   "ties_first": 10,
+   "ties_second": 17,
+   "first": -1.157624670849228,
+   "second": -0.7962461743282386
+  },
+  {
+   "club": "Paris SG",
+   "ties_first": 11,
+   "ties_second": 22,
+   "first": -1.3629846025337875,
+   "second": 2.1127500872245486
+  },
+  {
+   "club": "Real Madrid",
+   "ties_first": 23,
+   "ties_second": 21,
+   "first": 2.680542913407857,
+   "second": 2.6315466978196738
+  }
+ ],
+ "others": {
+  "clubs": 14,
+  "largest_z": 1.3639985863330828
+ },
+ "spanish": {
+  "Barcelona": {
+   "ties": 28,
+   "won": 17,
+   "expected": 17.4839,
+   "z": -0.19588313805768376
+  },
+  "Ath Madrid": {
+   "ties": 26,
+   "won": 15,
+   "expected": 13.0757,
+   "z": 0.8041999442331974
+  }
+ }
+}

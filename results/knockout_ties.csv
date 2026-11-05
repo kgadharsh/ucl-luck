@@ -104,66 +104,66 @@ season,round,team_a,team_b,p_a,winner,p_winner
 2018-19,Semifinals,Tottenham,AFC Ajax (NED),0.5516,Tottenham,0.5516
 2018-19,Semifinals,Barcelona,Liverpool,0.5335,Liverpool,0.4665
 2018-19,Final,Tottenham,Liverpool,0.3747,Liverpool,0.6253
-2019-20,Round of 16,Man City,Real Madrid,0.7401,Man City,0.7401
-2019-20,Round of 16,Juventus,Lyon,0.7000,Lyon,0.3000
-2019-20,Round of 16,Bayern Munich,Chelsea,0.6702,Bayern Munich,0.6702
-2019-20,Round of 16,Barcelona,Napoli,0.6938,Barcelona,0.6938
-2019-20,Quarterfinals,Atalanta,Paris SG,0.3289,Paris SG,0.6711
-2019-20,Quarterfinals,RB Leipzig,Ath Madrid,0.3940,RB Leipzig,0.3940
-2019-20,Quarterfinals,Barcelona,Bayern Munich,0.5500,Bayern Munich,0.4500
-2019-20,Quarterfinals,Man City,Lyon,0.7525,Lyon,0.2475
-2019-20,Semifinals,RB Leipzig,Paris SG,0.3255,Paris SG,0.6745
-2019-20,Semifinals,Lyon,Bayern Munich,0.3293,Bayern Munich,0.6707
-2019-20,Final,Paris SG,Bayern Munich,0.4633,Bayern Munich,0.5367
-2019-20,Round of 16,Dortmund,Paris SG,0.2367,Paris SG,0.7633
-2019-20,Round of 16,Ath Madrid,Liverpool,0.2863,Ath Madrid,0.2863
-2019-20,Round of 16,Atalanta,Valencia,0.5878,Atalanta,0.5878
-2019-20,Round of 16,Tottenham,RB Leipzig,0.4839,RB Leipzig,0.5161
-2020-21,Round of 16,RB Leipzig,Liverpool,0.4202,Liverpool,0.5798
-2020-21,Round of 16,Barcelona,Paris SG,0.4494,Paris SG,0.5506
+2019-20,Round of 16,Dortmund,Paris SG,0.2372,Paris SG,0.7628
+2019-20,Round of 16,Ath Madrid,Liverpool,0.2932,Ath Madrid,0.2932
+2019-20,Round of 16,Atalanta,Valencia,0.5836,Atalanta,0.5836
+2019-20,Round of 16,Tottenham,RB Leipzig,0.5013,RB Leipzig,0.4987
+2019-20,Round of 16,Chelsea,Bayern Munich,0.2497,Bayern Munich,0.7503
+2019-20,Round of 16,Napoli,Barcelona,0.2916,Barcelona,0.7084
+2019-20,Round of 16,Real Madrid,Man City,0.3274,Man City,0.6726
+2019-20,Round of 16,Lyon,Juventus,0.2869,Lyon,0.2869
+2019-20,Quarterfinals,Atalanta,Paris SG,0.3648,Paris SG,0.6352
+2019-20,Quarterfinals,RB Leipzig,Ath Madrid,0.4706,RB Leipzig,0.4706
+2019-20,Quarterfinals,Barcelona,Bayern Munich,0.4460,Bayern Munich,0.5540
+2019-20,Quarterfinals,Man City,Lyon,0.7700,Lyon,0.2300
+2019-20,Semifinals,RB Leipzig,Paris SG,0.3792,Paris SG,0.6208
+2019-20,Semifinals,Lyon,Bayern Munich,0.2501,Bayern Munich,0.7499
+2019-20,Final,Paris SG,Bayern Munich,0.4362,Bayern Munich,0.5638
+2020-21,Round of 16,RB Leipzig,Liverpool,0.4260,Liverpool,0.5740
+2020-21,Round of 16,Barcelona,Paris SG,0.4194,Paris SG,0.5806
 2020-21,Round of 16,FC Porto (POR),Juventus,0.4370,FC Porto (POR),0.4370
-2020-21,Round of 16,Sevilla,Dortmund,0.4186,Dortmund,0.5814
-2020-21,Round of 16,Lazio,Bayern Munich,0.1717,Bayern Munich,0.8283
-2020-21,Round of 16,Ath Madrid,Chelsea,0.5340,Chelsea,0.4660
-2020-21,Round of 16,M'gladbach,Man City,0.1399,Man City,0.8601
-2020-21,Round of 16,Atalanta,Real Madrid,0.4449,Real Madrid,0.5551
-2020-21,Quarterfinals,Man City,Dortmund,0.8423,Man City,0.8423
-2020-21,Quarterfinals,Real Madrid,Liverpool,0.3961,Real Madrid,0.3961
-2020-21,Quarterfinals,FC Porto (POR),Chelsea,0.4924,Chelsea,0.5076
-2020-21,Quarterfinals,Bayern Munich,Paris SG,0.5937,Paris SG,0.4063
-2020-21,Semifinals,Real Madrid,Chelsea,0.5487,Chelsea,0.4513
-2020-21,Semifinals,Paris SG,Man City,0.3034,Man City,0.6966
-2020-21,Final,Man City,Chelsea,0.6901,Chelsea,0.3099
-2021-22,Round of 16,Sporting CP,Man City,0.0517,Man City,0.9483
-2021-22,Round of 16,Paris SG,Real Madrid,0.5381,Real Madrid,0.4619
-2021-22,Round of 16,RB Salzburg,Bayern Munich,0.0646,Bayern Munich,0.9354
-2021-22,Round of 16,Inter,Liverpool,0.3546,Liverpool,0.6454
-2021-22,Round of 16,Chelsea,Lille,0.7356,Chelsea,0.7356
-2021-22,Round of 16,Villarreal,Juventus,0.4588,Villarreal,0.4588
-2021-22,Round of 16,Benfica,AFC Ajax (NED),0.2052,Benfica,0.2052
-2021-22,Round of 16,Ath Madrid,Man United,0.4198,Ath Madrid,0.4198
-2021-22,Quarterfinals,Man City,Ath Madrid,0.8005,Man City,0.8005
-2021-22,Quarterfinals,Benfica,Liverpool,0.1430,Liverpool,0.8570
-2021-22,Quarterfinals,Chelsea,Real Madrid,0.4977,Real Madrid,0.5023
-2021-22,Quarterfinals,Villarreal,Bayern Munich,0.1923,Villarreal,0.1923
-2021-22,Semifinals,Man City,Real Madrid,0.6962,Real Madrid,0.3038
-2021-22,Semifinals,Liverpool,Villarreal,0.7672,Liverpool,0.7672
+2020-21,Round of 16,Sevilla,Dortmund,0.4086,Dortmund,0.5914
+2020-21,Round of 16,Lazio,Bayern Munich,0.1571,Bayern Munich,0.8429
+2020-21,Round of 16,Ath Madrid,Chelsea,0.5362,Chelsea,0.4638
+2020-21,Round of 16,M'gladbach,Man City,0.1506,Man City,0.8494
+2020-21,Round of 16,Atalanta,Real Madrid,0.4457,Real Madrid,0.5543
+2020-21,Quarterfinals,Man City,Dortmund,0.8319,Man City,0.8319
+2020-21,Quarterfinals,Real Madrid,Liverpool,0.3964,Real Madrid,0.3964
+2020-21,Quarterfinals,FC Porto (POR),Chelsea,0.4983,Chelsea,0.5017
+2020-21,Quarterfinals,Bayern Munich,Paris SG,0.6019,Paris SG,0.3981
+2020-21,Semifinals,Real Madrid,Chelsea,0.5520,Chelsea,0.4480
+2020-21,Semifinals,Paris SG,Man City,0.3207,Man City,0.6793
+2020-21,Final,Man City,Chelsea,0.6898,Chelsea,0.3102
+2021-22,Round of 16,Sporting CP,Man City,0.0535,Man City,0.9465
+2021-22,Round of 16,Paris SG,Real Madrid,0.5440,Real Madrid,0.4560
+2021-22,Round of 16,RB Salzburg,Bayern Munich,0.0614,Bayern Munich,0.9386
+2021-22,Round of 16,Inter,Liverpool,0.3556,Liverpool,0.6444
+2021-22,Round of 16,Chelsea,Lille,0.7311,Chelsea,0.7311
+2021-22,Round of 16,Villarreal,Juventus,0.4580,Villarreal,0.4580
+2021-22,Round of 16,Benfica,AFC Ajax (NED),0.2064,Benfica,0.2064
+2021-22,Round of 16,Ath Madrid,Man United,0.4194,Ath Madrid,0.4194
+2021-22,Quarterfinals,Man City,Ath Madrid,0.7989,Man City,0.7989
+2021-22,Quarterfinals,Benfica,Liverpool,0.1447,Liverpool,0.8553
+2021-22,Quarterfinals,Chelsea,Real Madrid,0.4951,Real Madrid,0.5049
+2021-22,Quarterfinals,Villarreal,Bayern Munich,0.1851,Villarreal,0.1851
+2021-22,Semifinals,Man City,Real Madrid,0.6935,Real Madrid,0.3065
+2021-22,Semifinals,Liverpool,Villarreal,0.7665,Liverpool,0.7665
 2021-22,Final,Liverpool,Real Madrid,0.5814,Real Madrid,0.4186
-2022-23,Round of 16,Milan,Tottenham,0.4276,Milan,0.4276
-2022-23,Round of 16,Paris SG,Bayern Munich,0.3099,Bayern Munich,0.6901
-2022-23,Round of 16,Club Brugge KV (BEL),Benfica,0.2539,Benfica,0.7461
-2022-23,Round of 16,Dortmund,Chelsea,0.4047,Chelsea,0.5953
-2022-23,Round of 16,Liverpool,Real Madrid,0.5166,Real Madrid,0.4834
-2022-23,Round of 16,Ein Frankfurt,Napoli,0.2318,Napoli,0.7682
-2022-23,Round of 16,RB Leipzig,Man City,0.2038,Man City,0.7962
-2022-23,Round of 16,Inter,FC Porto (POR),0.6436,Inter,0.6436
-2022-23,Quarterfinals,Benfica,Inter,0.4764,Inter,0.5236
-2022-23,Quarterfinals,Man City,Bayern Munich,0.6408,Man City,0.6408
-2022-23,Quarterfinals,Real Madrid,Chelsea,0.5879,Real Madrid,0.5879
-2022-23,Quarterfinals,Milan,Napoli,0.3160,Milan,0.3160
-2022-23,Semifinals,Real Madrid,Man City,0.2651,Man City,0.7349
-2022-23,Semifinals,Milan,Inter,0.4150,Inter,0.5850
-2022-23,Final,Man City,Inter,0.6992,Man City,0.6992
+2022-23,Round of 16,Milan,Tottenham,0.4286,Milan,0.4286
+2022-23,Round of 16,Paris SG,Bayern Munich,0.3069,Bayern Munich,0.6931
+2022-23,Round of 16,Club Brugge KV (BEL),Benfica,0.2534,Benfica,0.7466
+2022-23,Round of 16,Dortmund,Chelsea,0.4111,Chelsea,0.5889
+2022-23,Round of 16,Liverpool,Real Madrid,0.5163,Real Madrid,0.4837
+2022-23,Round of 16,Ein Frankfurt,Napoli,0.2360,Napoli,0.7640
+2022-23,Round of 16,RB Leipzig,Man City,0.2074,Man City,0.7926
+2022-23,Round of 16,Inter,FC Porto (POR),0.6434,Inter,0.6434
+2022-23,Quarterfinals,Benfica,Inter,0.4776,Inter,0.5224
+2022-23,Quarterfinals,Man City,Bayern Munich,0.6283,Man City,0.6283
+2022-23,Quarterfinals,Real Madrid,Chelsea,0.5905,Real Madrid,0.5905
+2022-23,Quarterfinals,Milan,Napoli,0.3178,Milan,0.3178
+2022-23,Semifinals,Real Madrid,Man City,0.2673,Man City,0.7327
+2022-23,Semifinals,Milan,Inter,0.4146,Inter,0.5854
+2022-23,Final,Man City,Inter,0.6972,Man City,0.6972
 2023-24,Round of 16,FC København (DEN),Man City,0.0726,Man City,0.9274
 2023-24,Round of 16,RB Leipzig,Real Madrid,0.2602,Real Madrid,0.7398
 2023-24,Round of 16,Paris SG,Sociedad,0.6481,Paris SG,0.6481

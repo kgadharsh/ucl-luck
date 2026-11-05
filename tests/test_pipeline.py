@@ -237,7 +237,7 @@ def _cl_match(date, home, away, home_goals, away_goals, season, round_="Round of
 
 def test_tie_scores_always_put_team_a_first_whoever_was_at_home():
     # The second leg is played at team_b's ground, so its score is stored the other way round.
-    from export_site import tie_scores
+    from knockouts import tie_scores
     matches = pd.DataFrame([
         # away goals: 2-1 then 0-1 at B's ground leaves them level on goals, and B scored the away goal
         _cl_match("2019-02-13", "A", "B", 2, 1, "2018-19"),
@@ -254,3 +254,41 @@ def test_tie_scores_always_put_team_a_first_whoever_was_at_home():
     assert scores[("2018-19", "Round of 16", "A", "B")] == {"legs": [[2, 1], [0, 1]], "away": True}
     assert scores[("2022-23", "Round of 16", "C", "D")] == {"legs": [[1, 0], [0, 1]], "aet": True, "pens": [4, 3]}
     assert scores[("2022-23", "Final", "E", "F")] == {"legs": [[0, 1]], "aet": True}
+
+
+# ---------- dates ----------
+
+@pytest.mark.parametrize("season, month, year", [
+    ("2012-13", 9, 2012), ("2012-13", 3, 2013), ("2012-13", 5, 2013),
+    ("2019-20", 9, 2019), ("2019-20", 2, 2020),
+    ("2019-20", 8, 2020),  # the season was suspended in March 2020 and finished in August
+    ("2020-21", 10, 2020), ("2020-21", 5, 2021),
+])
+def test_matches_are_dated_in_the_right_year(season, month, year):
+    from parse_europe import season_year
+    assert season_year(season, month) == year
+
+
+@needs_raw_data
+def test_no_european_match_is_dated_before_its_season_could_start():
+    # Qualifying rounds aren't in the files, so nothing can be played before September of the first year.
+    # This is how an August 2020 match dated 2019 (the COVID finish) showed up: it was caught only by
+    # comparing every match against another source.
+    from parse_europe import load_europe
+    europe, _ = load_europe()
+    first_possible = pd.to_datetime(europe.season.str[:4] + "-09-01")
+    early = europe[pd.to_datetime(europe.date) < first_possible]
+    assert early.empty, early[["competition", "season", "date", "home", "away"]].head(12).to_string()
+
+
+@needs_raw_data
+def test_the_covid_finish_comes_after_the_first_legs_in_the_same_ties():
+    from knockouts import ties_table
+    from matches import load_matches
+    matches = load_matches()
+    finish = matches[(matches.competition == "CL") & (matches.season == "2019-20") & (matches.date >= "2020-08-01")]
+    assert len(finish) == 11 and finish.date.min() == pd.Timestamp("2020-08-07") and finish.date.max() == pd.Timestamp("2020-08-23")
+    # Real Madrid v Man City: the first leg was at the Bernabeu in February, the second at the Etihad in August.
+    (legs,) = [legs for season, rnd, legs in ties_table(matches)
+               if season == "2019-20" and rnd == "Round of 16" and set(legs.home) == {"Real Madrid", "Man City"}]
+    assert list(legs.home) == ["Real Madrid", "Man City"] and list(legs.date.dt.strftime("%Y-%m-%d")) == ["2020-02-26", "2020-08-07"]

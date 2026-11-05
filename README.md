@@ -21,6 +21,8 @@ Things I left out on purpose: StatsBomb event data (a goals model doesn't need i
 
 A few things I knew going in. There are only about 15 knockout ties a season, so I pooled every season and tested calibration on league matches too, where there's far more data. I expected to lose to the bookmakers, and I did, so the interesting part is how close I got. And the two data sources spell team names differently ("Man City" vs "Manchester City FC (ENG)"), so there's a name mapping in `data/team_names.csv`.
 
+Once the study was done I checked every Champions League match against Transfermarkt's match list as a one-off. They agree on date and score everywhere except the 20 extra-time games, where Transfermarkt records the score after extra time and mine is the 90-minute score. That caught one real bug: eleven matches from the COVID-delayed finish in August 2020 were dated August 2019, so a few 2019-20 ties had stale or leaked information in their chances. It's fixed (`season_year` in `src/parse_europe.py`) and covered by tests, and every number below comes from after the fix. The effect was small (no tie result changed, and Real Madrid's record is the same), but the median champion's run went from 10% to 11% and Bayern's 2019-20 run from 11% to 18%.
+
 ## Data
 
 | Source | What | Licence |
@@ -60,7 +62,7 @@ What's on it:
 - How often the favourite went through in each round.
 - **Which season was the wildest?** For each season, how many underdogs went through against how many the model expected. Hover a season to see who they were; click it to open its ties in the explorer.
 - An explorer for all 226 ties, with a season-by-season strip and filters. Every tie shows how it actually ended: both legs, extra time, penalties, or the away-goals rule where it was used. Type two clubs to get their full history against each other, with how often the model expected each to go through; the page suggests the pairings that have met most often.
-- The Real Madrid section.
+- The Real Madrid section, with two checks on whether its record is luck: where in a tie the extra wins came from, and whether the first seven seasons predict the last seven.
 - How honest the model is against the bookmakers, and the live ratings and prediction ledger.
 - An upsets watch: the upcoming league games where the model rates a result well above the bookmakers do, so you can see each weekend whether the model or the market was right.
 
@@ -116,11 +118,11 @@ Scores on the test seasons (16,561 league matches with closing odds; lower is be
 | Elo | 0.5879 | 0.9866 |
 | Bookmakers' closing odds | 0.5737 | 0.9659 |
 
-Elo gets about 81% of the way from knowing nothing to the bookmakers. They're still better, by 0.0142 Brier (95% interval 0.0123 to 0.0160, from resampling matches), and they win every single season. That's not surprising: closing odds know about team news, injuries and where the money's going.
+Elo gets about 81% of the way from knowing nothing to the bookmakers. They're still better, by 0.0142 Brier (95% interval 0.0123 to 0.0161, from resampling matches), and they win every single season. That's not surprising: closing odds know about team news, injuries and where the money's going.
 
 The gap was biggest in 2020-21 (0.0204), the season without fans. Home advantage shrank and the bookmakers picked up on it much faster than Elo, which only learns from results.
 
-Calibration is fine across the range ([chart](results/calibration_week1.png)). Elo is a little overconfident between 55% and 65%: home sides it gave about 65% won about 61% of the time. In European matches (2,062 in the test seasons, no odds available), Elo scores 0.5615 against 0.6353 for base rates.
+Calibration is fine across the range ([chart](results/calibration_week1.png)). Elo is a little overconfident between 55% and 65%: home sides it gave about 65% won about 61% of the time. In European matches (2,062 in the test seasons, no odds available), Elo scores 0.5614 against 0.6353 for base rates.
 
 Two caveats. Two of the tuned settings ended up at the edge of the grid I searched (home advantage 40, newcomer gap 50), though the difference between neighbouring settings was tiny (log loss 0.9792 vs 0.9793). And I used Pinnacle closing odds where they exist (2012-13 to 2025-26) and the market average otherwise.
 
@@ -139,9 +141,9 @@ Same 16,561 test matches:
 | Average of the two | 0.5861 | 0.9840 |
 | Bookmakers' closing odds | 0.5737 | 0.9659 |
 
-In the leagues it's basically a tie with Elo: the difference is −0.0008 Brier, with a 95% interval of −0.0020 to +0.0006, so it could go either way. Averaging the two is slightly better than either alone. Dixon–Coles is better calibrated though. It fixes Elo's overconfidence around 60% and tracks the bookmakers closely ([chart](results/calibration_week2.png)). The bookmakers still lead, by 0.0135 Brier (95% interval 0.0116 to 0.0151).
+In the leagues it's basically a tie with Elo: the difference is −0.0008 Brier, with a 95% interval of −0.0021 to +0.0006, so it could go either way. Averaging the two is slightly better than either alone. Dixon–Coles is better calibrated though. It fixes Elo's overconfidence around 60% and tracks the bookmakers closely ([chart](results/calibration_week2.png)). The bookmakers still lead, by 0.0135 Brier (95% interval 0.0117 to 0.0152).
 
-In European matches Dixon–Coles does beat Elo (0.5567 vs 0.5615 over 2,062 matches). Knockout matches are much harder: 0.6107 across 526 of them. Knockouts mostly pair strong teams, so results are closer to a coin flip, which was the first hint of what week 3 would find.
+In European matches Dixon–Coles does beat Elo (0.5567 vs 0.5614 over 2,062 matches). Knockout matches are much harder: 0.6106 across 526 of them. Knockouts mostly pair strong teams, so results are closer to a coin flip, which was the first hint of what week 3 would find.
 
 I went with Dixon–Coles for week 3 because it predicts scorelines, and you need scorelines to play out two legs, extra time and penalties.
 
@@ -151,9 +153,9 @@ I went with Dixon–Coles for week 3 because it predicts scorelines, and you nee
 
 For every Champions League knockout tie from 2012-13 to 2025-26 (226 ties), `src/knockouts.py` works out each team's chance of going through before the first leg, using a Dixon–Coles fit on earlier matches only. It handles both legs, away goals (until 2020-21), extra time and penalties (treated as a coin flip). It's an exact calculation rather than a simulation, which is the same as replaying each tie infinitely many times. As a sanity check, every winner the code finds turns up in the next round, and all 14 champions match the real ones.
 
-The answer: a knockout tie is roughly a 70/30 bet. On average the model gave the underdog a **32%** chance of going through. The favourite went through in 69.9% of ties, against 68.0% expected (give or take about 6 points), so the tie probabilities hold up. The Brier score on ties is 0.194, where a coin flip would get 0.25. Ties get closer as the tournament goes on: the favourite's expected chance drops from 70% in the round of 16 to 62% in the semis and 59% in the final.
+The answer: a knockout tie is roughly a 70/30 bet. On average the model gave the underdog a **32%** chance of going through. The favourite went through in 69.9% of ties, against 68.0% expected (give or take about 6 points), so the tie probabilities hold up. The Brier score on ties is 0.193, where a coin flip would get 0.25. Ties get closer as the tournament goes on: the favourite's expected chance drops from 70% in the round of 16 to 62% in the semis and 60% in the final.
 
-Even champions mostly got lucky ([chart](results/champions_path.png)). Multiply together a champion's chances in each tie it actually played and you get the odds of its whole run. That came out at **10% for the median champion**. The most expected runs were Man City in 2022-23 (26%) and Real Madrid in 2015-16 (25%). The least expected were Real Madrid in 2021-22 (2.9%) and Chelsea in 2020-21 (3.3%).
+Even champions mostly got lucky ([chart](results/champions_path.png)). Multiply together a champion's chances in each tie it actually played and you get the odds of its whole run. That came out at **11% for the median champion**. The most expected runs were Man City in 2022-23 (25%) and Real Madrid in 2015-16 (25%). The least expected were Real Madrid in 2021-22 (3.0%) and Chelsea in 2020-21 (3.2%).
 
 The biggest upsets, by the winner's pre-match chance:
 
@@ -164,10 +166,18 @@ The biggest upsets, by the winner's pre-match chance:
 
 ### Luck, or a blind spot? Real Madrid
 
-Overall the tie probabilities are honest, but one club breaks them. Real Madrid went through 36 of 44 ties when the model expected 24.3. If the model were right, that would happen about once in 11,500 tries, which is still far too rare even after allowing for the fact that I checked 15 clubs. Every other club with 8 or more ties is within the normal range.
+Overall the tie probabilities are honest, but one club breaks them. Real Madrid went through 36 of 44 ties when the model expected 24.3. If the model were right, that would happen about once in 10,200 tries, which is still far too rare even after allowing for the fact that I checked 15 clubs. Every other club with 8 or more ties is within the normal range (none is further than 1.4 standard deviations from what the model expected).
 
-The model isn't just underrating Real in general. In La Liga they took 2.24 points a match against 2.18 expected, which is spot on. In Champions League knockout matches they took 1.85 against 1.50 expected, a third of a point a match over 82 matches. Bayern, City, Barcelona and PSG show nothing like it.
+So is it luck or a blind spot? `src/real_madrid.py` runs every check below.
 
-So part of what looks like Real Madrid's luck isn't luck. Either they genuinely raise their level for these games, or something that matters in them (squad depth, experience, whatever you want to call it) doesn't show up in league results. A model built mostly on league results can't tell those two apart, and that's the obvious next thing to dig into.
+**It isn't the model underrating Real Madrid everywhere.** In La Liga they took 2.24 points a match against 2.17 expected, which is inside the margin of error. In Champions League group matches the gap was +0.16 a match (88 matches), and in knockout matches +0.34 (1.85 against 1.51, over 82 matches). Every other club taken together is spot on in both: the gap is -0.00 over 2,792 group matches and -0.01 over 782 knockout matches. Real's three numbers climb with the stakes, but their error bars overlap, so I wouldn't read much into that.
 
-`.venv/bin/python src/knockouts.py` reproduces this (a few seconds).
+**It isn't just Spain.** Barcelona won 17 of 28 ties against 17.5 expected, and Atlético Madrid 15 of 26 against 13.1.
+
+**Where in a tie it happens.** Of Real's 44 ties, 37 were settled in normal time: they won 29 when the model expected 21.7, and lost 8 when it expected 17.1. Seven went to extra time or penalties, which the model treats as close to coin flips, and Real won all seven (2.7 expected, about 1 in 170). That run is the likeliest piece of pure luck. I picked these cuts after seeing the data, so read the odds as descriptions rather than tests.
+
+**Did it last?** This is the check that separates a lucky run from something real, because luck washes out and a real effect carries on. Split the 14 seasons into two halves of seven. In the first Real won 20 of 23 ties against 14.2 expected, and in the second 16 of 21 against 10.2: about the same both times, and ahead of the model in 11 of 14 seasons. The second half is the fair test. I'd already have noticed Real from the first half, and picking one club out of 15 after the fact is easy to fool yourself with, but then they did it again over seven more seasons, which for a club chosen in advance would happen about once in 140 tries. A boost fitted on the first seven seasons alone (it multiplies Real's odds of going through by about 4.8) cuts the forecast error on the next 21 ties from 0.642 to 0.476 (log loss per tie). Other clubs don't do that. For the 11 other clubs with at least four ties in each half, a good first half says nothing about the second (the correlation is -0.43), which is how luck should behave.
+
+**What I think.** Mostly a real blind spot, with some luck on top. The model only sees league results and Champions League scores, so it can't tell Real Madrid raising their level in Europe from rotating in La Liga, or from having a best eleven that's stronger than their league record shows. There are no line-ups, injuries or bookmaker odds for these matches that could settle it. If I can find some, that's the next step.
+
+`.venv/bin/python src/knockouts.py` reproduces the first part (a few seconds), and `.venv/bin/python src/real_madrid.py` the rest (about 25 seconds).

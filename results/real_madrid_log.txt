@@ -1,0 +1,27 @@
+Real Madrid: won 36 of 44 ties, expected 24.3 (about 1 in 10,182 by luck alone)
+
+1. Where (points a match, 90 minutes, model expectation made before each match)
+   La Liga                         529 matches  2.24 v 2.17 expected  gap +0.07 (95%: +/-0.09)   goals 2.32 v 2.33, conceded 0.94 v 0.93
+   Champions League groups          88 matches  2.22 v 2.05 expected  gap +0.16 (95%: +/-0.24)   goals 2.57 v 2.35, conceded 1.11 v 1.07
+   Champions League knockouts       82 matches  1.85 v 1.51 expected  gap +0.34 (95%: +/-0.29)   goals 1.82 v 1.66, conceded 1.21 v 1.42
+
+2. When in a tie (the model treats extra time and penalties as close to a coin flip)
+   won in normal time      29 v 21.7 expected  (1 in 76)
+   lost in normal time      8 v 17.1 expected  (1 in 544)
+   went to extra time       7 v 5.3 expected
+   won after extra time     7 v 2.7 expected  (1 in 166)
+
+3. Did it last?
+   2012-13 to 2018-19: won 20 of 23, expected 14.2, z = 2.68 (1 in 200)
+   2019-20 to 2025-26: won 16 of 21, expected 10.2, z = 2.63 (1 in 136)
+   above the model in 11 of 14 seasons
+   a boost fitted on the first seven seasons (odds x4.8) cuts the forecast error on the next 21 ties from 0.642 to 0.476 (log loss per tie)
+   fitted on all seasons: odds x4.1, 95% range x2.0 to x9.7
+   every other club, Champions League groups: 2792 matches, gap -0.00
+   every other club, Champions League knockouts: 782 matches, gap -0.01
+   control: the other 11 clubs with 4+ ties in both halves: first-half and second-half z-scores correlate -0.43
+   control: no other club with 8+ ties is further than z = 1.4 from the model (14 clubs)
+
+4. Just Spain?
+   Barcelona: won 17 of 28, expected 17.5 (z = -0.20)
+   Ath Madrid: won 15 of 26, expected 13.1 (z = +0.80)

@@ -125,7 +125,7 @@ function addTie(dist, p) {
 
 // "1 in N": how rarely a club would win at least as many ties as it did if the model's tie
 // chances were right. Exact (the tail of a Poisson-binomial distribution), not a normal
-// approximation, which says 1 in 13,000 for Real Madrid instead of 1 in 11,500.
+// approximation, which says 1 in 11,600 for Real Madrid instead of 1 in 10,200.
 function oddsOfDoingAsWell(ties, club) {
   const mine = ties.filter((t) => t.team_a === club || t.team_b === club);
   let dist = [1]; // dist[k]: chance of exactly k ties won so far
@@ -615,6 +615,106 @@ function drawClubs(data) {
     const hit = svg("rect", { x: 0, y: cy - rowH / 2, width, height: rowH, class: "hit" }, root);
     hover(hit, `<b>${clean(club.club)}</b><br>Won ${club.won} of ${club.ties} ties<br>Model expected ${club.expected.toFixed(1)}`);
   });
+}
+
+// ---------- Real Madrid: where the extra wins came from, and did it last? ----------
+// The numbers come from src/real_madrid.py (data.real_madrid). If that analysis is missing or out
+// of date the whole block stays hidden and the page keeps its shorter explanation.
+const oneIn = (p) => `1 in ${Number((1 / p).toPrecision(2)).toLocaleString("en-GB")}`;
+const signed = (v, digits = 1) => {
+  const size = Math.abs(v).toFixed(digits);
+  return Number(size) === 0 ? size : `${v < 0 ? "−" : "+"}${size}`; // zero has no sign
+};
+
+function drawRmSplit(data) {
+  const rm = data.real_madrid;
+  if (!rm) return;
+  const n = rm.normal_time;
+  const rows = [
+    ["Won, normal time", n.won_normal, `Won ${n.won_normal.actual} ties in normal time; the model expected ${n.won_normal.expected.toFixed(1)} (${oneIn(n.won_normal.p_at_least)} by luck)`],
+    ["Lost, normal time", n.lost_normal, `Lost ${n.lost_normal.actual} ties in normal time; the model expected ${n.lost_normal.expected.toFixed(1)} (${oneIn(n.lost_normal.p_at_most)} by luck)`],
+    ["Went to extra time", n.extra_time, `${n.extra_time.actual} ties went to extra time; the model expected ${n.extra_time.expected.toFixed(1)}`],
+    ["Won in extra time", n.won_extra, `Won ${n.won_extra.actual} of those ${n.extra_time.actual}; the model expected ${n.won_extra.expected.toFixed(1)} (${oneIn(n.won_extra.p_at_least)} by luck)`],
+  ];
+  const box = document.getElementById("rm-split");
+  const rowH = 38;
+  const { root, width, height } = canvas(box, rows.length * rowH + 40);
+  const m = { l: 150, r: 14, t: 8, b: 30 }; // room for the longest label, "Went to extra time"
+  const max = Math.ceil(Math.max(...rows.map(([, r]) => Math.max(r.actual, r.expected))) / 5) * 5;
+  const x = (v) => m.l + (v / max) * (width - m.l - m.r);
+  for (let v = 0; v <= max; v += 5) {
+    svg("line", { x1: x(v), x2: x(v), y1: m.t, y2: height - m.b, stroke: css("--grid") }, root);
+    svg("text", { x: x(v), y: height - 10, "text-anchor": "middle" }, root).textContent = v;
+  }
+  svg("text", { x: m.l - 10, y: height - 10, "text-anchor": "end" }, root).textContent = "Ties";
+  legend("rm-split-legend", [["What happened", css("--s2")], ["Model expected", css("--muted")]]);
+  rows.forEach(([label, r, tip], i) => {
+    const cy = m.t + rowH * (i + 0.5);
+    svg("text", { x: m.l - 10, y: cy + 4, "text-anchor": "end", class: "label-strong" }, root).textContent = label;
+    svg("line", { x1: x(r.expected), x2: x(r.actual), y1: cy, y2: cy, stroke: css("--s2"), "stroke-width": 2 }, root);
+    svg("circle", { cx: x(r.expected), cy, r: 5, fill: css("--surface"), stroke: css("--muted"), "stroke-width": 2 }, root);
+    svg("circle", { cx: x(r.actual), cy, r: 5, fill: css("--s2"), stroke: css("--surface"), "stroke-width": 2 }, root);
+    hover(svg("rect", { x: 0, y: cy - rowH / 2, width, height: rowH, class: "hit" }, root), tip);
+  });
+}
+
+// One dot per club: how far it was from the model's expectation in the first seven seasons (across)
+// and the last seven (up). Distances are in units of normal luck: 0 is exactly as expected and
+// beyond 2 is more than luck usually allows.
+function drawRmLast(data) {
+  const rm = data.real_madrid;
+  if (!rm) return;
+  const box = document.getElementById("rm-last");
+  const side = Math.max(box.clientWidth, 280);
+  const { root, width, height } = canvas(box, Math.round(Math.min(380, Math.max(270, side * 0.85))));
+  const m = { l: 34, r: 12, t: 10, b: 40 };
+  const lim = 3.2;
+  const x = (v) => m.l + ((v + lim) / (2 * lim)) * (width - m.l - m.r);
+  const y = (v) => m.t + (1 - (v + lim) / (2 * lim)) * (height - m.t - m.b);
+  [-2, 0, 2].forEach((v) => {
+    const mid = v === 0;
+    svg("line", { x1: x(v), x2: x(v), y1: m.t, y2: height - m.b, stroke: mid ? css("--axis") : css("--grid") }, root);
+    svg("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v), stroke: mid ? css("--axis") : css("--grid") }, root);
+    svg("text", { x: x(v), y: height - m.b + 15, "text-anchor": "middle" }, root).textContent = signed(v, 0);
+    svg("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = signed(v, 0);
+  });
+  svg("text", { x: (m.l + width - m.r) / 2, y: height - 6, "text-anchor": "middle" }, root).textContent = "First seven seasons →";
+  svg("text", { x: 11, y: (m.t + height - m.b) / 2, "text-anchor": "middle", transform: `rotate(-90 11 ${(m.t + height - m.b) / 2})` }, root).textContent = "Last seven seasons →";
+  const ordered = [...rm.clubs].sort((a, b) => (a.club === rm.club) - (b.club === rm.club)); // Real Madrid drawn last, on top
+  ordered.forEach((c) => {
+    const real = c.club === rm.club;
+    svg("circle", { cx: x(c.first), cy: y(c.second), r: real ? 7 : 4.5, fill: real ? css("--s2") : css("--s1"),
+      "fill-opacity": real ? 1 : 0.55, stroke: css("--surface"), "stroke-width": 1.5 }, root);
+    if (real) svg("text", { x: x(c.first) - 11, y: y(c.second) + 4, "text-anchor": "end", class: "label-strong" }, root).textContent = clean(c.club);
+    hover(svg("circle", { cx: x(c.first), cy: y(c.second), r: 11, class: "hit" }, root),
+      `<b>${clean(c.club)}</b><br>First seven seasons (${c.ties_first} ties): ${signed(c.first)}<br>Last seven (${c.ties_second} ties): ${signed(c.second)}<br><span style="opacity:.6">0 is exactly what the model expected</span>`);
+  });
+}
+
+function fillRealMadrid(data) {
+  const rm = data.real_madrid;
+  document.getElementById("rm").hidden = !rm;
+  if (!rm) return;
+  document.getElementById("rm-lead").textContent = "So is it luck, or something the model can't see? Two checks follow, then what I make of them.";
+  const others = rm.clubs.filter((c) => c.club !== rm.club);
+  const mean = (list) => list.reduce((a, b) => a + b, 0) / list.length;
+  const [mx, my] = [mean(others.map((c) => c.first)), mean(others.map((c) => c.second))];
+  const corr = others.reduce((s, c) => s + (c.first - mx) * (c.second - my), 0)
+    / Math.sqrt(others.reduce((s, c) => s + (c.first - mx) ** 2, 0) * others.reduce((s, c) => s + (c.second - my) ** 2, 0));
+  document.getElementById("rm-last-note").textContent =
+    `Distances are in luck-units: 0 is exactly what the model expected, and beyond 2 is more than luck usually allows. The other ${others.length} clubs scatter around the middle, and a good first half told you nothing about the second (the two correlate at ${signed(corr, 2)}). Real Madrid are top right: ahead of the model in both halves.`;
+
+  const [h1, h2] = rm.halves, f = rm.forecast, n = rm.normal_time;
+  const stage = Object.fromEntries(rm.stages.map((s) => [s.label, s]));
+  const liga = stage["La Liga"], groups = stage["Champions League groups"], knockouts = stage["Champions League knockouts"];
+  const [barca, atleti] = [rm.spanish["Barcelona"], rm.spanish["Ath Madrid"]];
+  const separate = knockouts.gap - knockouts.error > liga.gap + liga.error;
+  document.getElementById("rm-verdict").innerHTML = `
+    <p><b>The short answer: mostly not luck, though a bit of it is.</b> The model only sees league results and Champions League scores, and it keeps underrating Real Madrid in Europe.</p>
+    <p><b>It doesn't look like a lucky streak.</b> Split the ${rm.seasons} seasons in half and Real Madrid beat the model by about the same amount in both: ${h1.won} of ${h1.ties} ties won when ${h1.expected.toFixed(1)} were expected, then ${h2.won} of ${h2.ties} when ${h2.expected.toFixed(1)} were. They were ahead of it in ${rm.seasons_above} of ${rm.seasons} seasons. A boost worked out from the first seven seasons alone would have forecast the next seven clearly better (error per tie ${f.without.toFixed(2)} down to ${f.with.toFixed(2)}). Ordinary clubs don't show that: no other club is further than ${rm.others.largest_z.toFixed(1)} luck-units from the model.</p>
+    <p><b>It isn't a Spanish thing.</b> Barcelona won ${barca.won} of ${barca.ties} ties when ${barca.expected.toFixed(1)} were expected, and Atlético Madrid ${atleti.won} of ${atleti.ties} when ${atleti.expected.toFixed(1)} were. Real Madrid's own La Liga results are close to the model's too: ${liga.points.toFixed(2)} points a match against ${liga.expected.toFixed(2)} expected.</p>
+    <p><b>Part of it is probably luck.</b> ${n.extra_time.actual} of Real's ties went to extra time or penalties, which are close to coin flips, and they won all ${n.won_extra.actual} (about ${n.won_extra.expected.toFixed(1)} expected). That run is the likeliest piece of pure luck. But they also lost only ${n.lost_normal.actual} ties in normal time when the model expected ${n.lost_normal.expected.toFixed(0)}, and that part isn't a coin flip.</p>
+    <p><b>What I can't tell you is why.</b> There are no line-ups, injuries or bookmaker odds for these matches, so the model can't separate "Real Madrid lift their level in Europe" from "they rotate in La Liga" or "their best eleven is stronger than their league record shows". The gap does grow with the stakes, from ${signed(liga.gap, 2)} points a match in La Liga to ${signed(groups.gap, 2)} in the Champions League groups and ${signed(knockouts.gap, 2)} in the knockouts. ${separate ? "That climb is bigger than luck would explain." : "But those three each have wide error bars that overlap, so I wouldn't lean on that."}</p>`;
 }
 
 // ---------- calibration ----------
@@ -1396,13 +1496,14 @@ function start(data) {
   setupTies(data);
   fillLive(data);
   setupGlossary();
+  fillRealMadrid(data);
   const redrawSkill = setupSkill(data);
   const redrawButterfly = setupButterfly(data);
   const redrawHeat = setupComeback(data);
   setupWire(data);
   const redrawMachine = setupMachine(data);
   const redrawTicker = setupTicker(data);
-  drawAll = () => { redrawMachine(); redrawTicker(); drawRuns(data); redrawSkill(); drawRounds(data); drawWild(data); drawClubs(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
+  drawAll = () => { redrawMachine(); redrawTicker(); drawRuns(data); redrawSkill(); drawRounds(data); drawWild(data); drawClubs(data); drawRmSplit(data); drawRmLast(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
   drawAll();
   const luck = document.querySelector("h1 em");
   document.fonts.ready.then(() => setTimeout(() => scramble(luck), 500));

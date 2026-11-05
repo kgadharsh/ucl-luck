@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-  <link rel="stylesheet" href="style.css?v=28">
+  <link rel="stylesheet" href="style.css?v=29">
   <script>
     // Before anything paints or draws: mark that JS is on, and apply a saved light/dark choice,
     // so charts are never drawn in the system theme's colours and the page doesn't flash.
@@ -246,7 +246,25 @@
       <div class="chart" id="clubs-chart" role="img" aria-label="Expected and actual ties won per club"></div>
       <div class="note">
         <p><b>Real Madrid went through <span data-fill="real-won"></span> ties when the model expected <span data-fill="real-expected"></span>.</b> If the model were right, that would happen about once in <span data-fill="real-odds"></span> tries. The model rates Real accurately in La Liga, but in Champions League knockout matches they take about a third of a point a match more than expected.</p>
-        <p>So part of Real Madrid's "luck" isn't luck. Either they lift their level for these matches, or something that matters here isn't visible in league results.</p>
+        <p id="rm-lead">So part of Real Madrid's "luck" isn't luck. Either they lift their level for these matches, or something that matters here isn't visible in league results.</p>
+      </div>
+      <div class="rm" id="rm" hidden>
+        <h3>Is it just a lucky streak? Two checks</h3>
+        <div class="split">
+          <div>
+            <h4>Where the extra wins came from</h4>
+            <p class="small">Each tie Real Madrid played, sorted by how it ended. Hollow dot: how many the model expected. Solid dot: what happened.</p>
+            <div class="legend" id="rm-split-legend"></div>
+            <div class="chart" id="rm-split" role="img" aria-label="Real Madrid's ties by how they ended, against how many the model expected"></div>
+          </div>
+          <div>
+            <h4>Did it last?</h4>
+            <p class="small">Every club with at least four ties in each half of the 14 seasons. Right means it beat the model in the first seven seasons, up means it did in the last seven.</p>
+            <div class="chart" id="rm-last" role="img" aria-label="For each club, how far above or below the model it was in the first seven seasons and the last seven"></div>
+            <p class="small" id="rm-last-note"></p>
+          </div>
+        </div>
+        <div class="note" id="rm-verdict"></div>
       </div>
     </section>
 
@@ -318,6 +336,6 @@
   <a class="to-top" id="to-top" href="#top" hidden>↑ Top</a>
   <div class="tip" id="tip" aria-hidden="true"></div>
   <script src="motion.js?v=11"></script>
-  <script src="app.js?v=33"></script>
+  <script src="app.js?v=34"></script>
 </body>
 </html>

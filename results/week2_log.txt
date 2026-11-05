@@ -8,10 +8,10 @@ Test seasons 2017-18 onwards, league matches with closing odds:
                    Dixon–Coles    16561 0.5872    0.9858
 Average of Elo and Dixon–Coles    16561 0.5861    0.9840
           Bookmakers (closing)    16561 0.5737    0.9659
-Dixon–Coles minus bookmakers, Brier: +0.0135 (95% interval +0.0116 to +0.0151; positive means Dixon–Coles is worse)
-Dixon–Coles minus Elo, Brier: -0.0008 (95% interval -0.0020 to +0.0006; positive means Dixon–Coles is worse)
+Dixon–Coles minus bookmakers, Brier: +0.0135 (95% interval +0.0117 to +0.0152; positive means Dixon–Coles is worse)
+Dixon–Coles minus Elo, Brier: -0.0008 (95% interval -0.0021 to +0.0006; positive means Dixon–Coles is worse)
 
-European matches in test seasons (2062): Dixon–Coles Brier 0.5567, Elo 0.5615
-European knockout matches only (526): Dixon–Coles Brier 0.6107, Elo 0.6132
+European matches in test seasons (2062): Dixon–Coles Brier 0.5567, Elo 0.5614
+European knockout matches only (526): Dixon–Coles Brier 0.6106, Elo 0.6121
 
 Saved calibration_week2.png, week2_scores.csv and dixon_coles_settings.csv in /Users/kgadharsh/ucl-luck/results

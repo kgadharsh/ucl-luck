@@ -37,29 +37,40 @@ def extra_time_split(lam, nu):
     return np.tril(grid, -1).sum(), np.triu(grid, 1).sum(), grid
 
 
+def single_match_outcomes(lam, nu, rho):
+    """A one-off match, in pieces: the chance the first-named team wins in normal time, the other
+    team wins in normal time, it is level after 90 minutes, and (if level) that the first-named
+    team goes through after extra time and penalties."""
+    grid = score_matrix(np.array([lam]), np.array([nu]), rho)[0]
+    win, lose, draw = np.tril(grid, -1).sum(), np.triu(grid, 1).sum(), np.trace(grid)
+    et_win, et_loss, _ = extra_time_split(lam, nu)
+    return win, lose, draw, et_win + 0.5 * (1 - et_win - et_loss)
+
+
 def single_match(lam, nu, rho):
     """Chance the first-named team goes through a one-off match (extra time, then penalties)."""
-    grid = score_matrix(np.array([lam]), np.array([nu]), rho)[0]
-    win, draw = np.tril(grid, -1).sum(), np.trace(grid)
-    et_win, et_loss, _ = extra_time_split(lam, nu)
-    return win + draw * (et_win + 0.5 * (1 - et_win - et_loss))
+    win, _, draw, from_level = single_match_outcomes(lam, nu, rho)
+    return win + draw * from_level
 
 
-def two_legs(lam1, nu1, lam2, nu2, rho, away_goals_rule):
-    """Chance team A goes through. Leg 1: A at home (lam1 = A's goals, nu1 = B's).
-    Leg 2: B at home (lam2 = B's goals, nu2 = A's)."""
+def two_leg_outcomes(lam1, nu1, lam2, nu2, rho, away_goals_rule):
+    """Two legs, in pieces: the chance team A is through without needing extra time, the chance
+    team B is, the chance it is still level (so extra time is played), and, if level, the chance
+    A goes through. Leg 1: A at home (lam1 = A's goals, nu1 = B's). Leg 2: B at home (lam2 = B's
+    goals, nu2 = A's)."""
     g1 = score_matrix(np.array([lam1]), np.array([nu1]), rho)[0]  # [A goals, B goals]
     g2 = score_matrix(np.array([lam2]), np.array([nu2]), rho)[0]  # [B goals, A goals]
     i, j, k, l = np.meshgrid(*[np.arange(MAX_GOALS + 1)] * 4, indexing="ij")
     p = g1[:, :, None, None] * g2[None, None, :, :]
     agg_a, agg_b = i + l, j + k
     a_wins = agg_a > agg_b
+    b_wins = agg_b > agg_a
     level = agg_a == agg_b
     if away_goals_rule:
         a_wins = a_wins | (level & (l > j))
+        b_wins = b_wins | (level & (l < j))
         level = level & (l == j)
-    p_a = p[a_wins].sum()
-    p_level = p[level].sum()
+    p_a, p_b, p_level = p[a_wins].sum(), p[b_wins].sum(), p[level].sum()
 
     # Extra time in leg 2: B at home. With the away-goals rule, a level extra time
     # with goals (1-1, 2-2...) goes to A, who scored them away.
@@ -69,6 +80,12 @@ def two_legs(lam1, nu1, lam2, nu2, rho, away_goals_rule):
         a_after_et = et_a + et_level_scoring + 0.5 * et_grid[0, 0]
     else:
         a_after_et = et_a + 0.5 * np.trace(et_grid)
+    return p_a, p_b, p_level, a_after_et
+
+
+def two_legs(lam1, nu1, lam2, nu2, rho, away_goals_rule):
+    """Chance team A goes through (see two_leg_outcomes for the legs)."""
+    p_a, _, p_level, a_after_et = two_leg_outcomes(lam1, nu1, lam2, nu2, rho, away_goals_rule)
     return p_a + p_level * a_after_et
 
 
@@ -108,6 +125,34 @@ def actual_winner(legs, away_goals_rule):
         if away_a != away_b:
             return team_a if away_a > away_b else team_b
     return last.home if last.home_pens > last.away_pens else last.away
+
+
+def tie_scores(matches):
+    """What happened in every knockout tie, keyed like knockout_ties.csv by (season, round,
+    team_a, team_b). `legs` has the score of each match with team_a's goals first, counting extra
+    time. `aet`: the last match went to extra time. `pens`: the shoot-out, team_a first. `away`:
+    the two legs finished level on goals and the away-goals rule decided it."""
+    scores = {}
+    for season, rnd, legs in ties_table(matches):
+        first, last = legs.iloc[0], legs.iloc[-1]
+        team_a = first.home
+
+        def goals(row):
+            home, away = goals_after(row, "home"), goals_after(row, "away")
+            return [home, away] if row.home == team_a else [away, home]
+
+        record = {"legs": [goals(row) for _, row in legs.iterrows()]}
+        if last.extra_time:
+            record["aet"] = True
+        if pd.notna(last.home_pens):
+            pens = [int(last.home_pens), int(last.away_pens)]
+            record["pens"] = pens if last.home == team_a else pens[::-1]
+        elif len(legs) == 2 and season <= LAST_AWAY_GOALS_SEASON:
+            (a1, b1), (a2, b2) = record["legs"]
+            if a1 + a2 == b1 + b2:  # level on goals: the team that scored more away goals went through
+                record["away"] = True
+        scores[(season, rnd, team_a, first.away)] = record
+    return scores
 
 
 def main():
@@ -187,7 +232,7 @@ def main():
         index=False, float_format=lambda v: f"{v:.1%}"))
 
     ties.to_csv(RESULTS / "knockout_ties.csv", index=False, float_format="%.4f")
-    champions.to_csv(RESULTS / "champions_path.csv", index=False, float_format="%.4f")
+    champions.to_csv(RESULTS / "champions_path.csv", index=False, float_format="%.6f")  # more than 4: some runs sit on a rounding boundary
     champions_chart(champions, RESULTS / "champions_path.png")
     print(f"\nSaved knockout_ties.csv, champions_path.csv and champions_path.png in {RESULTS}")
 
