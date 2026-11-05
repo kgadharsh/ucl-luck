@@ -59,7 +59,7 @@ What's on it:
 - **A comeback meter.** Pick a first-leg score, where it was played, how strong your team is and which rules apply, and it gives you the exact chance of still going through (second leg, extra time, penalties, and away goals if you want them). Next to that is what actually happened in real ties that started the same way: 337 ties in all, from Champions League knockouts since 2011-12 and the Europa League seasons above. One thing it shows nicely: real teams that lost the first leg away usually went through more often than the "evenly matched" model says, because they were usually the seeded side and had the second leg at home.
 - How often the favourite went through in each round.
 - **Which season was the wildest?** For each season, how many underdogs went through against how many the model expected. Hover a season to see who they were; click it to open its ties in the explorer.
-- An explorer for all 226 ties, with a season-by-season strip and filters.
+- An explorer for all 226 ties, with a season-by-season strip and filters. Every tie shows how it actually ended: both legs, extra time, penalties, or the away-goals rule where it was used. Type two clubs to get their full history against each other, with how often the model expected each to go through; the page suggests the pairings that have met most often.
 - The Real Madrid section.
 - How honest the model is against the bookmakers, and the live ratings and prediction ledger.
 - An upsets watch: the upcoming league games where the model rates a result well above the bookmakers do, so you can see each weekend whether the model or the market was right.

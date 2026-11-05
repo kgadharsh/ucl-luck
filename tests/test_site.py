@@ -465,6 +465,129 @@ def test_a_tap_opens_a_glossary_term_on_touch_screens(open_page, browser_name):
     assert "on" in page.locator("#tip").get_attribute("class")  # tapping elsewhere-on-the-page closes tooltips, but not this
 
 
+# ---------- scores and head-to-head in the tie explorer ----------
+
+ROUND_ORDER = ["Playoffs", "Round of 16", "Quarterfinals", "Semifinals", "Final"]
+
+
+def score_line(t):
+    """How the tie list writes a result: team_a's goals first, as in the row's name order."""
+    legs = [f"{a}–{b}" for a, b in t["legs"]]
+    if t.get("aet"):
+        legs[-1] += " a.e.t."
+    parts = [f"Match {legs[0]}"] if len(legs) == 1 else [f"{'2nd' if i else '1st'} leg {leg}" for i, leg in enumerate(legs)]
+    if len(legs) == 2:
+        parts.append(f"{sum(a for a, _ in t['legs'])}–{sum(b for _, b in t['legs'])} on aggregate")
+    if "pens" in t:
+        parts.append(f"{t['pens'][0]}–{t['pens'][1]} on penalties")
+    elif t.get("away"):
+        parts.append("away goals")
+    return " · ".join(parts)
+
+
+def score_tip(t):
+    """The same result as a tooltip writes it: the winner's goals first."""
+    flip = t["winner"] != t["team_a"]
+    turn = lambda pair: pair[::-1] if flip else pair
+    legs = [f"{a}–{b}" for a, b in map(turn, t["legs"])]
+    if t.get("aet"):
+        legs[-1] += " a.e.t."
+    text = ", ".join(legs)
+    if len(legs) == 2:
+        text += f" ({sum(turn(l)[0] for l in t['legs'])}–{sum(turn(l)[1] for l in t['legs'])} on aggregate)"
+    if "pens" in t:
+        text += f", {turn(t['pens'])[0]}–{turn(t['pens'])[1]} on penalties"
+    elif t.get("away"):
+        text += ", away goals"
+    return text
+
+
+def test_every_tie_shows_how_it_ended(open_page, data):
+    page = open_page(reduced_motion="reduce")
+    seasons = sorted({t["season"] for t in data["ties"]})
+    for season in seasons:  # every season fits on one page of the list
+        page.select_option("#f-season", season)
+        shown = page.locator("#ties-list .tie-score").all_text_contents()
+        mine = sorted((t for t in data["ties"] if t["season"] == season), key=lambda t: -ROUND_ORDER.index(t["round"]))
+        assert shown == [score_line(t) for t in mine], season
+    assert any("on penalties" in score_line(t) for t in data["ties"]) and any("away goals" in score_line(t) for t in data["ties"])
+
+
+def test_head_to_head_summarises_exactly_the_ties_between_two_clubs(open_page, data):
+    page = open_page(reduced_motion="reduce")
+    page.fill("#f-club", "Real Madrid")
+    page.fill("#f-against", "Man City")  # the way fans say it, not the way the page writes it
+    meetings = [t for t in data["ties"] if {t["team_a"], t["team_b"]} == {"Real Madrid", "Man City"}]
+    real_won = sum(t["winner"] == "Real Madrid" for t in meetings)
+    city_won = len(meetings) - real_won
+    expected = sum(t["p_a"] if t["team_a"] == "Real Madrid" else 1 - t["p_a"] for t in meetings)
+    times = lambda k: "once" if k == 1 else "never" if k == 0 else f"{k} times"
+    assert page.text_content("#ties-count") == f"{len(meetings)} ties"
+    summary = page.text_content("#h2h")
+    assert f"Real Madrid v Manchester City: {len(meetings)} ties." in summary
+    assert f"Real Madrid went through {times(real_won)}, Manchester City {times(city_won)}." in summary
+    assert f"to go through {expected:.1f} times" in summary
+    bright = page.evaluate("[...document.querySelectorAll('.strip-bar')].filter((r) => r.style.opacity === '1').length")
+    assert bright == len(meetings)  # the season strip shows the same ties as the list
+
+
+def test_a_half_typed_name_gets_no_misleading_summary(open_page):
+    page = open_page(reduced_motion="reduce")
+    page.fill("#f-club", "real")
+    page.fill("#f-against", "madrid")  # could mean several clubs
+    assert page.locator("#h2h").is_hidden()
+    assert page.locator("#ties-list .tie").count() > 0
+    page.fill("#f-against", "")
+    assert page.locator("#h2h").is_hidden()
+
+
+def test_the_suggested_pairings_are_the_ones_that_met_most(open_page, data):
+    page = open_page(reduced_motion="reduce")
+    meetings = {}
+    for t in data["ties"]:
+        pair = frozenset((t["team_a"], t["team_b"]))
+        meetings[pair] = meetings.get(pair, 0) + 1
+    chips = page.locator("#h2h-try .chip")
+    assert chips.count() == 4
+    counts = [int(re.search(r"(\d+) ties$", chips.nth(i).text_content()).group(1)) for i in range(4)]
+    assert counts == sorted(meetings.values(), reverse=True)[:4]
+    for i in range(4):  # each chip leads to exactly the number of ties it promises
+        chips.nth(i).click()
+        assert page.text_content("#ties-count") == f"{counts[i]} ties"
+        assert page.input_value("#f-club") and page.input_value("#f-against")
+    page.evaluate("filterTies({ club: 'Barcelona' })")  # searching one club starts a new search
+    assert page.input_value("#f-against") == "" and page.locator("#h2h").is_hidden()
+
+
+def test_a_tooltip_on_the_season_strip_gives_the_score(open_page, data):
+    page = open_page(reduced_motion="reduce")
+    first = max((t for t in data["ties"] if t["season"] == "2012-13" and t["round"] == "Round of 16"),
+                key=lambda t: t["p_a"] if t["winner"] == t["team_a"] else 1 - t["p_a"])  # the strip's first bar
+    page.locator("#ticker-chart").scroll_into_view_if_needed()
+    page.wait_for_timeout(150)  # scrolling (correctly) hides tooltips
+    page.locator(".strip-bar").first.hover()
+    tip = page.locator("#tip")
+    assert "on" in tip.get_attribute("class")
+    assert score_tip(first) in tip.text_content()
+
+
+def test_a_ball_in_the_luck_machine_shows_its_tie_and_score(open_page, data, browser_name):
+    only_in(browser_name, "chromium")  # scanning the canvas for a ball is slow enough once
+    page = open_page(reduced_motion="reduce")  # the finished machine: every ball has landed
+    page.locator("#machine").scroll_into_view_if_needed()
+    page.wait_for_timeout(300)
+    box = page.locator("#machine").bounding_box()
+    tip = page.locator("#tip")
+    for row in range(1, 20):  # sweep the pile until the pointer is over a ball
+        for col in range(1, 40):
+            page.mouse.move(box["x"] + box["width"] * col / 40, box["y"] + box["height"] * (1 - row / 20))
+            if "on" in tip.get_attribute("class"):
+                assert re.search(r"\d–\d", tip.text_content()), tip.text_content()
+                assert " beat " in tip.text_content() and "chance beforehand" in tip.text_content()
+                return
+    pytest.fail("never found a ball to hover")
+
+
 # ---------- printing ----------
 
 def test_printout_shows_every_section_in_final_form(open_page, browser_name, data):

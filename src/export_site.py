@@ -15,7 +15,7 @@ from dixon_coles import outcome_probs, walk_forward_goals
 from elo import run_elo
 from evaluate_dc import ELO_SETTINGS
 from evaluate_elo import TUNE, WARM_UP, walk_forward_probs
-from knockouts import LAST_AWAY_GOALS_SEASON, ROUNDS, actual_winner
+from knockouts import LAST_AWAY_GOALS_SEASON, ROUNDS, actual_winner, goals_after, ties_table
 from matches import load_matches
 from outcomes import outcome_codes
 from preview import write_preview
@@ -113,6 +113,34 @@ def first_legs(matches):
     }
 
 
+def tie_scores(matches):
+    """What happened in every knockout tie, keyed like knockout_ties.csv by (season, round,
+    team_a, team_b). `legs` has the score of each match with team_a's goals first, counting extra
+    time. `aet`: the last match went to extra time. `pens`: the shoot-out, team_a first. `away`:
+    the two legs finished level on goals and the away-goals rule decided it."""
+    scores = {}
+    for season, rnd, legs in ties_table(matches):
+        first, last = legs.iloc[0], legs.iloc[-1]
+        team_a = first.home
+
+        def goals(row):
+            home, away = goals_after(row, "home"), goals_after(row, "away")
+            return [home, away] if row.home == team_a else [away, home]
+
+        record = {"legs": [goals(row) for _, row in legs.iterrows()]}
+        if last.extra_time:
+            record["aet"] = True
+        if pd.notna(last.home_pens):
+            pens = [int(last.home_pens), int(last.away_pens)]
+            record["pens"] = pens if last.home == team_a else pens[::-1]
+        elif len(legs) == 2 and season <= LAST_AWAY_GOALS_SEASON:
+            (a1, b1), (a2, b2) = record["legs"]
+            if a1 + a2 == b1 + b2:  # level on goals: the team that scored more away goals went through
+                record["away"] = True
+        scores[(season, rnd, team_a, first.away)] = record
+    return scores
+
+
 # What the dashboard shows for a prediction still waiting for kick-off.
 UPCOMING = ["competition", "date", "kickoff", "home", "away", "p_home", "p_draw", "p_away",
             "odds_home", "odds_draw", "odds_away"]
@@ -166,6 +194,11 @@ def main():
             "ties": [{"round": t["round"], "opponent": t.team_b if t.team_a == row.champion else t.team_a,
                       "probability": t.p_winner} for _, t in path.iterrows()]})
 
+    leg_scores = tie_scores(matches)
+    tie_rows = ties[["season", "round", "team_a", "team_b", "p_a", "winner"]].round(4).to_dict("records")
+    for row in tie_rows:  # a KeyError here means a tie has no recorded match: better loud than blank
+        row.update(leg_scores[(row["season"], row["round"], row["team_a"], row["team_b"])])
+
     favourite = np.maximum(ties.p_a, 1 - ties.p_a)
     clubs = clubs_table(ties)
     real = next(c for c in clubs if c["club"] == "Real Madrid")
@@ -181,7 +214,7 @@ def main():
             "real_won": real["won"], "real_ties": real["ties"], "real_expected": real["expected"],
         },
         "champions": champion_runs,
-        "ties": ties[["season", "round", "team_a", "team_b", "p_a", "winner"]].round(4).to_dict("records"),
+        "ties": tie_rows,
         "rounds": rounds_table(ties),
         "clubs": clubs,
         "scores": scores.round(4).to_dict("records"),

@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-  <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="style.css?v=28">
   <script>
     // Before anything paints or draws: mark that JS is on, and apply a saved light/dark choice,
     // so charts are never drawn in the system theme's colours and the page doesn't flash.
@@ -213,7 +213,7 @@
 
     <section id="ties" class="card">
       <h2>Every knockout tie</h2>
-      <p class="sub">Each bar splits the <span class="term" tabindex="0" data-term="pre-match">pre-match chances</span> between the two teams. ✓ marks the team that went through.</p>
+      <p class="sub">Each bar splits the <span class="term" tabindex="0" data-term="pre-match">pre-match chances</span> between the two teams. ✓ marks the team that went through. The scores under each bar are written in the same order as the team names. Put two clubs in the boxes below to see their whole history against each other.</p>
       <figure class="ticker">
         <figcaption><b>Season by season.</b> One bar per tie, grouped by round within each season, from the play-offs to the final. A bar's height is the winner's pre-match chance; the dotted line is 50%, so <span class="red">red bars, below it, are ties the underdog won</span>. Click a season, or choose one below, to zoom in.</figcaption>
         <div class="strip-nav" id="strip-nav" hidden>
@@ -227,9 +227,13 @@
       <div class="filters">
         <label>Season <select id="f-season"></select></label>
         <label>Round <select id="f-round"></select></label>
-        <label class="grow">Club <input id="f-club" type="search" placeholder="Search a club" autocomplete="off"></label>
+        <label class="grow">Club <input id="f-club" type="search" list="club-names" placeholder="Search a club" autocomplete="off"></label>
+        <label class="grow">Against <input id="f-against" type="search" list="club-names" placeholder="Optional: a second club" autocomplete="off"></label>
         <label class="check"><input id="f-upsets" type="checkbox"> Upsets only (under 35%)</label>
       </div>
+      <datalist id="club-names"></datalist>
+      <div class="h2h-try" id="h2h-try"></div>
+      <p class="h2h" id="h2h" aria-live="polite" hidden></p>
       <p class="count" id="ties-count"></p>
       <div class="ties" id="ties-list"></div>
       <button class="more" id="ties-more" type="button" hidden>Show more ties</button>
@@ -313,7 +317,7 @@
 
   <a class="to-top" id="to-top" href="#top" hidden>↑ Top</a>
   <div class="tip" id="tip" aria-hidden="true"></div>
-  <script src="motion.js?v=10"></script>
-  <script src="app.js?v=32"></script>
+  <script src="motion.js?v=11"></script>
+  <script src="app.js?v=33"></script>
 </body>
 </html>

@@ -62,6 +62,31 @@ def test_one_final_per_season(data):
     assert finals["ties"] == len(seasons) == len(data["champions"])
 
 
+def test_scores_reproduce_every_winner(data):
+    # The scores come from the match files and the winners from a separate calculation. If they
+    # ever disagree, one of them is wrong, whichever tie it is.
+    for t in data["ties"]:
+        a, b = (sum(leg[i] for leg in t["legs"]) for i in (0, 1))
+        if a != b:
+            winner = t["team_a"] if a > b else t["team_b"]
+        elif t.get("away"):  # team_b's away goals are its first-leg goals, team_a's are its second-leg goals
+            away_a, away_b = t["legs"][1][0], t["legs"][0][1]
+            assert away_a != away_b, t
+            winner = t["team_a"] if away_a > away_b else t["team_b"]
+        else:
+            assert t["pens"][0] != t["pens"][1], t
+            winner = t["team_a"] if t["pens"][0] > t["pens"][1] else t["team_b"]
+        assert winner == t["winner"], (t["season"], t["round"], t["team_a"], t["team_b"])
+
+
+def test_scores_have_the_right_shape(data):
+    for t in data["ties"]:
+        assert len(t["legs"]) in (1, 2) and all(len(leg) == 2 and min(leg) >= 0 for leg in t["legs"])
+        if t.get("away"):  # the away-goals rule ended after 2020-21, and only applies to two legs
+            assert t["season"] <= "2020-21" and len(t["legs"]) == 2 and "pens" not in t
+    assert sum("pens" in t for t in data["ties"]) > 0 and sum(bool(t.get("aet")) for t in data["ties"]) > 0
+
+
 def test_calibration_uses_the_same_matches_as_the_scores_table(data):
     # "Tested on N matches" comes from the scores table; the chart must be drawn on the same N.
     by_model = {s["name"]: sum(p["n"] for p in s["points"]) for s in data["calibration"]}

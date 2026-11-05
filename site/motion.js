@@ -1,7 +1,7 @@
 // Motion for the Knockout Luck page: the luck machine, the upsets wire, rolling numbers,
 // the scrambled headline, scroll reveals and the reading progress bar. Loaded before
 // app.js, which calls these once data.json has arrived and supplies css(), pct(),
-// clean(), showTip(), hideTip(), ROUND_SHORT and filterTies().
+// clean(), showTip(), hideTip(), ROUND_SHORT, scoreTip() and filterTies().
 
 const STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const ROUND_ORDER = { Playoffs: 0, "Round of 16": 1, Quarterfinals: 2, Semifinals: 3, Final: 4 };
@@ -360,7 +360,7 @@ function setupMachine(data) {
     return best;
   }
 
-  const tipFor = (t) => `<b>${t.season}, ${ROUND_SHORT[t.round]}</b><br>${clean(t.winner)} beat ${clean(loserOf(t))}<br>` +
+  const tipFor = (t) => `<b>${t.season}, ${ROUND_SHORT[t.round]}</b><br>${clean(t.winner)} beat ${clean(loserOf(t))}<br>${scoreTip(t)}<br>` +
     `${pct(t.p)} chance beforehand${t.p < 0.35 ? " · an upset" : t.upset ? " · the underdog" : ""}<br><span style="opacity:.6">Click to find it below</span>`;
 
   board.addEventListener("pointermove", (e) => {

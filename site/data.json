@@ -1,5 +1,5 @@
 {
- "built": "04 Nov 2026",
+ "built": "05 Nov 2026",
  "headline": {
   "ties": 226,
   "first_season": "2012-13",
@@ -409,7 +409,17 @@
    "team_a": "Celtic FC (SCO)",
    "team_b": "Juventus",
    "p_a": 0.2104,
-   "winner": "Juventus"
+   "winner": "Juventus",
+   "legs": [
+    [
+     0,
+     3
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2012-13",
@@ -417,7 +427,17 @@
    "team_a": "Valencia",
    "team_b": "Paris SG",
    "p_a": 0.3212,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2012-13",
@@ -425,7 +445,17 @@
    "team_a": "Shakhtar Donetsk",
    "team_b": "Dortmund",
    "p_a": 0.2039,
-   "winner": "Dortmund"
+   "winner": "Dortmund",
+   "legs": [
+    [
+     2,
+     2
+    ],
+    [
+     0,
+     3
+    ]
+   ]
   },
   {
    "season": "2012-13",
@@ -433,7 +463,17 @@
    "team_a": "Real Madrid",
    "team_b": "Man United",
    "p_a": 0.7242,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2012-13",
@@ -441,7 +481,18 @@
    "team_a": "Arsenal",
    "team_b": "Bayern Munich",
    "p_a": 0.166,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2012-13",
@@ -449,7 +500,17 @@
    "team_a": "FC Porto (POR)",
    "team_b": "Malaga",
    "p_a": 0.3821,
-   "winner": "Malaga"
+   "winner": "Malaga",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2012-13",
@@ -457,7 +518,17 @@
    "team_a": "Galatasaray",
    "team_b": "Schalke 04",
    "p_a": 0.4204,
-   "winner": "Galatasaray"
+   "winner": "Galatasaray",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     3,
+     2
+    ]
+   ]
   },
   {
    "season": "2012-13",
@@ -465,7 +536,17 @@
    "team_a": "Milan",
    "team_b": "Barcelona",
    "p_a": 0.1913,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     2,
+     0
+    ],
+    [
+     0,
+     4
+    ]
+   ]
   },
   {
    "season": "2012-13",
@@ -473,7 +554,18 @@
    "team_a": "Paris SG",
    "team_b": "Barcelona",
    "p_a": 0.2648,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     2,
+     2
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2012-13",
@@ -481,7 +573,17 @@
    "team_a": "Bayern Munich",
    "team_b": "Juventus",
    "p_a": 0.5351,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     0
+    ]
+   ]
   },
   {
    "season": "2012-13",
@@ -489,7 +591,17 @@
    "team_a": "Malaga",
    "team_b": "Dortmund",
    "p_a": 0.2853,
-   "winner": "Dortmund"
+   "winner": "Dortmund",
+   "legs": [
+    [
+     0,
+     0
+    ],
+    [
+     2,
+     3
+    ]
+   ]
   },
   {
    "season": "2012-13",
@@ -497,7 +609,17 @@
    "team_a": "Real Madrid",
    "team_b": "Galatasaray",
    "p_a": 0.8581,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     2,
+     3
+    ]
+   ]
   },
   {
    "season": "2012-13",
@@ -505,7 +627,17 @@
    "team_a": "Bayern Munich",
    "team_b": "Barcelona",
    "p_a": 0.6012,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     4,
+     0
+    ],
+    [
+     3,
+     0
+    ]
+   ]
   },
   {
    "season": "2012-13",
@@ -513,7 +645,17 @@
    "team_a": "Dortmund",
    "team_b": "Real Madrid",
    "p_a": 0.3581,
-   "winner": "Dortmund"
+   "winner": "Dortmund",
+   "legs": [
+    [
+     4,
+     1
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2012-13",
@@ -521,7 +663,13 @@
    "team_a": "Dortmund",
    "team_b": "Bayern Munich",
    "p_a": 0.2962,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     1,
+     2
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -529,7 +677,17 @@
    "team_a": "Man City",
    "team_b": "Barcelona",
    "p_a": 0.3861,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     2
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -537,7 +695,17 @@
    "team_a": "Leverkusen",
    "team_b": "Paris SG",
    "p_a": 0.2857,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     0,
+     4
+    ],
+    [
+     1,
+     2
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -545,7 +713,17 @@
    "team_a": "Milan",
    "team_b": "Ath Madrid",
    "p_a": 0.2974,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     4
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -553,7 +731,17 @@
    "team_a": "Arsenal",
    "team_b": "Bayern Munich",
    "p_a": 0.1839,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -561,7 +749,17 @@
    "team_a": "Zenit St. Petersburg (RUS)",
    "team_b": "Dortmund",
    "p_a": 0.0752,
-   "winner": "Dortmund"
+   "winner": "Dortmund",
+   "legs": [
+    [
+     2,
+     4
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -569,7 +767,17 @@
    "team_a": "Olympiakos",
    "team_b": "Man United",
    "p_a": 0.2906,
-   "winner": "Man United"
+   "winner": "Man United",
+   "legs": [
+    [
+     2,
+     0
+    ],
+    [
+     0,
+     3
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -577,7 +785,17 @@
    "team_a": "Galatasaray",
    "team_b": "Chelsea",
    "p_a": 0.2035,
-   "winner": "Chelsea"
+   "winner": "Chelsea",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -585,7 +803,17 @@
    "team_a": "Schalke 04",
    "team_b": "Real Madrid",
    "p_a": 0.1572,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     1,
+     6
+    ],
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -593,7 +821,17 @@
    "team_a": "Barcelona",
    "team_b": "Ath Madrid",
    "p_a": 0.6168,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -601,7 +839,17 @@
    "team_a": "Man United",
    "team_b": "Bayern Munich",
    "p_a": 0.1822,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -609,7 +857,17 @@
    "team_a": "Real Madrid",
    "team_b": "Dortmund",
    "p_a": 0.7239,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -617,7 +875,18 @@
    "team_a": "Paris SG",
    "team_b": "Chelsea",
    "p_a": 0.5859,
-   "winner": "Chelsea"
+   "winner": "Chelsea",
+   "legs": [
+    [
+     3,
+     1
+    ],
+    [
+     0,
+     2
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2013-14",
@@ -625,7 +894,17 @@
    "team_a": "Ath Madrid",
    "team_b": "Chelsea",
    "p_a": 0.5721,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     0,
+     0
+    ],
+    [
+     3,
+     1
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -633,7 +912,17 @@
    "team_a": "Real Madrid",
    "team_b": "Bayern Munich",
    "p_a": 0.3891,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     4,
+     0
+    ]
+   ]
   },
   {
    "season": "2013-14",
@@ -641,7 +930,14 @@
    "team_a": "Real Madrid",
    "team_b": "Ath Madrid",
    "p_a": 0.55,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     4,
+     1
+    ]
+   ],
+   "aet": true
   },
   {
    "season": "2014-15",
@@ -649,7 +945,19 @@
    "team_a": "Paris SG",
    "team_b": "Chelsea",
    "p_a": 0.4682,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     2
+    ]
+   ],
+   "aet": true,
+   "away": true
   },
   {
    "season": "2014-15",
@@ -657,7 +965,17 @@
    "team_a": "Shakhtar Donetsk",
    "team_b": "Bayern Munich",
    "p_a": 0.1522,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     7
+    ]
+   ]
   },
   {
    "season": "2014-15",
@@ -665,7 +983,17 @@
    "team_a": "Schalke 04",
    "team_b": "Real Madrid",
    "p_a": 0.1087,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     4,
+     3
+    ]
+   ]
   },
   {
    "season": "2014-15",
@@ -673,7 +1001,17 @@
    "team_a": "FC Basel 1893 (SUI)",
    "team_b": "FC Porto (POR)",
    "p_a": 0.3532,
-   "winner": "FC Porto (POR)"
+   "winner": "FC Porto (POR)",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     4
+    ]
+   ]
   },
   {
    "season": "2014-15",
@@ -681,7 +1019,17 @@
    "team_a": "Man City",
    "team_b": "Barcelona",
    "p_a": 0.3173,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     1,
+     2
+    ],
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2014-15",
@@ -689,7 +1037,17 @@
    "team_a": "Juventus",
    "team_b": "Dortmund",
    "p_a": 0.6983,
-   "winner": "Juventus"
+   "winner": "Juventus",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     3,
+     0
+    ]
+   ]
   },
   {
    "season": "2014-15",
@@ -697,7 +1055,22 @@
    "team_a": "Leverkusen",
    "team_b": "Ath Madrid",
    "p_a": 0.1987,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     1
+    ]
+   ],
+   "aet": true,
+   "pens": [
+    2,
+    3
+   ]
   },
   {
    "season": "2014-15",
@@ -705,7 +1078,18 @@
    "team_a": "Arsenal",
    "team_b": "Monaco",
    "p_a": 0.5327,
-   "winner": "Monaco"
+   "winner": "Monaco",
+   "legs": [
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     0
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2014-15",
@@ -713,7 +1097,17 @@
    "team_a": "Ath Madrid",
    "team_b": "Real Madrid",
    "p_a": 0.4503,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2014-15",
@@ -721,7 +1115,17 @@
    "team_a": "Juventus",
    "team_b": "Monaco",
    "p_a": 0.64,
-   "winner": "Juventus"
+   "winner": "Juventus",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2014-15",
@@ -729,7 +1133,17 @@
    "team_a": "Paris SG",
    "team_b": "Barcelona",
    "p_a": 0.3269,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     1,
+     3
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2014-15",
@@ -737,7 +1151,17 @@
    "team_a": "FC Porto (POR)",
    "team_b": "Bayern Munich",
    "p_a": 0.1467,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     3,
+     1
+    ],
+    [
+     1,
+     6
+    ]
+   ]
   },
   {
    "season": "2014-15",
@@ -745,7 +1169,17 @@
    "team_a": "Juventus",
    "team_b": "Real Madrid",
    "p_a": 0.4572,
-   "winner": "Juventus"
+   "winner": "Juventus",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2014-15",
@@ -753,7 +1187,17 @@
    "team_a": "Barcelona",
    "team_b": "Bayern Munich",
    "p_a": 0.467,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     2,
+     3
+    ]
+   ]
   },
   {
    "season": "2014-15",
@@ -761,7 +1205,13 @@
    "team_a": "Juventus",
    "team_b": "Barcelona",
    "p_a": 0.4075,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2015-16",
@@ -769,7 +1219,17 @@
    "team_a": "Paris SG",
    "team_b": "Chelsea",
    "p_a": 0.7095,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2015-16",
@@ -777,7 +1237,17 @@
    "team_a": "Benfica",
    "team_b": "Zenit St. Petersburg (RUS)",
    "p_a": 0.3052,
-   "winner": "Benfica"
+   "winner": "Benfica",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2015-16",
@@ -785,7 +1255,17 @@
    "team_a": "KAA Gent (BEL)",
    "team_b": "Wolfsburg",
    "p_a": 0.4176,
-   "winner": "Wolfsburg"
+   "winner": "Wolfsburg",
+   "legs": [
+    [
+     2,
+     3
+    ],
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2015-16",
@@ -793,7 +1273,17 @@
    "team_a": "Roma",
    "team_b": "Real Madrid",
    "p_a": 0.1799,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2015-16",
@@ -801,7 +1291,17 @@
    "team_a": "Arsenal",
    "team_b": "Barcelona",
    "p_a": 0.2041,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2015-16",
@@ -809,7 +1309,18 @@
    "team_a": "Juventus",
    "team_b": "Bayern Munich",
    "p_a": 0.3561,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     2,
+     2
+    ],
+    [
+     2,
+     4
+    ]
+   ],
+   "aet": true
   },
   {
    "season": "2015-16",
@@ -817,7 +1328,22 @@
    "team_a": "PSV",
    "team_b": "Ath Madrid",
    "p_a": 0.1682,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     0
+    ]
+   ],
+   "aet": true,
+   "pens": [
+    7,
+    8
+   ]
   },
   {
    "season": "2015-16",
@@ -825,7 +1351,17 @@
    "team_a": "Dinamo Kiev (UKR)",
    "team_b": "Man City",
    "p_a": 0.2614,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     1,
+     3
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2015-16",
@@ -833,7 +1369,17 @@
    "team_a": "Bayern Munich",
    "team_b": "Benfica",
    "p_a": 0.911,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     2,
+     2
+    ]
+   ]
   },
   {
    "season": "2015-16",
@@ -841,7 +1387,17 @@
    "team_a": "Barcelona",
    "team_b": "Ath Madrid",
    "p_a": 0.5968,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2015-16",
@@ -849,7 +1405,17 @@
    "team_a": "Wolfsburg",
    "team_b": "Real Madrid",
    "p_a": 0.1404,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     2,
+     0
+    ],
+    [
+     0,
+     3
+    ]
+   ]
   },
   {
    "season": "2015-16",
@@ -857,7 +1423,17 @@
    "team_a": "Paris SG",
    "team_b": "Man City",
    "p_a": 0.68,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     2,
+     2
+    ],
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2015-16",
@@ -865,7 +1441,17 @@
    "team_a": "Man City",
    "team_b": "Real Madrid",
    "p_a": 0.3185,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2015-16",
@@ -873,7 +1459,18 @@
    "team_a": "Ath Madrid",
    "team_b": "Bayern Munich",
    "p_a": 0.4208,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2015-16",
@@ -881,7 +1478,18 @@
    "team_a": "Real Madrid",
    "team_b": "Ath Madrid",
    "p_a": 0.5266,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     1,
+     1
+    ]
+   ],
+   "aet": true,
+   "pens": [
+    5,
+    3
+   ]
   },
   {
    "season": "2016-17",
@@ -889,7 +1497,17 @@
    "team_a": "Benfica",
    "team_b": "Dortmund",
    "p_a": 0.2358,
-   "winner": "Dortmund"
+   "winner": "Dortmund",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     4
+    ]
+   ]
   },
   {
    "season": "2016-17",
@@ -897,7 +1515,17 @@
    "team_a": "Paris SG",
    "team_b": "Barcelona",
    "p_a": 0.3256,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     4,
+     0
+    ],
+    [
+     1,
+     6
+    ]
+   ]
   },
   {
    "season": "2016-17",
@@ -905,7 +1533,17 @@
    "team_a": "Real Madrid",
    "team_b": "Napoli",
    "p_a": 0.7393,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     3,
+     1
+    ],
+    [
+     3,
+     1
+    ]
+   ]
   },
   {
    "season": "2016-17",
@@ -913,7 +1551,17 @@
    "team_a": "Bayern Munich",
    "team_b": "Arsenal",
    "p_a": 0.7583,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     5,
+     1
+    ],
+    [
+     5,
+     1
+    ]
+   ]
   },
   {
    "season": "2016-17",
@@ -921,7 +1569,18 @@
    "team_a": "Man City",
    "team_b": "Monaco",
    "p_a": 0.4923,
-   "winner": "Monaco"
+   "winner": "Monaco",
+   "legs": [
+    [
+     5,
+     3
+    ],
+    [
+     1,
+     3
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2016-17",
@@ -929,7 +1588,17 @@
    "team_a": "Leverkusen",
    "team_b": "Ath Madrid",
    "p_a": 0.2817,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     2,
+     4
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2016-17",
@@ -937,7 +1606,17 @@
    "team_a": "FC Porto (POR)",
    "team_b": "Juventus",
    "p_a": 0.196,
-   "winner": "Juventus"
+   "winner": "Juventus",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2016-17",
@@ -945,7 +1624,17 @@
    "team_a": "Sevilla",
    "team_b": "Leicester",
    "p_a": 0.6819,
-   "winner": "Leicester"
+   "winner": "Leicester",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2016-17",
@@ -953,7 +1642,17 @@
    "team_a": "Juventus",
    "team_b": "Barcelona",
    "p_a": 0.4276,
-   "winner": "Juventus"
+   "winner": "Juventus",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2016-17",
@@ -961,7 +1660,17 @@
    "team_a": "Dortmund",
    "team_b": "Monaco",
    "p_a": 0.5701,
-   "winner": "Monaco"
+   "winner": "Monaco",
+   "legs": [
+    [
+     2,
+     3
+    ],
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2016-17",
@@ -969,7 +1678,17 @@
    "team_a": "Ath Madrid",
    "team_b": "Leicester",
    "p_a": 0.8351,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2016-17",
@@ -977,7 +1696,18 @@
    "team_a": "Bayern Munich",
    "team_b": "Real Madrid",
    "p_a": 0.6761,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     4
+    ]
+   ],
+   "aet": true
   },
   {
    "season": "2016-17",
@@ -985,7 +1715,17 @@
    "team_a": "Real Madrid",
    "team_b": "Ath Madrid",
    "p_a": 0.4789,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     1,
+     2
+    ]
+   ]
   },
   {
    "season": "2016-17",
@@ -993,7 +1733,17 @@
    "team_a": "Monaco",
    "team_b": "Juventus",
    "p_a": 0.2964,
-   "winner": "Juventus"
+   "winner": "Juventus",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     2
+    ]
+   ]
   },
   {
    "season": "2016-17",
@@ -1001,7 +1751,13 @@
    "team_a": "Juventus",
    "team_b": "Real Madrid",
    "p_a": 0.5364,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     1,
+     4
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1009,7 +1765,17 @@
    "team_a": "Juventus",
    "team_b": "Tottenham",
    "p_a": 0.5563,
-   "winner": "Juventus"
+   "winner": "Juventus",
+   "legs": [
+    [
+     2,
+     2
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1017,7 +1783,17 @@
    "team_a": "FC Basel 1893 (SUI)",
    "team_b": "Man City",
    "p_a": 0.1374,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     0,
+     4
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1025,7 +1801,17 @@
    "team_a": "FC Porto (POR)",
    "team_b": "Liverpool",
    "p_a": 0.3659,
-   "winner": "Liverpool"
+   "winner": "Liverpool",
+   "legs": [
+    [
+     0,
+     5
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1033,7 +1819,17 @@
    "team_a": "Real Madrid",
    "team_b": "Paris SG",
    "p_a": 0.3795,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     3,
+     1
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1041,7 +1837,17 @@
    "team_a": "Chelsea",
    "team_b": "Barcelona",
    "p_a": 0.2498,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     3
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1049,7 +1855,17 @@
    "team_a": "Bayern Munich",
    "team_b": "Beşiktaş (TUR)",
    "p_a": 0.8325,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     5,
+     0
+    ],
+    [
+     3,
+     1
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1057,7 +1873,17 @@
    "team_a": "Sevilla",
    "team_b": "Man United",
    "p_a": 0.2264,
-   "winner": "Sevilla"
+   "winner": "Sevilla",
+   "legs": [
+    [
+     0,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1065,7 +1891,18 @@
    "team_a": "Shakhtar Donetsk",
    "team_b": "Roma",
    "p_a": 0.2775,
-   "winner": "Roma"
+   "winner": "Roma",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2017-18",
@@ -1073,7 +1910,17 @@
    "team_a": "Sevilla",
    "team_b": "Bayern Munich",
    "p_a": 0.096,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     1,
+     2
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1081,7 +1928,17 @@
    "team_a": "Juventus",
    "team_b": "Real Madrid",
    "p_a": 0.5639,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     0,
+     3
+    ],
+    [
+     3,
+     1
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1089,7 +1946,18 @@
    "team_a": "Barcelona",
    "team_b": "Roma",
    "p_a": 0.8295,
-   "winner": "Roma"
+   "winner": "Roma",
+   "legs": [
+    [
+     4,
+     1
+    ],
+    [
+     0,
+     3
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2017-18",
@@ -1097,7 +1965,17 @@
    "team_a": "Liverpool",
    "team_b": "Man City",
    "p_a": 0.3709,
-   "winner": "Liverpool"
+   "winner": "Liverpool",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1105,7 +1983,17 @@
    "team_a": "Liverpool",
    "team_b": "Roma",
    "p_a": 0.5942,
-   "winner": "Liverpool"
+   "winner": "Liverpool",
+   "legs": [
+    [
+     5,
+     2
+    ],
+    [
+     2,
+     4
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1113,7 +2001,17 @@
    "team_a": "Bayern Munich",
    "team_b": "Real Madrid",
    "p_a": 0.6085,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     2
+    ]
+   ]
   },
   {
    "season": "2017-18",
@@ -1121,7 +2019,13 @@
    "team_a": "Real Madrid",
    "team_b": "Liverpool",
    "p_a": 0.5686,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     3,
+     1
+    ]
+   ]
   },
   {
    "season": "2018-19",
@@ -1129,7 +2033,18 @@
    "team_a": "Man United",
    "team_b": "Paris SG",
    "p_a": 0.2626,
-   "winner": "Man United"
+   "winner": "Man United",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     3,
+     1
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2018-19",
@@ -1137,7 +2052,18 @@
    "team_a": "Roma",
    "team_b": "FC Porto (POR)",
    "p_a": 0.6307,
-   "winner": "FC Porto (POR)"
+   "winner": "FC Porto (POR)",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     1,
+     3
+    ]
+   ],
+   "aet": true
   },
   {
    "season": "2018-19",
@@ -1145,7 +2071,17 @@
    "team_a": "Tottenham",
    "team_b": "Dortmund",
    "p_a": 0.6026,
-   "winner": "Tottenham"
+   "winner": "Tottenham",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     1,
+     0
+    ]
+   ]
   },
   {
    "season": "2018-19",
@@ -1153,7 +2089,17 @@
    "team_a": "AFC Ajax (NED)",
    "team_b": "Real Madrid",
    "p_a": 0.2208,
-   "winner": "AFC Ajax (NED)"
+   "winner": "AFC Ajax (NED)",
+   "legs": [
+    [
+     1,
+     2
+    ],
+    [
+     4,
+     1
+    ]
+   ]
   },
   {
    "season": "2018-19",
@@ -1161,7 +2107,17 @@
    "team_a": "Lyon",
    "team_b": "Barcelona",
    "p_a": 0.1734,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     5
+    ]
+   ]
   },
   {
    "season": "2018-19",
@@ -1169,7 +2125,17 @@
    "team_a": "Liverpool",
    "team_b": "Bayern Munich",
    "p_a": 0.5556,
-   "winner": "Liverpool"
+   "winner": "Liverpool",
+   "legs": [
+    [
+     0,
+     0
+    ],
+    [
+     3,
+     1
+    ]
+   ]
   },
   {
    "season": "2018-19",
@@ -1177,7 +2143,17 @@
    "team_a": "Schalke 04",
    "team_b": "Man City",
    "p_a": 0.1079,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     2,
+     3
+    ],
+    [
+     0,
+     7
+    ]
+   ]
   },
   {
    "season": "2018-19",
@@ -1185,7 +2161,17 @@
    "team_a": "Ath Madrid",
    "team_b": "Juventus",
    "p_a": 0.4292,
-   "winner": "Juventus"
+   "winner": "Juventus",
+   "legs": [
+    [
+     2,
+     0
+    ],
+    [
+     0,
+     3
+    ]
+   ]
   },
   {
    "season": "2018-19",
@@ -1193,7 +2179,17 @@
    "team_a": "Liverpool",
    "team_b": "FC Porto (POR)",
    "p_a": 0.8464,
-   "winner": "Liverpool"
+   "winner": "Liverpool",
+   "legs": [
+    [
+     2,
+     0
+    ],
+    [
+     4,
+     1
+    ]
+   ]
   },
   {
    "season": "2018-19",
@@ -1201,7 +2197,18 @@
    "team_a": "Tottenham",
    "team_b": "Man City",
    "p_a": 0.3206,
-   "winner": "Tottenham"
+   "winner": "Tottenham",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     3,
+     4
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2018-19",
@@ -1209,7 +2216,17 @@
    "team_a": "AFC Ajax (NED)",
    "team_b": "Juventus",
    "p_a": 0.292,
-   "winner": "AFC Ajax (NED)"
+   "winner": "AFC Ajax (NED)",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2018-19",
@@ -1217,7 +2234,17 @@
    "team_a": "Man United",
    "team_b": "Barcelona",
    "p_a": 0.2729,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     3
+    ]
+   ]
   },
   {
    "season": "2018-19",
@@ -1225,7 +2252,18 @@
    "team_a": "Tottenham",
    "team_b": "AFC Ajax (NED)",
    "p_a": 0.5516,
-   "winner": "Tottenham"
+   "winner": "Tottenham",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     3,
+     2
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2018-19",
@@ -1233,7 +2271,17 @@
    "team_a": "Barcelona",
    "team_b": "Liverpool",
    "p_a": 0.5335,
-   "winner": "Liverpool"
+   "winner": "Liverpool",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     0,
+     4
+    ]
+   ]
   },
   {
    "season": "2018-19",
@@ -1241,7 +2289,13 @@
    "team_a": "Tottenham",
    "team_b": "Liverpool",
    "p_a": 0.3747,
-   "winner": "Liverpool"
+   "winner": "Liverpool",
+   "legs": [
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1249,7 +2303,17 @@
    "team_a": "Man City",
    "team_b": "Real Madrid",
    "p_a": 0.7401,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1257,7 +2321,18 @@
    "team_a": "Juventus",
    "team_b": "Lyon",
    "p_a": 0.7,
-   "winner": "Lyon"
+   "winner": "Lyon",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2019-20",
@@ -1265,7 +2340,17 @@
    "team_a": "Bayern Munich",
    "team_b": "Chelsea",
    "p_a": 0.6702,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     4,
+     1
+    ],
+    [
+     3,
+     0
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1273,7 +2358,17 @@
    "team_a": "Barcelona",
    "team_b": "Napoli",
    "p_a": 0.6938,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     3,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1281,7 +2376,13 @@
    "team_a": "Atalanta",
    "team_b": "Paris SG",
    "p_a": 0.3289,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     1,
+     2
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1289,7 +2390,13 @@
    "team_a": "RB Leipzig",
    "team_b": "Ath Madrid",
    "p_a": 0.394,
-   "winner": "RB Leipzig"
+   "winner": "RB Leipzig",
+   "legs": [
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1297,7 +2404,13 @@
    "team_a": "Barcelona",
    "team_b": "Bayern Munich",
    "p_a": 0.55,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     2,
+     8
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1305,7 +2418,13 @@
    "team_a": "Man City",
    "team_b": "Lyon",
    "p_a": 0.7525,
-   "winner": "Lyon"
+   "winner": "Lyon",
+   "legs": [
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1313,7 +2432,13 @@
    "team_a": "RB Leipzig",
    "team_b": "Paris SG",
    "p_a": 0.3255,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     0,
+     3
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1321,7 +2446,13 @@
    "team_a": "Lyon",
    "team_b": "Bayern Munich",
    "p_a": 0.3293,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     0,
+     3
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1329,7 +2460,13 @@
    "team_a": "Paris SG",
    "team_b": "Bayern Munich",
    "p_a": 0.4633,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1337,7 +2474,17 @@
    "team_a": "Dortmund",
    "team_b": "Paris SG",
    "p_a": 0.2367,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1345,7 +2492,18 @@
    "team_a": "Ath Madrid",
    "team_b": "Liverpool",
    "p_a": 0.2863,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     3,
+     2
+    ]
+   ],
+   "aet": true
   },
   {
    "season": "2019-20",
@@ -1353,7 +2511,17 @@
    "team_a": "Atalanta",
    "team_b": "Valencia",
    "p_a": 0.5878,
-   "winner": "Atalanta"
+   "winner": "Atalanta",
+   "legs": [
+    [
+     4,
+     1
+    ],
+    [
+     4,
+     3
+    ]
+   ]
   },
   {
    "season": "2019-20",
@@ -1361,7 +2529,17 @@
    "team_a": "Tottenham",
    "team_b": "RB Leipzig",
    "p_a": 0.4839,
-   "winner": "RB Leipzig"
+   "winner": "RB Leipzig",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     3
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1369,7 +2547,17 @@
    "team_a": "RB Leipzig",
    "team_b": "Liverpool",
    "p_a": 0.4202,
-   "winner": "Liverpool"
+   "winner": "Liverpool",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1377,7 +2565,17 @@
    "team_a": "Barcelona",
    "team_b": "Paris SG",
    "p_a": 0.4494,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     1,
+     4
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1385,7 +2583,19 @@
    "team_a": "FC Porto (POR)",
    "team_b": "Juventus",
    "p_a": 0.437,
-   "winner": "FC Porto (POR)"
+   "winner": "FC Porto (POR)",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     2,
+     3
+    ]
+   ],
+   "aet": true,
+   "away": true
   },
   {
    "season": "2020-21",
@@ -1393,7 +2603,17 @@
    "team_a": "Sevilla",
    "team_b": "Dortmund",
    "p_a": 0.4186,
-   "winner": "Dortmund"
+   "winner": "Dortmund",
+   "legs": [
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     2
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1401,7 +2621,17 @@
    "team_a": "Lazio",
    "team_b": "Bayern Munich",
    "p_a": 0.1717,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     1,
+     4
+    ],
+    [
+     1,
+     2
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1409,7 +2639,17 @@
    "team_a": "Ath Madrid",
    "team_b": "Chelsea",
    "p_a": 0.534,
-   "winner": "Chelsea"
+   "winner": "Chelsea",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1417,7 +2657,17 @@
    "team_a": "M'gladbach",
    "team_b": "Man City",
    "p_a": 0.1399,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1425,7 +2675,17 @@
    "team_a": "Atalanta",
    "team_b": "Real Madrid",
    "p_a": 0.4449,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1433,7 +2693,17 @@
    "team_a": "Man City",
    "team_b": "Dortmund",
    "p_a": 0.8423,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1441,7 +2711,17 @@
    "team_a": "Real Madrid",
    "team_b": "Liverpool",
    "p_a": 0.3961,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     3,
+     1
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1449,7 +2729,17 @@
    "team_a": "FC Porto (POR)",
    "team_b": "Chelsea",
    "p_a": 0.4924,
-   "winner": "Chelsea"
+   "winner": "Chelsea",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     0
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1457,7 +2747,18 @@
    "team_a": "Bayern Munich",
    "team_b": "Paris SG",
    "p_a": 0.5937,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     2,
+     3
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "away": true
   },
   {
    "season": "2020-21",
@@ -1465,7 +2766,17 @@
    "team_a": "Real Madrid",
    "team_b": "Chelsea",
    "p_a": 0.5487,
-   "winner": "Chelsea"
+   "winner": "Chelsea",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1473,7 +2784,17 @@
    "team_a": "Paris SG",
    "team_b": "Man City",
    "p_a": 0.3034,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     1,
+     2
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2020-21",
@@ -1481,7 +2802,13 @@
    "team_a": "Man City",
    "team_b": "Chelsea",
    "p_a": 0.6901,
-   "winner": "Chelsea"
+   "winner": "Chelsea",
+   "legs": [
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1489,7 +2816,17 @@
    "team_a": "Sporting CP",
    "team_b": "Man City",
    "p_a": 0.0517,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     0,
+     5
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1497,7 +2834,17 @@
    "team_a": "Paris SG",
    "team_b": "Real Madrid",
    "p_a": 0.5381,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1505,7 +2852,17 @@
    "team_a": "RB Salzburg",
    "team_b": "Bayern Munich",
    "p_a": 0.0646,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     7
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1513,7 +2870,17 @@
    "team_a": "Inter",
    "team_b": "Liverpool",
    "p_a": 0.3546,
-   "winner": "Liverpool"
+   "winner": "Liverpool",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     0
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1521,7 +2888,17 @@
    "team_a": "Chelsea",
    "team_b": "Lille",
    "p_a": 0.7356,
-   "winner": "Chelsea"
+   "winner": "Chelsea",
+   "legs": [
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1529,7 +2906,17 @@
    "team_a": "Villarreal",
    "team_b": "Juventus",
    "p_a": 0.4588,
-   "winner": "Villarreal"
+   "winner": "Villarreal",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     3,
+     0
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1537,7 +2924,17 @@
    "team_a": "Benfica",
    "team_b": "AFC Ajax (NED)",
    "p_a": 0.2052,
-   "winner": "Benfica"
+   "winner": "Benfica",
+   "legs": [
+    [
+     2,
+     2
+    ],
+    [
+     1,
+     0
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1545,7 +2942,17 @@
    "team_a": "Ath Madrid",
    "team_b": "Man United",
    "p_a": 0.4198,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1553,7 +2960,17 @@
    "team_a": "Man City",
    "team_b": "Ath Madrid",
    "p_a": 0.8005,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1561,7 +2978,17 @@
    "team_a": "Benfica",
    "team_b": "Liverpool",
    "p_a": 0.143,
-   "winner": "Liverpool"
+   "winner": "Liverpool",
+   "legs": [
+    [
+     1,
+     3
+    ],
+    [
+     3,
+     3
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1569,7 +2996,18 @@
    "team_a": "Chelsea",
    "team_b": "Real Madrid",
    "p_a": 0.4977,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     1,
+     3
+    ],
+    [
+     3,
+     2
+    ]
+   ],
+   "aet": true
   },
   {
    "season": "2021-22",
@@ -1577,7 +3015,17 @@
    "team_a": "Villarreal",
    "team_b": "Bayern Munich",
    "p_a": 0.1923,
-   "winner": "Villarreal"
+   "winner": "Villarreal",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1585,7 +3033,18 @@
    "team_a": "Man City",
    "team_b": "Real Madrid",
    "p_a": 0.6962,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     4,
+     3
+    ],
+    [
+     1,
+     3
+    ]
+   ],
+   "aet": true
   },
   {
    "season": "2021-22",
@@ -1593,7 +3052,17 @@
    "team_a": "Liverpool",
    "team_b": "Villarreal",
    "p_a": 0.7672,
-   "winner": "Liverpool"
+   "winner": "Liverpool",
+   "legs": [
+    [
+     2,
+     0
+    ],
+    [
+     3,
+     2
+    ]
+   ]
   },
   {
    "season": "2021-22",
@@ -1601,7 +3070,13 @@
    "team_a": "Liverpool",
    "team_b": "Real Madrid",
    "p_a": 0.5814,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1609,7 +3084,17 @@
    "team_a": "Milan",
    "team_b": "Tottenham",
    "p_a": 0.4276,
-   "winner": "Milan"
+   "winner": "Milan",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1617,7 +3102,17 @@
    "team_a": "Paris SG",
    "team_b": "Bayern Munich",
    "p_a": 0.3099,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1625,7 +3120,17 @@
    "team_a": "Club Brugge KV (BEL)",
    "team_b": "Benfica",
    "p_a": 0.2539,
-   "winner": "Benfica"
+   "winner": "Benfica",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     5
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1633,7 +3138,17 @@
    "team_a": "Dortmund",
    "team_b": "Chelsea",
    "p_a": 0.4047,
-   "winner": "Chelsea"
+   "winner": "Chelsea",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1641,7 +3156,17 @@
    "team_a": "Liverpool",
    "team_b": "Real Madrid",
    "p_a": 0.5166,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     2,
+     5
+    ],
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1649,7 +3174,17 @@
    "team_a": "Ein Frankfurt",
    "team_b": "Napoli",
    "p_a": 0.2318,
-   "winner": "Napoli"
+   "winner": "Napoli",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     3
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1657,7 +3192,17 @@
    "team_a": "RB Leipzig",
    "team_b": "Man City",
    "p_a": 0.2038,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     7
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1665,7 +3210,17 @@
    "team_a": "Inter",
    "team_b": "FC Porto (POR)",
    "p_a": 0.6436,
-   "winner": "Inter"
+   "winner": "Inter",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1673,7 +3228,17 @@
    "team_a": "Benfica",
    "team_b": "Inter",
    "p_a": 0.4764,
-   "winner": "Inter"
+   "winner": "Inter",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     3,
+     3
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1681,7 +3246,17 @@
    "team_a": "Man City",
    "team_b": "Bayern Munich",
    "p_a": 0.6408,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1689,7 +3264,17 @@
    "team_a": "Real Madrid",
    "team_b": "Chelsea",
    "p_a": 0.5879,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     0
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1697,7 +3282,17 @@
    "team_a": "Milan",
    "team_b": "Napoli",
    "p_a": 0.316,
-   "winner": "Milan"
+   "winner": "Milan",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1705,7 +3300,17 @@
    "team_a": "Real Madrid",
    "team_b": "Man City",
    "p_a": 0.2651,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     4
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1713,7 +3318,17 @@
    "team_a": "Milan",
    "team_b": "Inter",
    "p_a": 0.415,
-   "winner": "Inter"
+   "winner": "Inter",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2022-23",
@@ -1721,7 +3336,13 @@
    "team_a": "Man City",
    "team_b": "Inter",
    "p_a": 0.6992,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     1,
+     0
+    ]
+   ]
   },
   {
    "season": "2023-24",
@@ -1729,7 +3350,17 @@
    "team_a": "FC København (DEN)",
    "team_b": "Man City",
    "p_a": 0.0726,
-   "winner": "Man City"
+   "winner": "Man City",
+   "legs": [
+    [
+     1,
+     3
+    ],
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2023-24",
@@ -1737,7 +3368,17 @@
    "team_a": "RB Leipzig",
    "team_b": "Real Madrid",
    "p_a": 0.2602,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2023-24",
@@ -1745,7 +3386,17 @@
    "team_a": "Paris SG",
    "team_b": "Sociedad",
    "p_a": 0.6481,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2023-24",
@@ -1753,7 +3404,17 @@
    "team_a": "Lazio",
    "team_b": "Bayern Munich",
    "p_a": 0.1947,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     3
+    ]
+   ]
   },
   {
    "season": "2023-24",
@@ -1761,7 +3422,22 @@
    "team_a": "Inter",
    "team_b": "Ath Madrid",
    "p_a": 0.6289,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "aet": true,
+   "pens": [
+    2,
+    3
+   ]
   },
   {
    "season": "2023-24",
@@ -1769,7 +3445,17 @@
    "team_a": "PSV",
    "team_b": "Dortmund",
    "p_a": 0.3006,
-   "winner": "Dortmund"
+   "winner": "Dortmund",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2023-24",
@@ -1777,7 +3463,22 @@
    "team_a": "FC Porto (POR)",
    "team_b": "Arsenal",
    "p_a": 0.2391,
-   "winner": "Arsenal"
+   "winner": "Arsenal",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     1
+    ]
+   ],
+   "aet": true,
+   "pens": [
+    2,
+    4
+   ]
   },
   {
    "season": "2023-24",
@@ -1785,7 +3486,17 @@
    "team_a": "Napoli",
    "team_b": "Barcelona",
    "p_a": 0.4994,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2023-24",
@@ -1793,7 +3504,17 @@
    "team_a": "Arsenal",
    "team_b": "Bayern Munich",
    "p_a": 0.5915,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     2,
+     2
+    ],
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2023-24",
@@ -1801,7 +3522,22 @@
    "team_a": "Real Madrid",
    "team_b": "Man City",
    "p_a": 0.386,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     3,
+     3
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "aet": true,
+   "pens": [
+    4,
+    3
+   ]
   },
   {
    "season": "2023-24",
@@ -1809,7 +3545,17 @@
    "team_a": "Ath Madrid",
    "team_b": "Dortmund",
    "p_a": 0.4703,
-   "winner": "Dortmund"
+   "winner": "Dortmund",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     2,
+     4
+    ]
+   ]
   },
   {
    "season": "2023-24",
@@ -1817,7 +3563,17 @@
    "team_a": "Paris SG",
    "team_b": "Barcelona",
    "p_a": 0.5841,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     2,
+     3
+    ],
+    [
+     4,
+     1
+    ]
+   ]
   },
   {
    "season": "2023-24",
@@ -1825,7 +3581,17 @@
    "team_a": "Bayern Munich",
    "team_b": "Real Madrid",
    "p_a": 0.469,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     2,
+     2
+    ],
+    [
+     1,
+     2
+    ]
+   ]
   },
   {
    "season": "2023-24",
@@ -1833,7 +3599,17 @@
    "team_a": "Dortmund",
    "team_b": "Paris SG",
    "p_a": 0.3883,
-   "winner": "Dortmund"
+   "winner": "Dortmund",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     0
+    ]
+   ]
   },
   {
    "season": "2023-24",
@@ -1841,7 +3617,13 @@
    "team_a": "Dortmund",
    "team_b": "Real Madrid",
    "p_a": 0.3841,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1849,7 +3631,17 @@
    "team_a": "Brest",
    "team_b": "Paris SG",
    "p_a": 0.153,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     0,
+     3
+    ],
+    [
+     0,
+     7
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1857,7 +3649,17 @@
    "team_a": "Man City",
    "team_b": "Real Madrid",
    "p_a": 0.4848,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     2,
+     3
+    ],
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1865,7 +3667,17 @@
    "team_a": "Juventus",
    "team_b": "PSV",
    "p_a": 0.5946,
-   "winner": "PSV"
+   "winner": "PSV",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1873,7 +3685,17 @@
    "team_a": "Sporting CP",
    "team_b": "Dortmund",
    "p_a": 0.4127,
-   "winner": "Dortmund"
+   "winner": "Dortmund",
+   "legs": [
+    [
+     0,
+     3
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1881,7 +3703,17 @@
    "team_a": "Club Brugge KV (BEL)",
    "team_b": "Atalanta",
    "p_a": 0.1343,
-   "winner": "Club Brugge KV (BEL)"
+   "winner": "Club Brugge KV (BEL)",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     3,
+     1
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1889,7 +3721,17 @@
    "team_a": "Monaco",
    "team_b": "Benfica",
    "p_a": 0.4234,
-   "winner": "Benfica"
+   "winner": "Benfica",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     3,
+     3
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1897,7 +3739,17 @@
    "team_a": "Celtic FC (SCO)",
    "team_b": "Bayern Munich",
    "p_a": 0.0525,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1905,7 +3757,17 @@
    "team_a": "Feyenoord",
    "team_b": "Milan",
    "p_a": 0.3096,
-   "winner": "Feyenoord"
+   "winner": "Feyenoord",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1913,7 +3775,17 @@
    "team_a": "Club Brugge KV (BEL)",
    "team_b": "Aston Villa",
    "p_a": 0.4345,
-   "winner": "Aston Villa"
+   "winner": "Aston Villa",
+   "legs": [
+    [
+     1,
+     3
+    ],
+    [
+     0,
+     3
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1921,7 +3793,22 @@
    "team_a": "Real Madrid",
    "team_b": "Ath Madrid",
    "p_a": 0.5914,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     2,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ],
+   "aet": true,
+   "pens": [
+    4,
+    2
+   ]
   },
   {
    "season": "2024-25",
@@ -1929,7 +3816,17 @@
    "team_a": "PSV",
    "team_b": "Arsenal",
    "p_a": 0.1889,
-   "winner": "Arsenal"
+   "winner": "Arsenal",
+   "legs": [
+    [
+     1,
+     7
+    ],
+    [
+     2,
+     2
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1937,7 +3834,17 @@
    "team_a": "Dortmund",
    "team_b": "Lille",
    "p_a": 0.5267,
-   "winner": "Dortmund"
+   "winner": "Dortmund",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1945,7 +3852,17 @@
    "team_a": "Feyenoord",
    "team_b": "Inter",
    "p_a": 0.1338,
-   "winner": "Inter"
+   "winner": "Inter",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     2
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1953,7 +3870,22 @@
    "team_a": "Paris SG",
    "team_b": "Liverpool",
    "p_a": 0.4318,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "aet": true,
+   "pens": [
+    4,
+    1
+   ]
   },
   {
    "season": "2024-25",
@@ -1961,7 +3893,17 @@
    "team_a": "Bayern Munich",
    "team_b": "Leverkusen",
    "p_a": 0.5593,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     2,
+     0
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1969,7 +3911,17 @@
    "team_a": "Benfica",
    "team_b": "Barcelona",
    "p_a": 0.2939,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1977,7 +3929,17 @@
    "team_a": "Arsenal",
    "team_b": "Real Madrid",
    "p_a": 0.6169,
-   "winner": "Arsenal"
+   "winner": "Arsenal",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1985,7 +3947,17 @@
    "team_a": "Bayern Munich",
    "team_b": "Inter",
    "p_a": 0.4293,
-   "winner": "Inter"
+   "winner": "Inter",
+   "legs": [
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     2
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -1993,7 +3965,17 @@
    "team_a": "Paris SG",
    "team_b": "Aston Villa",
    "p_a": 0.7543,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     3,
+     1
+    ],
+    [
+     2,
+     3
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -2001,7 +3983,17 @@
    "team_a": "Barcelona",
    "team_b": "Dortmund",
    "p_a": 0.7002,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     4,
+     0
+    ],
+    [
+     1,
+     3
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -2009,7 +4001,17 @@
    "team_a": "Arsenal",
    "team_b": "Paris SG",
    "p_a": 0.6311,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     2
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -2017,7 +4019,17 @@
    "team_a": "Barcelona",
    "team_b": "Inter",
    "p_a": 0.4561,
-   "winner": "Inter"
+   "winner": "Inter",
+   "legs": [
+    [
+     3,
+     3
+    ],
+    [
+     3,
+     4
+    ]
+   ]
   },
   {
    "season": "2024-25",
@@ -2025,7 +4037,13 @@
    "team_a": "Paris SG",
    "team_b": "Inter",
    "p_a": 0.4939,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     5,
+     0
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2033,7 +4051,18 @@
    "team_a": "Galatasaray",
    "team_b": "Juventus",
    "p_a": 0.2086,
-   "winner": "Galatasaray"
+   "winner": "Galatasaray",
+   "legs": [
+    [
+     5,
+     2
+    ],
+    [
+     2,
+     3
+    ]
+   ],
+   "aet": true
   },
   {
    "season": "2025-26",
@@ -2041,7 +4070,17 @@
    "team_a": "Benfica",
    "team_b": "Real Madrid",
    "p_a": 0.2169,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     2
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2049,7 +4088,17 @@
    "team_a": "Monaco",
    "team_b": "Paris SG",
    "p_a": 0.1371,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     2
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2057,7 +4106,17 @@
    "team_a": "Dortmund",
    "team_b": "Atalanta",
    "p_a": 0.4824,
-   "winner": "Atalanta"
+   "winner": "Atalanta",
+   "legs": [
+    [
+     2,
+     0
+    ],
+    [
+     1,
+     4
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2065,7 +4124,17 @@
    "team_a": "Qarabağ",
    "team_b": "Newcastle",
    "p_a": 0.0423,
-   "winner": "Newcastle"
+   "winner": "Newcastle",
+   "legs": [
+    [
+     1,
+     6
+    ],
+    [
+     2,
+     3
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2073,7 +4142,17 @@
    "team_a": "Club Brugge KV (BEL)",
    "team_b": "Ath Madrid",
    "p_a": 0.2867,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     3,
+     3
+    ],
+    [
+     1,
+     4
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2081,7 +4160,17 @@
    "team_a": "Olympiakos",
    "team_b": "Leverkusen",
    "p_a": 0.2472,
-   "winner": "Leverkusen"
+   "winner": "Leverkusen",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2089,7 +4178,17 @@
    "team_a": "FK Bodø/Glimt (NOR)",
    "team_b": "Inter",
    "p_a": 0.144,
-   "winner": "FK Bodø/Glimt (NOR)"
+   "winner": "FK Bodø/Glimt (NOR)",
+   "legs": [
+    [
+     3,
+     1
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2097,7 +4196,17 @@
    "team_a": "Galatasaray",
    "team_b": "Liverpool",
    "p_a": 0.0976,
-   "winner": "Liverpool"
+   "winner": "Liverpool",
+   "legs": [
+    [
+     1,
+     0
+    ],
+    [
+     0,
+     4
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2105,7 +4214,17 @@
    "team_a": "Atalanta",
    "team_b": "Bayern Munich",
    "p_a": 0.2498,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     1,
+     6
+    ],
+    [
+     1,
+     4
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2113,7 +4232,17 @@
    "team_a": "Newcastle",
    "team_b": "Barcelona",
    "p_a": 0.4095,
-   "winner": "Barcelona"
+   "winner": "Barcelona",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     7
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2121,7 +4250,17 @@
    "team_a": "Ath Madrid",
    "team_b": "Tottenham",
    "p_a": 0.5813,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     5,
+     2
+    ],
+    [
+     2,
+     3
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2129,7 +4268,17 @@
    "team_a": "Leverkusen",
    "team_b": "Arsenal",
    "p_a": 0.1642,
-   "winner": "Arsenal"
+   "winner": "Arsenal",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     2
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2137,7 +4286,17 @@
    "team_a": "Paris SG",
    "team_b": "Chelsea",
    "p_a": 0.611,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     5,
+     2
+    ],
+    [
+     3,
+     0
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2145,7 +4304,17 @@
    "team_a": "Real Madrid",
    "team_b": "Man City",
    "p_a": 0.4024,
-   "winner": "Real Madrid"
+   "winner": "Real Madrid",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2153,7 +4322,18 @@
    "team_a": "FK Bodø/Glimt (NOR)",
    "team_b": "Sporting CP",
    "p_a": 0.4102,
-   "winner": "Sporting CP"
+   "winner": "Sporting CP",
+   "legs": [
+    [
+     3,
+     0
+    ],
+    [
+     0,
+     5
+    ]
+   ],
+   "aet": true
   },
   {
    "season": "2025-26",
@@ -2161,7 +4341,17 @@
    "team_a": "Real Madrid",
    "team_b": "Bayern Munich",
    "p_a": 0.379,
-   "winner": "Bayern Munich"
+   "winner": "Bayern Munich",
+   "legs": [
+    [
+     1,
+     2
+    ],
+    [
+     3,
+     4
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2169,7 +4359,17 @@
    "team_a": "Sporting CP",
    "team_b": "Arsenal",
    "p_a": 0.1369,
-   "winner": "Arsenal"
+   "winner": "Arsenal",
+   "legs": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     0
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2177,7 +4377,17 @@
    "team_a": "Paris SG",
    "team_b": "Liverpool",
    "p_a": 0.5844,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     2,
+     0
+    ],
+    [
+     2,
+     0
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2185,7 +4395,17 @@
    "team_a": "Barcelona",
    "team_b": "Ath Madrid",
    "p_a": 0.6456,
-   "winner": "Ath Madrid"
+   "winner": "Ath Madrid",
+   "legs": [
+    [
+     0,
+     2
+    ],
+    [
+     2,
+     1
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2193,7 +4413,17 @@
    "team_a": "Paris SG",
    "team_b": "Bayern Munich",
    "p_a": 0.4964,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     5,
+     4
+    ],
+    [
+     1,
+     1
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2201,7 +4431,17 @@
    "team_a": "Ath Madrid",
    "team_b": "Arsenal",
    "p_a": 0.205,
-   "winner": "Arsenal"
+   "winner": "Arsenal",
+   "legs": [
+    [
+     1,
+     1
+    ],
+    [
+     0,
+     1
+    ]
+   ]
   },
   {
    "season": "2025-26",
@@ -2209,7 +4449,18 @@
    "team_a": "Paris SG",
    "team_b": "Arsenal",
    "p_a": 0.4233,
-   "winner": "Paris SG"
+   "winner": "Paris SG",
+   "legs": [
+    [
+     1,
+     1
+    ]
+   ],
+   "aet": true,
+   "pens": [
+    4,
+    3
+   ]
   }
  ],
  "rounds": [

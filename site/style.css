@@ -308,6 +308,16 @@ select, input[type="search"] {
 }
 select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--s2); outline-offset: 2px; }
 .count { color: var(--muted); font: 12px var(--mono); margin: 4px 0 8px; }
+.h2h-try { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 10px; font: 11px var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.chip {
+  font: 12px var(--mono); color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 0;
+  padding: 6px 10px; min-height: 32px; cursor: pointer;
+}
+.chip em { font-style: normal; color: var(--muted); }
+.chip:hover { background: var(--ink); color: var(--page); }
+.chip:hover em { color: inherit; opacity: .7; }
+.h2h { margin: 6px 0 10px; padding-left: 14px; border-left: 3px solid var(--s2); max-width: 70ch; font-size: 15px; color: var(--ink-2); }
+.h2h b { color: var(--ink); }
 .ties { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
 .more {
   margin-top: 14px; font: 12px var(--mono); text-transform: uppercase; letter-spacing: .05em;
@@ -317,10 +327,11 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
 
 /* ---------- every tie ---------- */
 .tie {
-  display: grid; grid-template-columns: 110px 1fr minmax(120px, 2fr) 1fr; gap: 12px;
+  display: grid; grid-template-columns: 110px 1fr minmax(120px, 2fr) 1fr; gap: 4px 12px;
   align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 15px;
 }
-.tie-meta { color: var(--muted); font: 11px/1.35 var(--mono); }
+.tie-meta { color: var(--muted); font: 11px/1.35 var(--mono); grid-row: 1 / span 2; }
+.tie-score { grid-column: 2 / -1; text-align: center; color: var(--muted); font: 12px/1.35 var(--mono); }
 .team-a { text-align: right; }
 .team-a, .team-b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-2); }
 .through { font-weight: 600; color: var(--ink) !important; }
@@ -474,8 +485,9 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
   .cb-grid { grid-template-columns: 1fr; }
   .round-ties { grid-template-columns: 1fr; }
   .round-ties.one { max-width: none; }
-  .tie { grid-template-columns: 1fr 1fr; grid-template-areas: "meta meta" "a b" "bar bar"; gap: 4px 10px; }
+  .tie { grid-template-columns: 1fr 1fr; grid-template-areas: "meta meta" "a b" "bar bar" "score score"; gap: 4px 10px; }
   .tie-meta { grid-area: meta; }
+  .tie-score { grid-area: score; text-align: left; }
   .team-a { grid-area: a; text-align: left; }
   .team-b { grid-area: b; text-align: right; }
   .split-bar { grid-area: bar; }

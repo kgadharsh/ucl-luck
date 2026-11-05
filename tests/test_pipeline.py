@@ -226,3 +226,31 @@ def test_upcoming_predictions_never_put_nan_in_data_json(tmp_path, monkeypatch):
     json.dumps(section, allow_nan=False)  # raises on any NaN
     assert len(section["upcoming"]) == 2
     assert "odds_home" not in section["upcoming"][1] and "kickoff" not in section["upcoming"][1]
+
+
+def _cl_match(date, home, away, home_goals, away_goals, season, round_="Round of 16", **extra):
+    row = dict(competition="CL", season=season, round=round_, date=pd.Timestamp(date), home=home, away=away,
+               home_goals=home_goals, away_goals=away_goals, extra_time=False, home_goals_aet=None,
+               away_goals_aet=None, home_pens=None, away_pens=None, neutral=False)
+    return {**row, **extra}
+
+
+def test_tie_scores_always_put_team_a_first_whoever_was_at_home():
+    # The second leg is played at team_b's ground, so its score is stored the other way round.
+    from export_site import tie_scores
+    matches = pd.DataFrame([
+        # away goals: 2-1 then 0-1 at B's ground leaves them level on goals, and B scored the away goal
+        _cl_match("2019-02-13", "A", "B", 2, 1, "2018-19"),
+        _cl_match("2019-03-06", "B", "A", 1, 0, "2018-19"),
+        # extra time then penalties (no away goals any more): A wins the shoot-out 4-3, B was at home
+        _cl_match("2023-02-14", "C", "D", 1, 0, "2022-23"),
+        _cl_match("2023-03-07", "D", "C", 1, 0, "2022-23", extra_time=True, home_goals_aet=1, away_goals_aet=0,
+                  home_pens=3, away_pens=4),
+        # a one-off final, decided in extra time
+        _cl_match("2023-06-10", "E", "F", 0, 0, "2022-23", round_="Final", neutral=True, extra_time=True,
+                  home_goals_aet=0, away_goals_aet=1),
+    ])
+    scores = tie_scores(matches)
+    assert scores[("2018-19", "Round of 16", "A", "B")] == {"legs": [[2, 1], [0, 1]], "away": True}
+    assert scores[("2022-23", "Round of 16", "C", "D")] == {"legs": [[1, 0], [0, 1]], "aet": True, "pens": [4, 3]}
+    assert scores[("2022-23", "Final", "E", "F")] == {"legs": [[0, 1]], "aet": True}

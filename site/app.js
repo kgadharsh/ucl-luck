@@ -15,6 +15,8 @@ const CLUB_NAMES = {
   "Zenit St. Petersburg": "Zenit", "Leicester": "Leicester City", "Newcastle": "Newcastle United",
 };
 const clean = (name) => { const plain = name.replace(/ \([A-Z]{3}\)$/, ""); return CLUB_NAMES[plain] || plain; };
+// Does a club match what a fan typed? Either way of saying it works: "Man City" or "Manchester City".
+const called = (name, query) => clean(name).toLowerCase().includes(query) || name.replace(/ \([A-Z]{3}\)$/, "").toLowerCase().includes(query);
 const ROUND_SHORT = { "Playoffs": "Play-offs", "Round of 16": "Last 16", "Quarterfinals": "Quarter-finals", "Semifinals": "Semi-finals", "Final": "Final" };
 
 function svg(tag, attrs = {}, parent) {
@@ -173,7 +175,7 @@ function setupTicker(data) {
   const box = document.getElementById("ticker-chart");
   const nav = document.getElementById("strip-nav");
   const f = { season: document.getElementById("f-season"), round: document.getElementById("f-round"),
-    club: document.getElementById("f-club"), upsets: document.getElementById("f-upsets") };
+    club: document.getElementById("f-club"), against: document.getElementById("f-against"), upsets: document.getElementById("f-upsets") };
   const seasons = [...new Set(data.ties.map((t) => t.season))].sort();
   const ties = data.ties.map((t) => ({ ...t, p: winnerChance(t) }))
     .sort((a, b) => a.season.localeCompare(b.season) || ROUND_ORDER[a.round] - ROUND_ORDER[b.round] || b.p - a.p);
@@ -226,7 +228,7 @@ function setupTicker(data) {
     nodes = { root, labels: svg("g", {}, root), names: [] };
     nodes.rects = ties.map((t) => {
       const r = svg("rect", { fill: t.p < 0.5 ? css("--s2") : css("--s1"), class: "grow strip-bar", style: `--d:${seasons.indexOf(t.season) * 55}ms` }, bars);
-      hover(r, () => `<b>${t.season}, ${ROUND_SHORT[t.round]}</b><br>${clean(t.winner)} beat ${clean(loserOf(t))}<br>` +
+      hover(r, () => `<b>${t.season}, ${ROUND_SHORT[t.round]}</b><br>${clean(t.winner)} beat ${clean(loserOf(t))}<br>${scoreTip(t)}<br>` +
         `${pct(t.p)} chance beforehand${t.p < 0.35 ? " · an upset" : t.p < 0.5 ? " · the underdog" : ""}` +
         (view ? "" : `<br><span style="opacity:.6">Click to zoom into this season</span>`),
         () => { if (!view) filterTies({ season: t.season }); });
@@ -275,10 +277,9 @@ function setupTicker(data) {
 
   // Fade what the other filters exclude, and show the season controls when zoomed in.
   function update() {
-    const q = f.club.value.trim().toLowerCase(), round = f.round.value, upsets = f.upsets.checked;
+    const passes = tieFilter(false); // the season is the strip's zoom, not a filter
     ties.forEach((t, i) => {
-      const match = (!round || t.round === round) && (!upsets || t.p < 0.35) &&
-        (!q || clean(t.team_a).toLowerCase().includes(q) || clean(t.team_b).toLowerCase().includes(q));
+      const match = passes(t);
       nodes.rects[i].style.opacity = match ? 1 : 0.15;
       (nodes.names[i] || []).forEach((n) => { n.style.opacity = match ? 1 : 0.3; });
     });
@@ -320,7 +321,7 @@ function setupTicker(data) {
 
   f.season.addEventListener("change", () => show(f.season.value || null));
   [f.round, f.upsets].forEach((n) => n.addEventListener("change", update));
-  f.club.addEventListener("input", update);
+  [f.club, f.against].forEach((n) => n.addEventListener("input", update));
   nav.addEventListener("click", (e) => {
     const button = e.target.closest("button");
     if (!button) return;
@@ -333,8 +334,9 @@ function setupTicker(data) {
 // Point the tie explorer somewhere, as if the reader had picked it. Only the fields given
 // change, so clicking a season keeps the reader's own club search and other filters.
 function filterTies(changes, scroll = false) {
-  const fields = { season: "f-season", round: "f-round", club: "f-club" };
+  const fields = { season: "f-season", round: "f-round", club: "f-club", against: "f-against" };
   for (const [key, id] of Object.entries(fields)) if (key in changes) document.getElementById(id).value = changes[key];
+  if ("club" in changes && !("against" in changes)) document.getElementById("f-against").value = ""; // a new club is a new search
   if ("upsets" in changes) document.getElementById("f-upsets").checked = changes.upsets;
   document.getElementById("f-season").dispatchEvent(new Event("change"));
   hideTip();
@@ -714,6 +716,69 @@ function fillScores(data) {
   }).join("");
 }
 
+// ---------- scores ----------
+// What happened in a tie, from data.json's `legs` (team_a's goals first, extra time included).
+// `first` is the club whose goals are written first.
+function scoreParts(t, first) {
+  const turn = (pair) => (first === t.team_a ? pair : [pair[1], pair[0]]);
+  const legs = t.legs.map(turn);
+  const last = legs.length - 1;
+  return {
+    legs: legs.map((pair, i) => `${pair[0]}–${pair[1]}${i === last && t.aet ? " a.e.t." : ""}`),
+    aggregate: legs.length === 2 ? `${legs[0][0] + legs[1][0]}–${legs[0][1] + legs[1][1]}` : null,
+    decider: t.pens ? `${turn(t.pens).join("–")} on penalties` : t.away ? "away goals" : null,
+  };
+}
+// For the tie list: "1st leg 1–1 · 2nd leg 3–1 a.e.t. · 4–2 on aggregate", read in the order of the names.
+function scoreLine(t) {
+  const { legs, aggregate, decider } = scoreParts(t, t.team_a);
+  const parts = legs.length === 1 ? [`Match ${legs[0]}`] : legs.map((leg, i) => `${i ? "2nd" : "1st"} leg ${leg}`);
+  if (aggregate) parts.push(`${aggregate} on aggregate`);
+  if (decider) parts.push(decider);
+  return parts.join(" · ");
+}
+// For tooltips, which say who beat whom: the winner's goals come first.
+function scoreTip(t) {
+  const { legs, aggregate, decider } = scoreParts(t, t.winner);
+  return legs.join(", ") + (aggregate ? ` (${aggregate} on aggregate)` : "") + (decider ? `, ${decider}` : "");
+}
+
+// What the tie explorer's filters let through. The list and the season strip both use it, so
+// they always agree. Two clubs (Club and Against) mean one on each side of the tie; one box
+// filled means that club on either side. `withSeason: false` for the strip, where the season
+// is the zoom rather than a filter.
+function tieFilter(withSeason = true) {
+  const text = (id) => document.getElementById(id).value.trim().toLowerCase();
+  const season = withSeason ? document.getElementById("f-season").value : "";
+  const round = document.getElementById("f-round").value;
+  const upsetsOnly = document.getElementById("f-upsets").checked;
+  const club = text("f-club"), against = text("f-against");
+  const named = called;
+  return (t) => {
+    if (season && t.season !== season) return false;
+    if (round && t.round !== round) return false;
+    if (upsetsOnly && winnerChance(t) >= 0.35) return false;
+    if (club && against) return (named(t.team_a, club) && named(t.team_b, against)) || (named(t.team_b, club) && named(t.team_a, against));
+    const q = club || against;
+    return !q || named(t.team_a, q) || named(t.team_b, q);
+  };
+}
+
+// "Real Madrid v Man City: 7 ties. ..." for the ties currently listed, but only when each box
+// names one club (typing just "real" could mean several, and a summary of that would mislead).
+function headToHead(rows, club, against) {
+  const clubsMatching = (q) => [...new Set(rows.flatMap((t) => [t.team_a, t.team_b]).filter((name) => called(name, q)))];
+  const [a, b] = [clubsMatching(club), clubsMatching(against)];
+  if (!rows.length || a.length !== 1 || b.length !== 1 || a[0] === b[0]) return "";
+  const [one, two] = [a[0], b[0]];
+  const wins = (name) => rows.filter((t) => t.winner === name).length;
+  const expected = rows.reduce((sum, t) => sum + (t.team_a === one ? t.p_a : 1 - t.p_a), 0);
+  const times = (k) => (k === 1 ? "once" : k === 0 ? "never" : `${k} times`);
+  return `<b>${clean(one)} v ${clean(two)}: ${rows.length} tie${rows.length === 1 ? "" : "s"}.</b> ${clean(one)} went through ${times(wins(one))}, ${clean(two)} ${times(wins(two))}. `
+    + (rows.length === 1 ? `Before the tie, the model gave ${clean(one)} a ${pct(expected)} chance.`
+      : `Before each tie, the model expected ${clean(one)} to go through ${expected.toFixed(1)} times.`);
+}
+
 // ---------- tie explorer ----------
 function setupTies(data) {
   const seasons = [...new Set(data.ties.map((t) => t.season))].sort().reverse();
@@ -723,6 +788,7 @@ function setupTies(data) {
   seasonSelect.innerHTML = `<option value="">All seasons</option>` + seasons.map((s) => `<option>${s}</option>`).join("");
   roundSelect.innerHTML = `<option value="">All rounds</option>` + rounds.map((r) => `<option value="${r}">${ROUND_SHORT[r]}</option>`).join("");
   const club = document.getElementById("f-club");
+  const against = document.getElementById("f-against");
   const upsets = document.getElementById("f-upsets");
   const order = Object.fromEntries(rounds.map((r, i) => [r, i]));
   const more = document.getElementById("ties-more");
@@ -730,16 +796,31 @@ function setupTies(data) {
   let shown = PAGE;
   more.addEventListener("click", () => { shown += PAGE; render(true); });
 
+  // Suggestions while typing a club, and the pairings that have met most often, one click each.
+  const names = [...new Set(data.ties.flatMap((t) => [clean(t.team_a), clean(t.team_b)]))].sort((x, y) => x.localeCompare(y));
+  document.getElementById("club-names").replaceChildren(...names.map((name) => Object.assign(document.createElement("option"), { value: name })));
+  const meetings = new Map();
+  for (const t of data.ties) {
+    const pair = [clean(t.team_a), clean(t.team_b)].sort().join("\n");
+    meetings.set(pair, (meetings.get(pair) ?? 0) + 1);
+  }
+  const common = [...meetings].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0])).slice(0, 4);
+  const tryBox = document.getElementById("h2h-try");
+  tryBox.append(Object.assign(document.createElement("span"), { textContent: "Try" }), ...common.map(([pair, n]) => {
+    const [one, two] = pair.split("\n");
+    const chip = Object.assign(document.createElement("button"), { type: "button", className: "chip", textContent: `${one} v ${two} ` });
+    chip.append(Object.assign(document.createElement("em"), { textContent: `${n} ties` }));
+    chip.addEventListener("click", () => filterTies({ club: one, against: two, season: "", round: "", upsets: false }));
+    return chip;
+  }));
+
   function render(keepCount) {
     if (keepCount !== true) shown = PAGE;
-    const query = club.value.trim().toLowerCase();
-    const rows = data.ties.filter((t) => {
-      const pWinner = t.winner === t.team_a ? t.p_a : 1 - t.p_a;
-      return (!seasonSelect.value || t.season === seasonSelect.value)
-        && (!roundSelect.value || t.round === roundSelect.value)
-        && (!query || clean(t.team_a).toLowerCase().includes(query) || clean(t.team_b).toLowerCase().includes(query))
-        && (!upsets.checked || pWinner < 0.35);
-    }).sort((a, b) => b.season.localeCompare(a.season) || order[b.round] - order[a.round]);
+    const rows = data.ties.filter(tieFilter()).sort((a, b) => b.season.localeCompare(a.season) || order[b.round] - order[a.round]);
+    const summary = club.value.trim() && against.value.trim() ? headToHead(rows, club.value.trim().toLowerCase(), against.value.trim().toLowerCase()) : "";
+    const note = document.getElementById("h2h");
+    note.hidden = !summary;
+    note.innerHTML = summary;
     document.getElementById("ties-count").textContent = `${rows.length} tie${rows.length === 1 ? "" : "s"}`;
     more.hidden = rows.length <= shown;
     more.textContent = `Show more ties (${rows.length - shown} left)`;
@@ -755,11 +836,12 @@ function setupTies(data) {
           <span class="b" style="flex:${Math.max(100 - a, 1)}">${100 - a >= 12 ? 100 - a + "%" : ""}</span>
         </div>
         <div class="team-b ${t.winner === t.team_b ? "through" : ""}">${clean(t.team_b)}</div>
+        <div class="tie-score">${scoreLine(t)}</div>
       </div>`;
     }).join("") || `<p class="small">No ties match these filters.</p>`;
   }
   [seasonSelect, roundSelect, upsets].forEach((n) => n.addEventListener("change", () => render()));
-  club.addEventListener("input", () => render());
+  [club, against].forEach((n) => n.addEventListener("input", () => render()));
   render();
 }
 
