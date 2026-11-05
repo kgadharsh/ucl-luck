@@ -59,7 +59,10 @@ def open_page(browser, site_url):
         page = context.new_page()
         if not allow_errors:
             page.on("pageerror", lambda error: errors.append(f"page error: {error}"))
-            page.on("console", lambda msg: errors.append(f"console {msg.type}: {msg.text}") if msg.type == "error" else None)
+            # A web font still downloading when a test ends is aborted as the browser closes, and Firefox logs
+            # that as an error. It says nothing about the page, so it isn't one of the errors a test fails on.
+            page.on("console", lambda msg: errors.append(f"console {msg.type}: {msg.text}")
+                    if msg.type == "error" and "downloadable font" not in msg.text else None)
         for pattern, handler in (routes or {}).items():
             page.route(pattern, handler)
         if init_script:  # runs in the page before any of its own scripts
