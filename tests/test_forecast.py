@@ -22,6 +22,13 @@ CLUBS = 36
 SUMS = {"top8": 8, "top24": 24, "last16": 16, "quarter": 8, "semi": 4, "final": 2, "win": 1}  # clubs at each stage
 
 
+@pytest.fixture(autouse=True)
+def history_in_tmp(tmp_path, monkeypatch):
+    """The forecast command adds each day's forecast to the history. Left alone, a test that runs it
+    writes its made-up clubs into the real results/forecast_history.csv, which then gets committed."""
+    monkeypatch.setattr(fc, "HISTORY", tmp_path / "forecast_history.csv")
+
+
 # ---------- reading Wikipedia ----------
 
 SAMPLE = """Intro text.
@@ -502,6 +509,7 @@ def test_the_command_writes_the_forecast_and_removes_it_only_when_the_stage_is_o
     assert fc.main(["--as-of", "2026-11-05", "--simulations", "300"]) == 0
     written = json.loads((tmp_path / "forecast.json").read_text(encoding="utf-8"))
     assert written["simulations"] == 300 and "Favourites:" in capsys.readouterr().out
+    assert pd.read_csv(fc.HISTORY).as_of.unique().tolist() == ["2026-11-05"]  # the day went into the history, in the temporary one
     monkeypatch.setattr(fc, "load_league_phase", lambda season: None)  # no data: the last forecast stays, and it is reported
     assert fc.main(["--as-of", "2026-11-06"]) == 1
     assert (tmp_path / "forecast.json").exists()
