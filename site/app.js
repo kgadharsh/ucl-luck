@@ -461,7 +461,7 @@ function drawRounds(data) {
   });
 }
 
-// ---------- skill vs luck: the better side over many ties ----------
+// ---------- one tie is a lottery, a season isn't ----------
 // The chance of every number of wins for a side that wins each tie with chance p. Exact.
 function winsDistribution(n, p) {
   let dist = [1];
@@ -475,64 +475,20 @@ function standings(dist) {
   dist.forEach((q, k) => { out[2 * k > n ? "ahead" : 2 * k === n ? "level" : "behind"] += q; });
   return out;
 }
-// How many ties until the weaker side finishing ahead is rarer than 1 in 20, and stays that rare.
-// (It isn't smooth: an even number of ties can finish level, which is not "behind".)
-function tiesUntilSure(p, cap = 150) {
-  let dist = [1], lastBad = 0;
-  for (let n = 1; n <= cap; n++) {
-    dist = addTie(dist, p);
-    if (standings(dist).behind > 0.05) lastBad = n;
-  }
-  return lastBad < cap ? lastBad + 1 : null;
-}
-
-function setupSkill(data) {
-  const edge = document.getElementById("sk-edge");
-  const count = document.getElementById("sk-n");
-  edge.value = Math.round(data.headline.favourite_expected * 100); // what a typical favourite really had
-  const sure = {}; // tiesUntilSure for each edge, so dragging the other slider stays instant
-  function draw() {
-    const p = Number(edge.value) / 100, n = Number(count.value);
-    document.getElementById("sk-edge-out").textContent = `${edge.value}%`;
-    document.getElementById("sk-n-out").textContent = `${n} ${n === 1 ? "tie" : "ties"}`;
-    const dist = winsDistribution(n, p);
-    const { ahead, level, behind } = standings(dist);
-    document.getElementById("sk-ahead").textContent = chance(ahead);
-    document.getElementById("sk-level").textContent = chance(level);
-    document.getElementById("sk-behind").textContent = chance(behind);
-
-    const colour = (k) => (2 * k > n ? css("--s1") : 2 * k === n ? css("--s3") : css("--s2"));
-    legend("sk-legend", [["Better side finishes ahead", css("--s1")], ...(n % 2 ? [] : [["Level", css("--s3")]]), ["Weaker side finishes ahead", css("--s2")]]);
-    const box = document.getElementById("sk-chart");
-    const { root, width, height } = canvas(box, 230);
-    const m = { l: 44, r: 8, t: 12, b: 46 };
-    const top = Math.ceil(Math.max(...dist) * 10) / 10;
-    const y = (v) => m.t + (1 - v / top) * (height - m.t - m.b);
-    for (let v = 0; v <= top + 1e-9; v += top > 0.5 ? 0.2 : 0.1) {
-      svg("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v), stroke: css("--grid") }, root);
-      svg("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = pct(v);
-    }
-    const step = (width - m.l - m.r) / (n + 1);
-    const every = n <= 12 ? 1 : n <= 20 ? 2 : 5;
-    dist.forEach((q, k) => {
-      const cx = m.l + step * (k + 0.5), w = Math.min(step * 0.78, 38);
-      svg("rect", { x: cx - w / 2, y: y(q), width: w, height: Math.max(0, height - m.b - y(q)), fill: colour(k) }, root);
-      if (k % every === 0) svg("text", { x: cx, y: height - m.b + 16, "text-anchor": "middle" }, root).textContent = k;
-      const hit = svg("rect", { x: cx - step / 2, y: m.t, width: step, height: height - m.t - m.b, class: "hit" }, root);
-      hover(hit, `<b>${k} of ${n} won by the better side</b><br>${chance(q)} of the time<br>${2 * k > n ? "Better side finishes ahead" : 2 * k === n ? "Level" : "Weaker side finishes ahead"}`);
-    });
-    svg("text", { x: (m.l + width - m.r) / 2, y: height - 6, "text-anchor": "middle" }, root).textContent = "Ties won by the better side";
-
-    sure[edge.value] ??= tiesUntilSure(p);
-    const until = sure[edge.value];
-    const needed = until ? `It takes about ${until} ties before the weaker side finishing ahead is rarer than 1 in 20.` : "It would take more than 150 ties before the weaker side finishing ahead is rarer than 1 in 20.";
-    document.getElementById("sk-text").innerHTML = n === 1
-      ? `In a single tie, even the better side goes out ${chance(1 - p)} of the time. That's the lottery. ${needed}`
-      : `Winning <b>every</b> one of ${n} ties is much harder: ${chance(p ** n)}. ${needed}`;
-    box.setAttribute("aria-label", `Chance of each number of wins for the better side over ${n} ${n === 1 ? "tie" : "ties"}: ahead ${chance(ahead)}, level ${chance(level)}, behind ${chance(behind)}`);
-  }
-  [edge, count].forEach((input) => input.addEventListener("input", draw));
-  return draw;
+// A typical favourite wins a tie about 68% of the time, so it still goes out about 1 time in 3. The chance
+// that it ends up with more losses than wins shrinks fast as it plays more ties, but a trophy asks it to win
+// every one, and that stays unlikely. All of it exact, from the typical favourite's chance.
+function fillSkill(data) {
+  const p = data.headline.favourite_expected;
+  const behind = (n) => standings(winsDistribution(n, p)).behind;
+  document.getElementById("sk-sub").textContent =
+    `A typical favourite had a ${pct(p)} chance of winning a tie, so it still went out about 1 time in ${Math.round(1 / (1 - p))}. ` +
+    "Give it more ties and the luck fades. Here is the chance that it ends up with more losses than wins:";
+  document.getElementById("sk-stats").innerHTML = [1, 10, 30].map((n) =>
+    `<div class="sk-stat${n === 1 ? " red" : ""}"><b>${chance(behind(n))}</b><span>after ${n} ${n === 1 ? "tie" : "ties"}</span></div>`).join("");
+  document.getElementById("sk-text").innerHTML =
+    `But a trophy means winning <b>every</b> tie, four or five in a row. At ${pct(p)} each, that is ${chance(p ** 4)} for four and ${chance(p ** 5)} for five. ` +
+    "That is why even champions mostly got lucky.";
 }
 
 // ---------- the wildest seasons ----------
@@ -663,36 +619,33 @@ function drawRmSplit(data) {
   });
 }
 
-// One dot per club: how far it was from the model's expectation in the first seven seasons (across)
-// and the last seven (up). Distances are in units of normal luck: 0 is exactly as expected and
-// beyond 2 is more than luck usually allows.
+// Real Madrid's ties won in each half of the 14 seasons, against how many the model expected. A lucky
+// run fades and a real edge carries on, so the second half is the fair test.
 function drawRmLast(data) {
   const rm = data.real_madrid;
   if (!rm) return;
+  const rows = rm.halves.map((h, i) => [`${i ? "Last" : "First"} seven seasons`, h]);
   const box = document.getElementById("rm-last");
-  const side = Math.max(box.clientWidth, 280);
-  const { root, width, height } = canvas(box, Math.round(Math.min(380, Math.max(270, side * 0.85))));
-  const m = { l: 34, r: 12, t: 10, b: 40 };
-  const lim = 3.2;
-  const x = (v) => m.l + ((v + lim) / (2 * lim)) * (width - m.l - m.r);
-  const y = (v) => m.t + (1 - (v + lim) / (2 * lim)) * (height - m.t - m.b);
-  [-2, 0, 2].forEach((v) => {
-    const mid = v === 0;
-    svg("line", { x1: x(v), x2: x(v), y1: m.t, y2: height - m.b, stroke: mid ? css("--axis") : css("--grid") }, root);
-    svg("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v), stroke: mid ? css("--axis") : css("--grid") }, root);
-    svg("text", { x: x(v), y: height - m.b + 15, "text-anchor": "middle" }, root).textContent = signed(v, 0);
-    svg("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = signed(v, 0);
-  });
-  svg("text", { x: (m.l + width - m.r) / 2, y: height - 6, "text-anchor": "middle" }, root).textContent = "First seven seasons →";
-  svg("text", { x: 11, y: (m.t + height - m.b) / 2, "text-anchor": "middle", transform: `rotate(-90 11 ${(m.t + height - m.b) / 2})` }, root).textContent = "Last seven seasons →";
-  const ordered = [...rm.clubs].sort((a, b) => (a.club === rm.club) - (b.club === rm.club)); // Real Madrid drawn last, on top
-  ordered.forEach((c) => {
-    const real = c.club === rm.club;
-    svg("circle", { cx: x(c.first), cy: y(c.second), r: real ? 7 : 4.5, fill: real ? css("--s2") : css("--s1"),
-      "fill-opacity": real ? 1 : 0.55, stroke: css("--surface"), "stroke-width": 1.5 }, root);
-    if (real) svg("text", { x: x(c.first) - 11, y: y(c.second) + 4, "text-anchor": "end", class: "label-strong" }, root).textContent = clean(c.club);
-    hover(svg("circle", { cx: x(c.first), cy: y(c.second), r: 11, class: "hit" }, root),
-      `<b>${clean(c.club)}</b><br>First seven seasons (${c.ties_first} ties): ${signed(c.first)}<br>Last seven (${c.ties_second} ties): ${signed(c.second)}<br><span style="opacity:.6">0 is exactly what the model expected</span>`);
+  const rowH = 46;
+  const { root, width, height } = canvas(box, rows.length * rowH + 40);
+  const m = { l: 150, r: 14, t: 8, b: 30 }; // room for "First seven seasons"
+  const max = Math.ceil(Math.max(...rows.map(([, h]) => Math.max(h.won, h.expected))) / 5) * 5;
+  const x = (v) => m.l + (v / max) * (width - m.l - m.r);
+  for (let v = 0; v <= max; v += 5) {
+    svg("line", { x1: x(v), x2: x(v), y1: m.t, y2: height - m.b, stroke: css("--grid") }, root);
+    svg("text", { x: x(v), y: height - 10, "text-anchor": "middle" }, root).textContent = v;
+  }
+  svg("text", { x: m.l - 10, y: height - 10, "text-anchor": "end" }, root).textContent = "Ties";
+  legend("rm-last-legend", [["What happened", css("--s2")], ["Model expected", css("--muted")]]);
+  rows.forEach(([label, h], i) => {
+    const cy = m.t + rowH * (i + 0.5);
+    svg("text", { x: m.l - 10, y: cy - 1, "text-anchor": "end", class: "label-strong" }, root).textContent = label;
+    svg("text", { x: m.l - 10, y: cy + 14, "text-anchor": "end" }, root).textContent = h.seasons;
+    svg("line", { x1: x(h.expected), x2: x(h.won), y1: cy, y2: cy, stroke: css("--s2"), "stroke-width": 2 }, root);
+    svg("circle", { cx: x(h.expected), cy, r: 5, fill: css("--surface"), stroke: css("--muted"), "stroke-width": 2 }, root);
+    svg("circle", { cx: x(h.won), cy, r: 5, fill: css("--s2"), stroke: css("--surface"), "stroke-width": 2 }, root);
+    hover(svg("rect", { x: 0, y: cy - rowH / 2, width, height: rowH, class: "hit" }, root),
+      `<b>${label} (${h.seasons})</b><br>Won ${h.won} of ${h.ties} ties; the model expected ${h.expected.toFixed(1)} (${oneIn(h.p_at_least)} by luck)`);
   });
 }
 
@@ -718,12 +671,14 @@ function fillRealMadrid(data) {
   if (!rm) return;
   document.getElementById("rm-lead").textContent = "So is it luck, or something the model can't see? Two checks follow, then what I make of them.";
   const others = rm.clubs.filter((c) => c.club !== rm.club);
-  const mean = (list) => list.reduce((a, b) => a + b, 0) / list.length;
-  const [mx, my] = [mean(others.map((c) => c.first)), mean(others.map((c) => c.second))];
-  const corr = others.reduce((s, c) => s + (c.first - mx) * (c.second - my), 0)
-    / Math.sqrt(others.reduce((s, c) => s + (c.first - mx) ** 2, 0) * others.reduce((s, c) => s + (c.second - my) ** 2, 0));
+  const real = rm.clubs.find((c) => c.club === rm.club);
+  // A wide margin is 1.5 on the analysis's z-score. One other club reaches it in one half (the second),
+  // so the page can say Real Madrid is the only club to do it in both, and no more than that.
+  const WIDE = 1.5;
+  const alone = Boolean(real) && real.first > WIDE && real.second > WIDE && !others.some((c) => c.first > WIDE && c.second > WIDE);
   document.getElementById("rm-last-note").textContent =
-    `Distances are in luck-units: 0 is exactly what the model expected, and beyond 2 is more than luck usually allows. The other ${others.length} clubs scatter around the middle, and a good first half told you nothing about the second (the two correlate at ${signed(corr, 2)}). Real Madrid are top right: ahead of the model in both halves.`;
+    "Real Madrid beat the model in both halves, by about the same amount." +
+    (alone ? ` It is the only one of the ${rm.clubs.length} clubs with at least four ties in each half to beat it by a wide margin in both.` : "");
 
   const [h1, h2] = rm.halves, f = rm.forecast, n = rm.normal_time;
   const stage = Object.fromEntries(rm.stages.map((s) => [s.label, s]));
@@ -732,16 +687,18 @@ function fillRealMadrid(data) {
   const separate = knockouts.gap - knockouts.error > liga.gap + liga.error;
   document.getElementById("rm-verdict").innerHTML = `
     <p><b>The short answer: mostly not luck, though a bit of it is.</b> The model only sees league results and Champions League scores, and it keeps underrating Real Madrid in Europe.</p>
-    <p><b>It doesn't look like a lucky streak.</b> Split the ${rm.seasons} seasons in half and Real Madrid beat the model by about the same amount in both: ${h1.won} of ${h1.ties} ties won when ${h1.expected.toFixed(1)} were expected, then ${h2.won} of ${h2.ties} when ${h2.expected.toFixed(1)} were. They were ahead of it in ${rm.seasons_above} of ${rm.seasons} seasons. A boost worked out from the first seven seasons alone would have forecast the next seven clearly better (error per tie ${f.without.toFixed(2)} down to ${f.with.toFixed(2)}). Ordinary clubs don't show that: no other club is further than ${rm.others.largest_z.toFixed(1)} luck-units from the model.</p>
+    <p><b>It doesn't look like a lucky streak.</b> Split the ${rm.seasons} seasons in half and Real Madrid beat the model by about the same amount in both: ${h1.won} of ${h1.ties} ties won when ${h1.expected.toFixed(1)} were expected, then ${h2.won} of ${h2.ties} when ${h2.expected.toFixed(1)} were. They were ahead of it in ${rm.seasons_above} of ${rm.seasons} seasons. A boost worked out from the first seven seasons alone would have forecast the next seven clearly better (error per tie ${f.without.toFixed(2)} down to ${f.with.toFixed(2)}).${alone ? " No other club did the same in both halves." : ""}</p>
     <p><b>It isn't a Spanish thing.</b> Barcelona won ${barca.won} of ${barca.ties} ties when ${barca.expected.toFixed(1)} were expected, and Atlético Madrid ${atleti.won} of ${atleti.ties} when ${atleti.expected.toFixed(1)} were. Real Madrid's own La Liga results are close to the model's too: ${liga.points.toFixed(2)} points a match against ${liga.expected.toFixed(2)} expected.</p>
     <p><b>Part of it is probably luck.</b> ${n.extra_time.actual} of Real's ties went to extra time or penalties, which are close to coin flips, and they won all ${n.won_extra.actual} (about ${n.won_extra.expected.toFixed(1)} expected). That run is the likeliest piece of pure luck. But they also lost only ${n.lost_normal.actual} ties in normal time when the model expected ${n.lost_normal.expected.toFixed(0)}, and that part isn't a coin flip.</p>
 ${squadParagraphs(rm, { liga, groups, knockouts, separate })}`;
 }
 
 // ---------- calibration ----------
-// Two views of the same bins. "Gap" plots how far each model was from honest, which is
-// where the differences between models are visible; "full" is the classic diagonal chart.
-let calView = "gap";
+// Two views of the same bins. "Full" is the classic diagonal chart and the one that answers the
+// heading's question (lines hugging the diagonal mean the chances were honest), so it comes first.
+// "Gap" plots how far each model was from honest, which is where the small differences between
+// models are visible.
+let calView = "full";
 function drawCalibration(data) {
   const box = document.getElementById("cal-chart");
   const gapView = calView === "gap";
@@ -781,7 +738,9 @@ function drawCalibration(data) {
     svg("text", { x: x(0) + 8, y: height - m.b - 8 }, root).textContent = roomy ? "↓ Home side won less often than predicted" : "↓ Won less than predicted";
   } else {
     svg("line", { x1: x(0), y1: y(0), x2: x(1), y2: y(1), stroke: css("--ink-2"), "stroke-width": 1.5, "stroke-dasharray": "2 4" }, root);
-    svg("text", { x: x(0.62), y: y(0.62) + 18, "text-anchor": "start", class: "label-strong" }, root).textContent = "Perfectly honest";
+    // Up and to the left of the diagonal is empty: the lines hug it, so a label there covers nothing.
+    const roomy = x(0.5) - x(0) > 16 * 6.7 + 8;
+    svg("text", { x: x(0.5), y: y(0.62) + 4, "text-anchor": "end", class: "label-strong" }, root).textContent = roomy ? "Perfectly honest ↘" : "Honest ↘";
   }
   legend("cal-legend", data.calibration.map((s) => [MODEL_NAMES[s.name] || s.name, colors[s.name], dashed[s.name] ? "line dash" : "line"]));
 
@@ -811,7 +770,8 @@ function drawCalibration(data) {
   document.getElementById("cal-note").innerHTML = `On average, the home side's real win rate was off from the prediction by ` +
     misses.map((s) => `<b>${(s.miss * 100).toFixed(1)} points</b> for ${s.name === "Bookmakers" ? "the bookmakers" : (MODEL_NAMES[s.name] || s.name).toLowerCase()}`)
       .join(", ").replace(/, ([^,]*)$/, " and $1") +
-    `. Gaps that small mean all three are honest. Near 0% and 100% there are few matches, so the lines showing the likely range get long.`;
+    `. Gaps that small mean all three are honest. Near 0% and 100% there are few matches, so the lines showing the likely range get long.` +
+    (gapView ? ` This view is the same points with the honest line laid flat at 0, so that small gaps show.` : "");
 }
 
 function setupCalibration(data) {
@@ -1260,11 +1220,16 @@ function wilson(k, n) {
   return [Math.max(0, centre - half), Math.min(1, centre + half)];
 }
 
-function rampColor(t) {
-  const x = Math.max(0, Math.min(1, t)) * (RAMP.length - 1);
-  const i = Math.min(Math.floor(x), RAMP.length - 2), f = x - i;
+// The more likely, the more ink: dark on the light page, and light on the dark one, where the
+// ramp runs the other way. (Left alone, the likeliest squares would melt into a dark page.)
+const onDarkPage = () => parseInt(css("--surface").slice(1, 3), 16) < 128;
+
+function rampColor(t, dark = onDarkPage()) {
+  const ramp = dark ? [...RAMP].reverse() : RAMP;
+  const x = Math.max(0, Math.min(1, t)) * (ramp.length - 1);
+  const i = Math.min(Math.floor(x), ramp.length - 2), f = x - i;
   const hex = (c) => [1, 3, 5].map((j) => parseInt(c.slice(j, j + 2), 16));
-  const [a, b] = [hex(RAMP[i]), hex(RAMP[i + 1])];
+  const [a, b] = [hex(ramp[i]), hex(ramp[i + 1])];
   return `rgb(${a.map((v, j) => Math.round(v + (b[j] - v) * f)).join(",")})`;
 }
 
@@ -1303,24 +1268,30 @@ function setupComeback(data) {
       const rate = real.through / real.n;
       const [lo, hi] = wilson(real.through, real.n);
       document.getElementById("cb-hist").textContent = pct(rate);
-      document.getElementById("cb-hist-label").textContent = `Real ties ${era}: ${real.through} of ${real.n} went through`;
+      document.getElementById("cb-hist-label").textContent = `Past ties that started this way, ${era}: ${real.through} of ${real.n} went through`;
       histBar.style.width = pct(rate, 1);
       range.style.left = pct(lo, 1);
       range.style.width = pct(hi - lo, 1);
       range.hidden = false;
     } else {
       document.getElementById("cb-hist").textContent = "–";
-      document.getElementById("cb-hist-label").textContent = `Real ties ${era}: none started this way`;
+      document.getElementById("cb-hist-label").textContent = `Past ties that started this way, ${era}: none`;
       histBar.style.width = "0%";
       range.hidden = true;
     }
     const where = state.venue === "home" ? "at home" : "away";
     const result = state.us > state.them ? "won" : state.us < state.them ? "lost" : "drew";
+    // The past-ties bar pools teams of every strength, so it does not move with "Your team is". In real
+    // ties the seeded, stronger side hosts the second leg, which makes one setting the fairer comparison.
+    const fairer = state.venue === "away"
+      ? "Past ties cover teams of every strength, but the side hosting the second leg was usually the stronger, seeded one, so “Stronger” is the fairer comparison. "
+      : "Past ties cover teams of every strength, but the side that hosted the first leg was usually the weaker, unseeded one, so “Weaker” is the fairer comparison. ";
+    const [lo, hi] = wilson(real.through, real.n);
     document.getElementById("cb-text").innerHTML =
       `You ${result} <b>${state.us}-${state.them} ${where}</b> in the first leg, so the second leg is ${state.venue === "home" ? "away" : "at home"}. ` +
-      (state.venue === "away" && real.n ? "Real teams in your spot usually host the second leg because they were seeded, so they tend to be the stronger side. Try \"Stronger\" to compare like with like. " : "") +
-      (real.n >= 10 ? `The grey line on the real-ties bar shows the 95% range: with ${real.n} ties, the true rate is probably between ${pct(wilson(real.through, real.n)[0])} and ${pct(wilson(real.through, real.n)[1])}.`
-        : real.n ? `Only ${real.n} real tie${real.n === 1 ? "" : "s"} started this way, so trust the model more than the history here.` : "");
+      (real.n ? fairer : "") +
+      (real.n >= 10 ? `The grey line on the past-ties bar shows where the true rate probably lies: with ${real.n} ties, between ${pct(lo)} and ${pct(hi)}.`
+        : real.n ? `Only ${real.n} past tie${real.n === 1 ? "" : "s"} started this way, so trust the model more than the history here.` : "");
     drawHeat();
   }
 
@@ -1334,7 +1305,7 @@ function setupComeback(data) {
     document.getElementById("cb-heat-sub").textContent =
       `Rows: your first-leg goals. Columns: theirs. First leg ${state.venue === "home" ? "at home" : "away"}; tap a square to choose that score.` +
       (rules.value === "1" ? " With away goals, a 2-2 draw is not the same as 0-0: the team that scored away has the edge."
-        : " Under today's rules only the goal difference matters, so each diagonal shows the same chance.");
+        : " Under today's rules only the goal difference counts, so 1-1 and 2-2 give the same chance as 0-0.");
     svg("text", { x: m.l + (cell * n) / 2, y: 12, "text-anchor": "middle" }, root).textContent = "Their goals";
     const yLabel = svg("text", { x: 12, y: m.t + (cell * n) / 2, "text-anchor": "middle", transform: `rotate(-90 12 ${m.t + (cell * n) / 2})` }, root);
     yLabel.textContent = "Your goals";
@@ -1342,13 +1313,19 @@ function setupComeback(data) {
       svg("text", { x: m.l + cell * (k + 0.5), y: m.t - 6, "text-anchor": "middle" }, root).textContent = k;
       svg("text", { x: m.l - 8, y: m.t + cell * (k + 0.5) + 4, "text-anchor": "end" }, root).textContent = k;
     }
+    const dark = onDarkPage();
+    // A key for the shading, since which way it runs is the first thing a reader has to guess.
+    const keyY = m.t + cell * n + 14;
+    svg("text", { x: m.l, y: keyY + 9 }, root).textContent = "Unlikely";
+    for (let k = 0; k < 5; k++) svg("rect", { x: m.l + 62 + k * 13, y: keyY, width: 12, height: 12, fill: rampColor(k / 4, dark), class: "key" }, root);
+    svg("text", { x: m.l + 62 + 5 * 13 + 6, y: keyY + 9 }, root).textContent = "Likely";
     for (let us = 0; us < n; us++) {
       for (let them = 0; them < n; them++) {
         const p = throughChance({ ...settings(), us, them });
         const x = m.l + them * cell, y = m.t + us * cell;
         const wave = `--d:${(us + them) * 70}ms`;
-        const rect = svg("rect", { x: x + 1, y: y + 1, width: cell - 2, height: cell - 2, fill: rampColor(p), class: "cell pop", style: wave }, root);
-        svg("text", { x: x + cell / 2, y: y + cell / 2 + 4, "text-anchor": "middle", style: `fill:${textOn(rampColor(p))};font-weight:500;pointer-events:none;${wave}`, class: "fade" }, root).textContent = chance(p);
+        const rect = svg("rect", { x: x + 1, y: y + 1, width: cell - 2, height: cell - 2, fill: rampColor(p, dark), class: "cell pop", style: wave }, root);
+        svg("text", { x: x + cell / 2, y: y + cell / 2 + 4, "text-anchor": "middle", style: `fill:${textOn(rampColor(p, dark))};font-weight:500;pointer-events:none;${wave}`, class: "fade" }, root).textContent = chance(p);
         if (us === state.us && them === state.them) {
           svg("rect", { x: x + 1, y: y + 1, width: cell - 2, height: cell - 2, fill: "none", stroke: css("--s2"), "stroke-width": 3, "pointer-events": "none" }, root);
         }
@@ -1385,45 +1362,34 @@ const FORECAST_ROWS = 12;
 const forecastChance = (stage, p) => (stage === "win" && p > 0 && p < 0.1 ? (p < 0.0005 ? "<0.1%" : `${(p * 100).toFixed(1)}%`) : chance(p));
 const forecastDate = (iso) => new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 
-// The title chance of the leading clubs on every day the forecast was made, from before the first matchday on.
-function drawForecastHistory(data) {
-  const fc = data.forecast, box = document.getElementById("fc-hist-chart"), section = document.getElementById("fc-history");
+// Where the title odds stand now against the forecast made before the first matchday: the six likeliest
+// winners side by side, and in words whether anything much has changed. A handful of forecasts spread over
+// two months is too few for a line chart to say more than this does.
+function fillForecastHistory(data) {
+  const fc = data.forecast, section = document.getElementById("fc-history");
   const h = fc && fc.history;
   section.hidden = !(h && h.dates.length >= 2);
   if (section.hidden) return;
-  const lead = Object.keys(h.win).sort((a, b) => h.win[b].at(-1) - h.win[a].at(-1)).slice(0, 6);
-  const times = h.dates.map((d) => Date.parse(`${d}T12:00:00Z`));
-  const t0 = times[0], t1 = times.at(-1);
-  const top = Math.max(...lead.map((c) => Math.max(...h.win[c])));
-  const maxY = Math.ceil(top * 20) / 20;
-  const { root, width, height } = canvas(box, 260);
-  const m = { l: 36, r: width < 560 ? 100 : 150, t: 10, b: 28 };
-  const x = (i) => m.l + ((times[i] - t0) / (t1 - t0 || 1)) * (width - m.l - m.r);
-  const y = (v) => height - m.b - (v / maxY) * (height - m.t - m.b);
-  for (let v = 0; v <= maxY + 1e-9; v += 0.05) {
-    svg("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v), stroke: css("--grid") }, root);
-    svg("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = pct(v);
-  }
+  const last = h.dates.length - 1;
   const day = (iso) => forecastDate(iso).replace(/ \d{4}$/, "");
-  [0, h.dates.length - 1].forEach((i) => svg("text", { x: x(i), y: height - 8, "text-anchor": i ? "end" : "start" }, root).textContent = i ? day(h.dates[i]) : "Before matchday 1");
-  const colours = [css("--s2"), css("--s1"), css("--s3"), css("--muted"), css("--ink-2"), css("--axis")];
-  const ends = [];
-  lead.forEach((club, k) => {
-    const pts = h.win[club].map((v, i) => `${x(i)},${y(v)}`).join(" ");
-    svg("polyline", { points: pts, fill: "none", stroke: colours[k], "stroke-width": k === 0 ? 3 : 2, "stroke-linejoin": "round" }, root);
-    h.win[club].forEach((v, i) => svg("circle", { cx: x(i), cy: y(v), r: 3, fill: colours[k] }, root));
-    ends.push({ club, y: y(h.win[club].at(-1)), colour: colours[k] });
-  });
-  ends.sort((a, b) => a.y - b.y);  // keep the end labels from landing on top of each other
-  for (let i = 1; i < ends.length; i++) ends[i].y = Math.max(ends[i].y, ends[i - 1].y + 14);
-  ends.forEach((e) => svg("text", { x: width - m.r + 8, y: e.y + 4, fill: e.colour === css("--axis") ? css("--ink-2") : e.colour }, root).textContent = width < 560 ? shortClub(e.club) : clean(e.club));
-  h.dates.forEach((d, i) => {
-    const left = i ? (x(i - 1) + x(i)) / 2 : 0, right = i < h.dates.length - 1 ? (x(i) + x(i + 1)) / 2 : width - m.r;
-    const hit = svg("rect", { x: left, y: 0, width: Math.max(right - left, 8), height, class: "hit" }, root);
-    hover(hit, () => `<b>${i ? `After ${day(d)}` : "Before matchday 1"}</b>` + lead.map((c) => `<br>${clean(c)} ${forecastChance("win", h.win[c][i])}`).join(""));
-  });
-  document.getElementById("fc-history-note").textContent =
-    `One forecast for each day of results so far, from before the first matchday to ${day(h.dates.at(-1))}. Each is made only from what was known on that day. The six clubs shown are today's most likely winners.`;
+  const clubs = Object.keys(h.win);
+  const lead = [...clubs].sort((a, b) => h.win[b][last] - h.win[a][last]).slice(0, 6);
+  const move = (club) => h.win[club][last] - h.win[club][0];
+  const favouriteAt = (i) => clubs.reduce((a, b) => (h.win[b][i] > h.win[a][i] ? b : a));
+  const always = h.dates.every((_, i) => favouriteAt(i) === lead[0]); // the same club led at every forecast
+  const mover = clubs.reduce((a, b) => (Math.abs(move(b)) > Math.abs(move(a)) ? b : a));
+  const calm = Math.abs(move(mover)) < 0.05; // under five points anywhere in the field
+  document.getElementById("fc-history-note").innerHTML =
+    `${calm ? "Not much has changed" : "The odds have moved"} since the forecast made before the first matchday (${day(h.dates[0])}). ` +
+    (always ? `<b>${clean(lead[0])}</b> have led at every forecast. `
+      : `<b>${clean(favouriteAt(0))}</b> started as the favourites and <b>${clean(lead[0])}</b> are now. `) +
+    `The biggest move in the whole field is <b>${clean(mover)}</b>, ${forecastChance("win", h.win[mover][0])} to ${forecastChance("win", h.win[mover][last])}.`;
+  document.getElementById("fc-hist-before").textContent = "Before matchday 1";
+  document.getElementById("fc-hist-now").textContent = `Now (${day(h.dates[last])})`;
+  document.querySelector("#fc-hist-table tbody").innerHTML = lead.map((club) =>
+    `<tr data-club="${club.replace(/"/g, "&quot;")}"><td>${clean(club)}</td>` +
+    `<td class="num">${forecastChance("win", h.win[club][0])}</td><td class="num"><b>${forecastChance("win", h.win[club][last])}</b></td>` +
+    `<td class="num">${signed(move(club) * 100, 1)}</td></tr>`).join("");
 }
 
 function fillForecast(data) {
@@ -1663,15 +1629,16 @@ function start(data) {
   setupTies(data);
   fillLive(data);
   fillForecast(data);
+  fillForecastHistory(data);
   setupGlossary();
   fillRealMadrid(data);
-  const redrawSkill = setupSkill(data);
+  fillSkill(data);
   const redrawButterfly = setupButterfly(data);
   const redrawHeat = setupComeback(data);
   setupWire(data);
   const redrawMachine = setupMachine(data);
   const redrawTicker = setupTicker(data);
-  drawAll = () => { drawForecastHistory(data); redrawMachine(); redrawTicker(); drawRuns(data); redrawSkill(); drawRounds(data); drawWild(data); drawClubs(data); drawRmSplit(data); drawRmLast(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
+  drawAll = () => { redrawMachine(); redrawTicker(); drawRuns(data); drawRounds(data); drawWild(data); drawClubs(data); drawRmSplit(data); drawRmLast(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
   drawAll();
   const luck = document.querySelector("h1 em");
   document.fonts.ready.then(() => setTimeout(() => scramble(luck), 500));

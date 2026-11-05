@@ -279,15 +279,28 @@ def test_a_link_to_a_section_lands_on_it(open_page):
 
 
 def test_nav_highlights_the_section_you_are_reading(open_page):
+    """At every scroll position the nav marks the last section whose top has passed 40% down the screen.
+
+    The nav catches up on the next animation frame after a scroll, and a busy runner can delay that well
+    past a fixed wait: this test failed in WebKit on CI, on main, with a fixed 60 ms. A wrong highlight
+    stays wrong, so each position gets up to a second to settle before it counts as a mismatch."""
     page = open_page(reduced_motion="reduce")
     mismatches = page.evaluate("""async () => {
-      const max = document.documentElement.scrollHeight - innerHeight; let bad = 0;
-      for (let y = 0; y <= max; y += 350) {
-        window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60));
+      const maxScroll = () => document.documentElement.scrollHeight - innerHeight;
+      const expected = () => {
         const passed = [...document.querySelectorAll('main > section.card[id]')].filter((s) => !s.hidden && s.getBoundingClientRect().top <= innerHeight * 0.4);
-        const expected = scrollY >= max - 2 ? 'live' : passed.length ? passed[passed.length - 1].id : null;
-        const current = document.querySelector('nav a[aria-current]')?.hash.slice(1) ?? null;
-        if (current !== expected) bad++;
+        return scrollY >= maxScroll() - 2 ? 'live' : passed.length ? passed[passed.length - 1].id : null;
+      };
+      const current = () => document.querySelector('nav a[aria-current]')?.hash.slice(1) ?? null;
+      let bad = 0;
+      for (let y = 0; y <= maxScroll(); y += 350) {
+        window.scrollTo(0, y);
+        let settled = false;
+        for (let waited = 0; waited < 1000 && !settled; waited += 25) {
+          await new Promise((r) => setTimeout(r, 25));
+          settled = current() === expected();
+        }
+        if (!settled) bad++;
       }
       return bad;
     }""")
@@ -332,16 +345,57 @@ def test_comeback_compares_with_ties_played_under_the_same_rules(open_page):
     assert "today's rules" in today and "away goals" in away and today.split(":")[1] != away.split(":")[1]
 
 
+def test_comeback_says_why_past_ties_differ_from_the_model_whichever_leg_is_at_home(open_page):
+    """The past-ties bar pools every strength, so it can sit far from the model's number. Say why, both ways round."""
+    page = open_page(reduced_motion="reduce")  # opens on a 0-2 first leg away
+    away = page.text_content("#cb-text")
+    assert "side hosting the second leg was usually the stronger" in away and "“Stronger”" in away
+    page.click(".cb-controls .seg [data-venue='home']")
+    page.select_option("#cb-us", "1")
+    page.select_option("#cb-them", "0")
+    home = page.text_content("#cb-text")
+    assert "side that hosted the first leg was usually the weaker" in home and "“Weaker”" in home
+    words = page.text_content("#comeback").lower()
+    assert "real ties" not in words and "95%" not in words  # "Real" reads as Real Madrid on this page
+
+
+@pytest.mark.parametrize("system", ["light", "dark"])
+def test_the_comeback_shading_gets_stronger_with_the_chance_in_either_theme(open_page, system):
+    """More ink for a likelier result: dark squares on the light page, light squares on the dark one."""
+    page = open_page(color_scheme=system, reduced_motion="reduce")
+    shade = page.evaluate("""() => [...document.querySelectorAll('#cb-heat rect.cell')].map((r) =>
+      r.getAttribute('fill').match(/\\d+/g).map(Number).reduce((a, b) => a + b))""")
+    unlikely, likely = shade[4], shade[20]  # first row, last column / last row, first column
+    assert (likely < unlikely) == (system == "light")
+    keys = page.evaluate("[...document.querySelectorAll('#cb-heat rect.key')].map((r) => r.getAttribute('fill'))")
+    assert len(keys) == 5 and len(set(keys)) == 5  # five distinct shades, from unlikely to likely
+    assert {"Unlikely", "Likely"} <= set(page.evaluate("[...document.querySelectorAll('#cb-heat text')].map((t) => t.textContent)"))
+
+
 def test_calibration_view_switch_leaves_the_comeback_meter_alone(open_page):
     page = open_page(reduced_motion="reduce")
     venue = lambda: page.evaluate("[...document.querySelectorAll('.cb-controls .seg button')].map((b) => b.getAttribute('aria-pressed')).join()")
     before = venue()
-    page.click(".cal-view [data-view='full']")
+    page.click(".cal-view [data-view='gap']")
     assert venue() == before
+    assert page.locator(".cal-view [data-view='gap']").get_attribute("aria-pressed") == "true"
+
+
+def test_calibration_opens_on_the_whole_picture_and_can_zoom_in(open_page):
+    """The heading asks "when it says 60%, does it happen 60% of the time?" and the diagonal answers it."""
+    page = open_page(reduced_motion="reduce")
     assert page.locator(".cal-view [data-view='full']").get_attribute("aria-pressed") == "true"
+    assert page.locator(".cal-view button").first.get_attribute("data-view") == "full"
+    texts = lambda: page.evaluate("[...document.querySelectorAll('#cal-chart text')].map((t) => t.textContent).join('|')")
+    assert "honest" in texts().lower() and "How often the home team actually won" in texts()
+    assert "laid flat" not in page.text_content("#cal-note")
+    page.click(".cal-view [data-view='gap']")
+    assert "How far off" in texts() and "laid flat" in page.text_content("#cal-note")
+    page.click(".cal-view [data-view='full']")
+    assert "How often the home team actually won" in texts()
 
 
-# ---------- skill vs luck, the wildest seasons, the glossary ----------
+# ---------- the lottery, the wildest seasons, the glossary ----------
 
 def exact_standings(n, p):
     """Chance that a side winning each tie with chance p ends n ties ahead, level or behind."""
@@ -357,12 +411,6 @@ def exact_standings(n, p):
     return ahead, level, behind
 
 
-def ties_until_sure(p, cap=150):
-    """The fewest ties after which the weaker side finishing ahead is rarer than 1 in 20, for good."""
-    last_bad = max((n for n in range(1, cap + 1) if exact_standings(n, p)[2] > 0.05), default=0)
-    return last_bad + 1 if last_bad < cap else None
-
-
 def shown_chance(x):
     """How the page writes a chance (never rounds a near-certainty to 100% or a long shot to 0%)."""
     if 0.995 < x < 1:
@@ -372,45 +420,18 @@ def shown_chance(x):
     return f"{x * 100:.0f}%"
 
 
-def set_range(page, selector, value):
-    page.evaluate("""([selector, value]) => {
-      const input = document.querySelector(selector);
-      input.value = value;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    }""", [selector, str(value)])
-
-
-def test_skill_slider_matches_the_exact_odds(open_page, data):
+def test_the_lottery_section_gives_the_exact_odds_for_a_typical_favourite(open_page, data):
+    """Nothing to drag: three fixed numbers and a sentence, all from the typical favourite's chance."""
+    p = data["headline"]["favourite_expected"]
     page = open_page(reduced_motion="reduce")
-    typical = round(data["headline"]["favourite_expected"] * 100)
-    assert page.input_value("#sk-edge") == str(typical)  # starts at what a typical favourite really had
-    for edge, n in [(typical, 1), (68, 5), (68, 4), (90, 1), (75, 7), (55, 30)]:
-        set_range(page, "#sk-edge", edge)
-        set_range(page, "#sk-n", n)
-        shown = page.evaluate("['sk-ahead', 'sk-level', 'sk-behind'].map((id) => document.getElementById(id).textContent)")
-        assert shown == [shown_chance(x) for x in exact_standings(n, edge / 100)], (edge, n)
-        assert page.locator("#sk-chart rect:not(.hit)").count() == n + 1  # one bar for each possible number of wins
-        assert page.text_content("#sk-n-out") == f"{n} {'tie' if n == 1 else 'ties'}"
-
-
-def test_skill_slider_says_how_many_ties_it_takes(open_page):
-    page = open_page(reduced_motion="reduce")
-    set_range(page, "#sk-edge", 68)
-    assert f"about {ties_until_sure(0.68)} ties" in page.text_content("#sk-text")
-    set_range(page, "#sk-edge", 55)  # so close to a coin toss that 150 ties still isn't enough
-    assert ties_until_sure(0.55) is None and "more than 150 ties" in page.text_content("#sk-text")
-
-
-def test_skill_sliders_work_from_the_keyboard(open_page):
-    page = open_page(reduced_motion="reduce")
-    page.locator("#sk-n").focus()
-    page.keyboard.press("ArrowRight")
-    page.keyboard.press("ArrowRight")
-    assert page.text_content("#sk-n-out") == "3 ties"
-    assert page.locator("#sk-chart rect:not(.hit)").count() == 4
-    assert "Level" not in page.text_content("#sk-legend")  # three ties can't finish level
-    page.keyboard.press("ArrowRight")
-    assert "Level" in page.text_content("#sk-legend")
+    assert page.locator("#skill input").count() == 0
+    tiles = page.evaluate("[...document.querySelectorAll('#sk-stats .sk-stat')].map((t) => [t.querySelector('b').textContent, t.querySelector('span').textContent])")
+    assert [label for _, label in tiles] == ["after 1 tie", "after 10 ties", "after 30 ties"]
+    assert [value for value, _ in tiles] == [shown_chance(exact_standings(n, p)[2]) for n in (1, 10, 30)]  # more losses than wins
+    sub = page.text_content("#sk-sub")
+    assert f"{p:.0%} chance of winning a tie" in sub and f"1 time in {round(1 / (1 - p))}" in sub
+    text = page.text_content("#sk-text")
+    assert f"{shown_chance(p ** 4)} for four and {shown_chance(p ** 5)} for five" in text and "every" in text
 
 
 def test_wild_seasons_match_the_ties_and_link_to_them(open_page, data):
@@ -597,7 +618,7 @@ def test_real_madrid_checks_are_drawn_from_the_analysis(open_page, data):
     page = open_page(reduced_motion="reduce")
     assert page.locator("#rm").is_visible()
     assert page.locator("#rm-split circle").count() == 8  # four kinds of ending, a hollow and a solid dot each
-    assert page.locator("#rm-last circle:not(.hit)").count() == len(rm["clubs"])
+    assert page.locator("#rm-last circle:not(.hit)").count() == 4  # two halves, a hollow and a solid dot each
     verdict = page.text_content("#rm-verdict")
     h1, h2, n = rm["halves"][0], rm["halves"][1], rm["normal_time"]
     assert f"{h1['won']} of {h1['ties']} ties won when {h1['expected']:.1f} were expected, then {h2['won']} of {h2['ties']} when {h2['expected']:.1f} were" in verdict
@@ -606,16 +627,37 @@ def test_real_madrid_checks_are_drawn_from_the_analysis(open_page, data):
     assert f"error per tie {rm['forecast']['without']:.2f} down to {rm['forecast']['with']:.2f}" in verdict
 
 
+def test_did_it_last_uses_plain_words_and_only_says_real_madrid_stands_alone_when_it_does(open_page, data):
+    """No luck-units or correlations on the page. "Only club to do it in both halves" follows the data."""
+    import json
+    rm = data["real_madrid"]
+    page = open_page(reduced_motion="reduce")
+    text = page.text_content("#rm")
+    assert "luck-unit" not in text and "correlate" not in text
+    others = [c for c in rm["clubs"] if c["club"] != rm["club"]]
+    real = next(c for c in rm["clubs"] if c["club"] == rm["club"])
+    wide = lambda c: c["first"] > 1.5 and c["second"] > 1.5  # a wide margin, in both halves
+    alone = wide(real) and not any(wide(c) for c in others)
+    assert alone == (f"the only one of the {len(rm['clubs'])} clubs" in page.text_content("#rm-last-note")), "the note must follow the data"
+    assert alone == ("No other club did the same in both halves" in page.text_content("#rm-verdict")), "so must the verdict"
+    # If a rival matches Real in both halves, the page stops saying Real is the only one.
+    rival = {**others[0], "first": real["first"], "second": real["second"]}
+    changed = json.dumps({**data, "real_madrid": {**rm, "clubs": [real, rival, *others[1:]]}})
+    page = open_page(reduced_motion="reduce", routes={"**/data.json": lambda route: route.fulfill(body=changed, content_type="application/json")})
+    assert "the only one" not in page.text_content("#rm-last-note") and "No other club did" not in page.text_content("#rm-verdict")
+
+
 def test_real_madrid_dot_and_rows_explain_themselves(open_page, data):
     rm = data["real_madrid"]
     page = open_page(reduced_motion="reduce")
     page.locator("#rm-last").scroll_into_view_if_needed()
     page.wait_for_timeout(150)  # scrolling (correctly) hides tooltips
     tip = page.locator("#tip")
-    page.locator("#rm-last circle.hit").last.hover()  # Real Madrid is drawn last, on top
-    real = next(c for c in rm["clubs"] if c["club"] == "Real Madrid")
+    page.locator("#rm-last rect.hit").last.hover()
+    second = rm["halves"][1]
     assert "on" in tip.get_attribute("class")
-    assert "Real Madrid" in tip.text_content() and f"First seven seasons ({real['ties_first']} ties)" in tip.text_content()
+    assert "Last seven seasons" in tip.text_content() and f"Won {second['won']} of {second['ties']} ties" in tip.text_content()
+    assert f"the model expected {second['expected']:.1f}" in tip.text_content()
     page.mouse.move(5, 300)
     page.locator("#rm-split rect.hit").first.hover()
     n = rm["normal_time"]["won_normal"]
@@ -769,22 +811,47 @@ def test_a_cell_says_exactly_what_it_means(open_page, forecast):
     assert f"(about 1 in {one_in:g})" in tip
 
 
-def test_the_title_odds_chart_follows_the_history(open_page, data, forecast):
+def signed_points(v):
+    """How the page writes a change in points: one decimal, a real minus sign, no sign on zero."""
+    size = f"{abs(v):.1f}"
+    return size if float(size) == 0 else f"{'−' if v < 0 else '+'}{size}"
+
+
+def title_odds_rows(page):
+    return page.evaluate("""() => [...document.querySelectorAll('#fc-hist-table tbody tr')].map((tr) =>
+      ({club: tr.dataset.club, cells: [...tr.children].map((td) => td.textContent)}))""")
+
+
+def test_the_title_odds_table_sets_the_first_forecast_beside_the_latest(open_page, data, forecast):
     history = forecast.get("history")
     if not history or len(history["dates"]) < 2:
         pytest.skip("not enough days of forecasts yet")
     page = open_page(reduced_motion="reduce")
     assert page.locator("#fc-history").is_visible()
-    lead = sorted(history["win"], key=lambda c: -history["win"][c][-1])[:6]
-    assert page.locator("#fc-hist-chart polyline").count() == 6
-    assert page.locator("#fc-hist-chart circle").count() == 6 * len(history["dates"])
-    labels = page.evaluate("[...document.querySelectorAll('#fc-hist-chart text')].map((t) => t.textContent)")
-    assert "Before matchday 1" in labels and len(labels) >= 6 + 2
-    page.locator("#fc-hist-chart rect.hit").last.scroll_into_view_if_needed()
-    page.wait_for_timeout(150)
-    page.locator("#fc-hist-chart rect.hit").last.hover()
-    tip = page.locator("#tip").text_content()
-    assert "After " in tip and forecast_chance("win", history["win"][lead[0]][-1]) in tip
+    win = history["win"]
+    lead = sorted(win, key=lambda c: -win[c][-1])[:6]
+    rows = title_odds_rows(page)
+    assert [r["club"] for r in rows] == lead  # the six likeliest winners today, best first
+    for r in rows:
+        first, now = win[r["club"]][0], win[r["club"]][-1]
+        assert r["cells"][1:] == [forecast_chance("win", first), forecast_chance("win", now), signed_points((now - first) * 100)]
+    note = page.text_content("#fc-history-note")
+    move = lambda c: win[c][-1] - win[c][0]
+    assert ("Not much has changed" in note) == (abs(move(max(win, key=lambda c: abs(move(c))))) < 0.05)
+    led_throughout = all(max(win, key=lambda c: win[c][i]) == lead[0] for i in range(len(history["dates"])))
+    assert led_throughout == (f"{rows[0]['cells'][0]} have led at every forecast" in note)
+
+
+def test_the_title_odds_say_so_when_the_favourite_or_the_odds_have_changed(open_page, data, forecast):
+    now = sorted(forecast["clubs"], key=lambda c: -c["win"])
+    first, second = now[0]["club"], now[1]["club"]
+    shifted = {"dates": ["2026-09-07", forecast["as_of"]],
+               "win": {c["club"]: [0.30 if c["club"] == second else 0.01, c["win"]] for c in forecast["clubs"]}}  # the second club led at first
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, history=shifted)))
+    note = page.text_content("#fc-history-note")
+    rows = title_odds_rows(page)
+    assert rows[0]["club"] == first and "The odds have moved" in note and "Not much has changed" not in note
+    assert "started as the favourites" in note and "have led at every forecast" not in note
 
 
 def test_the_title_odds_chart_waits_for_a_second_forecast(open_page, data, forecast):

@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-  <link rel="stylesheet" href="style.css?v=35">
+  <link rel="stylesheet" href="style.css?v=36">
   <script>
     // Before anything paints or draws: mark that JS is on, and apply a saved light/dark choice,
     // so charts are never drawn in the system theme's colours and the page doesn't flash.
@@ -126,8 +126,14 @@
       <p class="small" id="fc-new" hidden></p>
       <div class="fc-history" id="fc-history" hidden>
         <h3>How the title odds have moved</h3>
-        <p class="small" id="fc-history-note"></p>
-        <div class="chart" id="fc-hist-chart" role="img" aria-label="Each leading club's chance of winning the trophy, forecast before the first matchday and after each day since"></div>
+        <p class="swing" id="fc-history-note"></p>
+        <div class="fc-scroll">
+          <table class="table" id="fc-hist-table">
+            <caption class="sr">Each leading club's chance of winning the trophy in the forecast made before the first matchday, and now, with the change in percentage points.</caption>
+            <thead><tr><th scope="col">Club</th><th scope="col" class="num" id="fc-hist-before"></th><th scope="col" class="num" id="fc-hist-now"></th><th scope="col" class="num">Change (points)</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
       <details class="nerds" id="fc-how">
         <summary>How this is worked out</summary>
@@ -137,23 +143,9 @@
 
     <section id="skill" class="card">
       <h2>One tie is a lottery. A season isn't.</h2>
-      <p class="sub">Say one side is better, and wins any single tie with the chance you choose. Drag the number of ties it plays and see how often the better side really comes out on top. Luck rules one tie, but it washes out over many.</p>
-      <div class="sk-controls">
-        <label>The better side's chance in one tie <output id="sk-edge-out" for="sk-edge"></output>
-          <input id="sk-edge" type="range" min="55" max="90" step="1" value="68">
-        </label>
-        <label>Ties played <output id="sk-n-out" for="sk-n"></output>
-          <input id="sk-n" type="range" min="1" max="30" step="1" value="1">
-        </label>
-      </div>
-      <div class="sk-stats">
-        <div class="sk-stat"><b id="sk-ahead"></b><span>better side finishes ahead on wins</span></div>
-        <div class="sk-stat"><b id="sk-level"></b><span>level on wins</span></div>
-        <div class="sk-stat red"><b id="sk-behind"></b><span>weaker side finishes ahead</span></div>
-      </div>
-      <div class="legend" id="sk-legend"></div>
-      <div class="chart" id="sk-chart" role="img" aria-label="How many of its ties the better side wins, and how likely each number is"></div>
-      <p class="swing" id="sk-text" aria-live="polite"></p>
+      <p class="sub" id="sk-sub"></p>
+      <div class="sk-stats" id="sk-stats"></div>
+      <p class="swing" id="sk-text"></p>
     </section>
 
     <section id="butterfly" class="card">
@@ -208,7 +200,7 @@
             <div class="meter"><span id="cb-model-bar"></span></div>
           </div>
           <div class="meter-row">
-            <div class="meter-head"><span id="cb-hist-label">Real ties</span><b id="cb-hist"></b></div>
+            <div class="meter-head"><span id="cb-hist-label">Past ties that started this way</span><b id="cb-hist"></b></div>
             <div class="meter"><span id="cb-hist-bar" class="alt"></span><i id="cb-hist-range"></i></div>
           </div>
           <p class="swing" id="cb-text" aria-live="polite"></p>
@@ -284,8 +276,9 @@
           </div>
           <div>
             <h4>Did it last?</h4>
-            <p class="small">Every club with at least four ties in each half of the 14 seasons. Right means it beat the model in the first seven seasons, up means it did in the last seven.</p>
-            <div class="chart" id="rm-last" role="img" aria-label="For each club, how far above or below the model it was in the first seven seasons and the last seven"></div>
+            <p class="small">The same count for each half of the 14 seasons. A lucky run fades, while a real edge carries on. Hollow dot: how many ties the model expected Real Madrid to win. Solid dot: how many they won.</p>
+            <div class="legend" id="rm-last-legend"></div>
+            <div class="chart" id="rm-last" role="img" aria-label="Real Madrid's ties won in the first seven seasons and in the last seven, against how many the model expected"></div>
             <p class="small" id="rm-last-note"></p>
           </div>
         </div>
@@ -301,8 +294,8 @@
           <h3>When it says 60%, does it happen 60% of the time?</h3>
           <p class="small">Home teams are grouped by the chance they were given, then we count how often they actually won. A point on the "honest" line means the chances were right.</p>
           <div class="seg cal-view" role="group" aria-label="Chart view">
-            <button type="button" data-view="gap" aria-pressed="true">Zoom in on the gap</button>
-            <button type="button" data-view="full" aria-pressed="false">Whole picture</button>
+            <button type="button" data-view="full" aria-pressed="true">Whole picture</button>
+            <button type="button" data-view="gap" aria-pressed="false">Zoom in on the gaps</button>
           </div>
           <div class="legend" id="cal-legend"></div>
           <div class="chart" id="cal-chart" role="img" aria-label="Calibration chart: for each model, how often the home team actually won against how likely the model said it was"></div>
@@ -361,6 +354,6 @@
   <a class="to-top" id="to-top" href="#top" hidden>↑ Top</a>
   <div class="tip" id="tip" aria-hidden="true"></div>
   <script src="motion.js?v=12"></script>
-  <script src="app.js?v=45"></script>
+  <script src="app.js?v=46"></script>
 </body>
 </html>
