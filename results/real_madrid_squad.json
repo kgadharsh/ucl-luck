@@ -1,0 +1,206 @@
+{
+ "club": "Real Madrid",
+ "through_season": "2025-26",
+ "matches_linked": 1871,
+ "matches_in_data": 1872,
+ "first_season": "2013-14",
+ "rotation": {
+  "real": {
+   "seasons": 13,
+   "league": 0.8391605814336179,
+   "knockouts": 0.9094789927812917,
+   "gap": 0.07031841134767386,
+   "se": 0.019350499578552408
+  },
+  "others": {
+   "clubs": 15,
+   "gap": 0.05440356764851972,
+   "sd": 0.030850308364432918
+  },
+  "real_rank": 5,
+  "clubs": 16,
+  "table": [
+   {
+    "club": "Paris Saint-Germain",
+    "seasons": 13,
+    "league": 0.815862932214177,
+    "knockouts": 0.9286332210247481,
+    "gap": 0.11277028881057105,
+    "se": 0.026990638663445952
+   },
+   {
+    "club": "FC Barcelona",
+    "seasons": 11,
+    "league": 0.8349346163399403,
+    "knockouts": 0.9319752013145439,
+    "gap": 0.09704058497460367,
+    "se": 0.022285893718451213
+   },
+   {
+    "club": "FC Porto",
+    "seasons": 7,
+    "league": 0.8735654273185426,
+    "knockouts": 0.9598851014882672,
+    "gap": 0.08631967416972462,
+    "se": 0.044482069248523555
+   },
+   {
+    "club": "Liverpool FC",
+    "seasons": 8,
+    "league": 0.8767038138370513,
+    "knockouts": 0.9488871659976332,
+    "gap": 0.0721833521605819,
+    "se": 0.017308954147939534
+   },
+   {
+    "club": "Real Madrid",
+    "seasons": 13,
+    "league": 0.8391605814336179,
+    "knockouts": 0.9094789927812917,
+    "gap": 0.07031841134767386,
+    "se": 0.019350499578552408
+   },
+   {
+    "club": "SL Benfica",
+    "seasons": 6,
+    "league": 0.8395593631941837,
+    "knockouts": 0.9070038337465663,
+    "gap": 0.06744447055238272,
+    "se": 0.02789196747375105
+   },
+   {
+    "club": "Bayern Munich",
+    "seasons": 13,
+    "league": 0.8579185323188672,
+    "knockouts": 0.9177482768661207,
+    "gap": 0.059829744547253504,
+    "se": 0.021267170371511778
+   },
+   {
+    "club": "Borussia Dortmund",
+    "seasons": 10,
+    "league": 0.857731034027905,
+    "knockouts": 0.9154646048692102,
+    "gap": 0.05773357084130528,
+    "se": 0.03298690092423851
+   },
+   {
+    "club": "Atlético de Madrid",
+    "seasons": 11,
+    "league": 0.8688430362562726,
+    "knockouts": 0.9262131756849677,
+    "gap": 0.057370139428695406,
+    "se": 0.01912225483207236
+   },
+   {
+    "club": "Inter Milan",
+    "seasons": 5,
+    "league": 0.8466520323006522,
+    "knockouts": 0.8937533375772183,
+    "gap": 0.047101305276566106,
+    "se": 0.043681052401107784
+   },
+   {
+    "club": "Juventus FC",
+    "seasons": 10,
+    "league": 0.8631599945666035,
+    "knockouts": 0.9072576843091426,
+    "gap": 0.044097689742538956,
+    "se": 0.016930956329019607
+   },
+   {
+    "club": "Chelsea FC",
+    "seasons": 9,
+    "league": 0.870664171079912,
+    "knockouts": 0.9103083607733006,
+    "gap": 0.03964418969338849,
+    "se": 0.030771888181636033
+   },
+   {
+    "club": "Arsenal FC",
+    "seasons": 7,
+    "league": 0.8965930282140727,
+    "knockouts": 0.9265147372498685,
+    "gap": 0.029921709035795812,
+    "se": 0.014777083922279973
+   },
+   {
+    "club": "Manchester City",
+    "seasons": 13,
+    "league": 0.8853759861705293,
+    "knockouts": 0.9133785557929104,
+    "gap": 0.028002569622381304,
+    "se": 0.011530679800923831
+   },
+   {
+    "club": "Bayer 04 Leverkusen",
+    "seasons": 5,
+    "league": 0.8722296552051843,
+    "knockouts": 0.8981375255269878,
+    "gap": 0.025907870321803618,
+    "se": 0.0313852063997773
+   },
+   {
+    "club": "Tottenham Hotspur",
+    "seasons": 5,
+    "league": 0.8650576609952175,
+    "knockouts": 0.855744016545421,
+    "gap": -0.009313644449796677,
+    "se": 0.05313794611765719
+   }
+  ]
+ },
+ "strength": {
+  "matches": 1746,
+  "fielded_vs_usual": {
+   "coefficient": 0.2943443434228978,
+   "se": 0.1944892692937141
+  },
+  "quality_gap": {
+   "coefficient": 0.06601154969116935,
+   "se": 0.0316173549561122
+  },
+  "real": {
+   "groups": {
+    "matches": 82,
+    "actual": 0.19265185344184402,
+    "se": 0.2183023178021674,
+    "explained_by_fielded": -0.0030282360783433497,
+    "explained_by_quality": 0.11587154482193592
+   },
+   "knockouts": {
+    "matches": 76,
+    "actual": 0.4427336056147951,
+    "se": 0.19704220030744302,
+    "explained_by_fielded": -0.001180342409910852,
+    "explained_by_quality": 0.028823785890444563
+   }
+  }
+ },
+ "managers": {
+  "ancelotti_at_real": {
+   "matches": 77,
+   "knockout_matches": 39,
+   "points": 0.3932329069571464,
+   "se": 0.13220553183016429
+  },
+  "zidane_at_real": {
+   "matches": 53,
+   "knockout_matches": 29,
+   "points": 0.2317956715853901,
+   "se": 0.17592478458434507
+  },
+  "others_at_real": {
+   "matches": 28,
+   "knockout_matches": 8,
+   "points": 0.08446460804846147,
+   "se": 0.24997894556281497
+  },
+  "ancelotti_elsewhere": {
+   "matches": 24,
+   "knockout_matches": 4,
+   "points": 0.029690854053165478,
+   "se": 0.25495049876464815
+  }
+ }
+}

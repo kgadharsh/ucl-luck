@@ -105,11 +105,17 @@ def test_the_stages_have_the_right_number_of_matches(saved):
 
 def test_the_page_gets_the_analysis_only_when_it_matches_the_ties(saved, data, tmp_path, monkeypatch, capsys):
     import export_site
-    assert data["real_madrid"] == saved
+    squad = json.loads((ROOT / "results" / "real_madrid_squad.json").read_text(encoding="utf-8"))
+    assert data["real_madrid"] == {**saved, "squad": squad}  # the page carries both analyses
     monkeypatch.setattr(export_site, "RESULTS", tmp_path)
     assert export_site.real_madrid_section(data["headline"]) is None  # no file at all
     (tmp_path / "real_madrid.json").write_text(json.dumps(saved), encoding="utf-8")
-    assert export_site.real_madrid_section(data["headline"]) == saved
+    assert export_site.real_madrid_section(data["headline"]) == saved  # the line-up check is optional: it needs extra data
+    (tmp_path / "real_madrid_squad.json").write_text(json.dumps(squad), encoding="utf-8")
+    assert export_site.real_madrid_section(data["headline"]) == {**saved, "squad": squad}
+    (tmp_path / "real_madrid_squad.json").write_text(json.dumps({**squad, "through_season": "2024-25"}), encoding="utf-8")
+    assert export_site.real_madrid_section(data["headline"]) == saved  # run on other seasons: left out, never mixed in
+    assert "covers different seasons" in capsys.readouterr().out
     stale = {**data["headline"], "real_won": saved["won"] + 4, "real_ties": saved["ties"] + 6}  # new ties since it was run
     assert export_site.real_madrid_section(stale) is None
     assert "out of date" in capsys.readouterr().out

@@ -11,6 +11,10 @@ const loserOf = (t) => (t.winner === t.team_a ? t.team_b : t.team_a);
 // ---------- the luck machine ----------
 // Every tie drops through a Galton board and lands on the chance the team that went
 // through had before the first leg. The path through the pegs is random; the bin is not.
+// The line under the board describes the ball as it is released, so the text and the ball
+// you are watching fall are the same tie. (Every ball takes about 1.3 seconds to fall, and
+// up to dozens are in the air at once, so describing a ball only as it lands would always
+// be about one you've already stopped watching.) The pile, ripples and tallies update on landing.
 function setupMachine(data) {
   const board = document.getElementById("machine");
   const ctx = board.getContext("2d");
@@ -150,7 +154,7 @@ function setupMachine(data) {
     ball.landed = true;
     tally[ball.t.upset ? "under" : "fav"]++;
     score();
-    if (time !== undefined) { ripple(ball.t, time); say(ball.t); }
+    if (time !== undefined) ripple(ball.t, time);
   }
 
   function release() {
@@ -194,6 +198,7 @@ function setupMachine(data) {
       busy = true;
       const age = clock - ball.start;
       if (age < 0) continue;
+      if (!ball.said) { ball.said = true; say(ball.t); } // in release order, so the newest one is what stays on screen
       if (age >= FLIGHT) land(ball, time);
       else fly(ball, age, time);
     }
@@ -201,7 +206,6 @@ function setupMachine(data) {
       const age = clock - ghost.start;
       if (age < FLIGHT) { fly(ghost, age, time); return true; }
       ripple(ghost.t, time);
-      say(ghost.t);
       return false;
     });
     ripples = ripples.filter((r) => time - r.at < 700);
@@ -230,6 +234,7 @@ function setupMachine(data) {
       if (visible && !document.hidden && !hovered && !paused && finished) {
         const t = ties[Math.floor(Math.random() * ties.length)];
         ghosts.push({ t, moves: route(t.bin), start: clock, row: -1, trail: [], ghost: true });
+        say(t);
         if (!frameId) frameId = requestAnimationFrame(frame);
       }
       idle();

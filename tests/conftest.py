@@ -22,6 +22,10 @@ needs_raw_data = pytest.mark.skipif(not (ROOT / "data" / "raw" / "leagues").exis
                                     reason="needs data/raw: run scripts/download_data.py first")
 
 
+needs_transfermarkt = pytest.mark.skipif(not (ROOT / "data" / "raw" / "transfermarkt" / "game_lineups.csv.gz").exists(),
+                                         reason="needs data/raw/transfermarkt: run scripts/download_data.py --transfermarkt first")
+
+
 @pytest.fixture(scope="session")
 def data():
     return json.loads((ROOT / "site" / "data.json").read_text(encoding="utf-8"))
@@ -49,7 +53,7 @@ def open_page(browser, site_url):
     Every page fails its test on any JavaScript error or console error."""
     contexts, errors = [], []
 
-    def opener(path="", width=1280, height=900, wait=True, allow_errors=False, routes=None, **options):
+    def opener(path="", width=1280, height=900, wait=True, allow_errors=False, routes=None, init_script=None, **options):
         context = browser.new_context(viewport={"width": width, "height": height}, **options)
         contexts.append(context)
         page = context.new_page()
@@ -58,6 +62,8 @@ def open_page(browser, site_url):
             page.on("console", lambda msg: errors.append(f"console {msg.type}: {msg.text}") if msg.type == "error" else None)
         for pattern, handler in (routes or {}).items():
             page.route(pattern, handler)
+        if init_script:  # runs in the page before any of its own scripts
+            page.add_init_script(init_script)
         page.goto(site_url + path)
         if wait:
             page.wait_for_function("document.querySelectorAll('.strip-bar').length > 0", timeout=15000)

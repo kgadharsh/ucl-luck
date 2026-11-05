@@ -234,6 +234,7 @@ def analyse():
         spanish[club] = {"ties": int(len(g)), "won": int(g.won.sum()), "expected": float(g.p.sum()), "z": z_score(g.won.sum(), g.p)}
     return {
         "club": CLUB,
+        "through_season": str(ties.season.max()),
         "ties": int(len(mine)), "won": int(mine.won.sum()), "expected": float(mine.p.sum()),
         "p_at_least": at_least(mine.p, int(mine.won.sum())),
         "stages": stage_rows(mine_matches, STAGES),

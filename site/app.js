@@ -621,6 +621,7 @@ function drawClubs(data) {
 // The numbers come from src/real_madrid.py (data.real_madrid). If that analysis is missing or out
 // of date the whole block stays hidden and the page keeps its shorter explanation.
 const oneIn = (p) => `1 in ${Number((1 / p).toPrecision(2)).toLocaleString("en-GB")}`;
+const ordinal = (n) => `${n}${["th", "st", "nd", "rd"][n % 100 >= 11 && n % 100 <= 13 ? 0 : n % 10 < 4 ? n % 10 : 0]}`;
 const signed = (v, digits = 1) => {
   const size = Math.abs(v).toFixed(digits);
   return Number(size) === 0 ? size : `${v < 0 ? "−" : "+"}${size}`; // zero has no sign
@@ -691,6 +692,22 @@ function drawRmLast(data) {
   });
 }
 
+// The last paragraphs of the verdict. With the line-up check (src/real_madrid_squad.py) they say what
+// it found; without it, why the model can't tell the explanations apart.
+function squadParagraphs(rm, { liga, groups, knockouts, separate }) {
+  const climb = `The gap does grow with the stakes, from ${signed(liga.gap, 2)} points a match in La Liga to ${signed(groups.gap, 2)} in the Champions League groups and ${signed(knockouts.gap, 2)} in the knockouts. ${separate ? "That climb is bigger than luck would explain." : "But those three each have wide error bars that overlap, so I wouldn't lean on that."}`;
+  const sq = rm.squad;
+  if (!sq) {
+    return `
+    <p><b>What I can't tell you is why.</b> There are no line-ups, injuries or bookmaker odds for these matches, so the model can't separate "Real Madrid lift their level in Europe" from "they rotate in La Liga" or "their best eleven is stronger than their league record shows". ${climb}</p>`;
+  }
+  const rot = sq.rotation, ko = sq.strength.real.knockouts, mg = sq.managers;
+  const explained = ko.explained_by_fielded + ko.explained_by_quality;
+  return `
+    <p><b>It isn't the line-ups either.</b> Transfermarkt's starting elevens and market values test the obvious explanations. <i>Rotation:</i> Real do field a fuller eleven in the knockouts than in La Liga (${pct(rot.real.knockouts)} of their best eleven's value against ${pct(rot.real.league)}), but every big club does: the other ${rot.others.clubs} average ${signed(rot.others.gap, 3)} against Real's ${signed(rot.real.gap, 3)}, and Real are ${ordinal(rot.real_rank)} of ${rot.clubs}. <i>Strength:</i> between the eleven Real fielded and the gap in squad quality with their opponents, only ${signed(explained, 2)} of the ${signed(ko.actual, 2)} goals a match they beat the model by in knockouts is accounted for. <i>The manager:</i> Real beat the model under Ancelotti (${signed(mg.ancelotti_at_real.points, 2)} points a match) and under Zidane (${signed(mg.zidane_at_real.points, 2)}), but Ancelotti's ${mg.ancelotti_elsewhere.matches} matches elsewhere (${signed(mg.ancelotti_elsewhere.points, 2)}) are too few to tell a coach from a club.</p>
+    <p><b>What I still can't tell you is why.</b> It isn't rotation, a stronger eleven or (clearly) the manager, so what's left is something neither results nor line-ups can see (how Real manage a tie, experience in these games, or something about the club itself, to give three possibilities). Bookmaker odds for these matches would be the next test, since they'd show whether the market also rated Real above the model. ${climb}</p>`;
+}
+
 function fillRealMadrid(data) {
   const rm = data.real_madrid;
   document.getElementById("rm").hidden = !rm;
@@ -714,7 +731,7 @@ function fillRealMadrid(data) {
     <p><b>It doesn't look like a lucky streak.</b> Split the ${rm.seasons} seasons in half and Real Madrid beat the model by about the same amount in both: ${h1.won} of ${h1.ties} ties won when ${h1.expected.toFixed(1)} were expected, then ${h2.won} of ${h2.ties} when ${h2.expected.toFixed(1)} were. They were ahead of it in ${rm.seasons_above} of ${rm.seasons} seasons. A boost worked out from the first seven seasons alone would have forecast the next seven clearly better (error per tie ${f.without.toFixed(2)} down to ${f.with.toFixed(2)}). Ordinary clubs don't show that: no other club is further than ${rm.others.largest_z.toFixed(1)} luck-units from the model.</p>
     <p><b>It isn't a Spanish thing.</b> Barcelona won ${barca.won} of ${barca.ties} ties when ${barca.expected.toFixed(1)} were expected, and Atlético Madrid ${atleti.won} of ${atleti.ties} when ${atleti.expected.toFixed(1)} were. Real Madrid's own La Liga results are close to the model's too: ${liga.points.toFixed(2)} points a match against ${liga.expected.toFixed(2)} expected.</p>
     <p><b>Part of it is probably luck.</b> ${n.extra_time.actual} of Real's ties went to extra time or penalties, which are close to coin flips, and they won all ${n.won_extra.actual} (about ${n.won_extra.expected.toFixed(1)} expected). That run is the likeliest piece of pure luck. But they also lost only ${n.lost_normal.actual} ties in normal time when the model expected ${n.lost_normal.expected.toFixed(0)}, and that part isn't a coin flip.</p>
-    <p><b>What I can't tell you is why.</b> There are no line-ups, injuries or bookmaker odds for these matches, so the model can't separate "Real Madrid lift their level in Europe" from "they rotate in La Liga" or "their best eleven is stronger than their league record shows". The gap does grow with the stakes, from ${signed(liga.gap, 2)} points a match in La Liga to ${signed(groups.gap, 2)} in the Champions League groups and ${signed(knockouts.gap, 2)} in the knockouts. ${separate ? "That climb is bigger than luck would explain." : "But those three each have wide error bars that overlap, so I wouldn't lean on that."}</p>`;
+${squadParagraphs(rm, { liga, groups, knockouts, separate })}`;
 }
 
 // ---------- calibration ----------

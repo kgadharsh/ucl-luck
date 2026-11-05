@@ -631,6 +631,98 @@ def test_without_the_analysis_the_page_keeps_its_short_explanation(open_page, da
     assert page.locator("#rm-split circle").count() == 0 and page.locator("#rm-last circle").count() == 0
 
 
+def test_the_verdict_reports_the_line_up_check(open_page, data):
+    squad = data["real_madrid"]["squad"]
+    rotation, managers = squad["rotation"], squad["managers"]
+    page = open_page(reduced_motion="reduce")
+    verdict = page.text_content("#rm-verdict")
+    assert f"{rotation['real']['knockouts']:.0%} of their best eleven's value against {rotation['real']['league']:.0%}" in verdict
+    assert f"the other {rotation['others']['clubs']} average {rotation['others']['gap']:+.3f} against Real's {rotation['real']['gap']:+.3f}" in verdict
+    assert f"Real are {rotation['real_rank']}th of {rotation['clubs']}" in verdict
+    assert f"Ancelotti's {managers['ancelotti_elsewhere']['matches']} matches elsewhere" in verdict
+    assert "It isn't the line-ups either" in verdict and "There are no line-ups" not in verdict
+
+
+def test_without_the_line_up_check_the_verdict_says_why_it_cannot_tell(open_page, data):
+    import json
+    without = json.dumps({**data, "real_madrid": {**data["real_madrid"], "squad": None}})
+    page = open_page(reduced_motion="reduce", routes={"**/data.json": lambda route: route.fulfill(body=without, content_type="application/json")})
+    verdict = page.text_content("#rm-verdict")
+    assert "There are no line-ups, injuries or bookmaker odds" in verdict and "isn't the line-ups" not in verdict
+
+
+# ---------- the luck machine: the ball and its tie ----------
+
+WATCH_READOUT = """document.addEventListener('DOMContentLoaded', () => {
+  window.__readouts = [];
+  const now = document.getElementById('machine-now'), under = document.getElementById('ms-under'), fav = document.getElementById('ms-fav');
+  let last = '';
+  const tick = () => {
+    if (now.textContent !== last) { last = now.textContent; __readouts.push({ text: last, landed: +under.textContent + +fav.textContent }); }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+});"""
+
+
+def test_the_machines_text_describes_the_ball_that_is_dropping(open_page, data, browser_name):
+    only_in(browser_name, "chromium")  # the drop takes ten seconds: once is enough
+    page = open_page(init_script=WATCH_READOUT)
+    page.wait_for_function("document.getElementById('machine-now').textContent.startsWith('All')", timeout=60000)
+    seen = [r for r in page.evaluate("__readouts") if not r["text"].startswith(("All", "Every"))]
+    ties = sorted(data["ties"], key=lambda t: (t["season"], ROUND_ORDER.index(t["round"])))  # the order they are released in
+    line = lambda t: (f"{t['season']} · ", f"{round((t['p_a'] if t['winner'] == t['team_a'] else 1 - t['p_a']) * 100)}% chance")
+    at = 0
+    for r in seen:  # every text is the next tie to be released (or a later one, if several were released within one frame)
+        found = next((k for k in range(at, min(at + 40, len(ties))) if r["text"].startswith(line(ties[k])[0]) and r["text"].endswith(line(ties[k])[1])), None)
+        assert found is not None, f"{r['text']} is not one of the next ties to drop"
+        at = found + 1
+    assert len(seen) > 0.25 * len(ties)  # and many get their moment on screen (fewer on a slow machine: several balls can drop within one frame)
+    # Described as it is dropped, not as it lands: balls take over a second to fall, so when the first
+    # texts appear nothing has landed yet. (Describing the landing ball put them one-to-one.)
+    assert [r["landed"] for r in seen[:5]] == [0] * 5
+
+
+FIND_BALLS = """() => {
+  const board = document.getElementById('machine'), tip = document.getElementById('tip');
+  const rect = () => board.getBoundingClientRect();
+  const move = (x, y) => board.dispatchEvent(new PointerEvent('pointermove', { clientX: Math.round(rect().left + x), clientY: Math.round(rect().top + y), pointerType: 'mouse', bubbles: true }));
+  const found = new Map();  // tooltip -> every point whose hover shows it; their middle is the ball's centre
+  const r0 = rect();
+  for (let y = 0; y < r0.height; y += 2) for (let x = 0; x < r0.width; x += 2) {
+    move(x, y);
+    if (!(tip.classList.contains('on') && tip.innerText.includes('chance beforehand'))) continue;
+    const lines = tip.innerText.split('\\n'), key = lines[0] + ' | ' + lines[1];
+    (found.get(key) || found.set(key, { pct: +lines.find((l) => l.includes('chance beforehand')).match(/(\\d+)%/)[1], points: [] }).get(key)).points.push([x, y]);
+  }
+  const w = board.parentElement.clientWidth, s = Math.min(56, w / 10), x0 = (w - s * 10) / 2;
+  const out = { balls: found.size, wrongBin: [], wrongTie: [] };
+  for (const [key, { pct, points }] of found) {
+    const cx = Math.round(points.reduce((a, p) => a + p[0], 0) / points.length), cy = Math.round(points.reduce((a, p) => a + p[1], 0) / points.length);
+    const bin = Math.floor((cx - x0) / s);
+    if (!(bin * 10 <= pct && pct <= bin * 10 + 10)) out.wrongBin.push([key, pct, bin]);
+    for (const id of ['f-season', 'f-round', 'f-club', 'f-against']) document.getElementById(id).value = '';
+    board.scrollIntoView({ block: 'center', behavior: 'instant' });
+    board.dispatchEvent(new MouseEvent('click', { clientX: Math.round(rect().left + cx), clientY: Math.round(rect().top + cy), bubbles: true }));
+    const [head, beat] = key.split(' | '), season = head.split(', ')[0], winner = beat.split(' beat ')[0], loser = beat.split(' beat ')[1];
+    const rows = [...document.querySelectorAll('#ties-list .tie')], through = [...document.querySelectorAll('#ties-list .tie .through')].map((e) => e.textContent);
+    if (!(rows.length === 1 && rows[0].innerText.includes(season) && rows[0].innerText.includes(loser) && through.length === 1 && through[0] === winner)) out.wrongTie.push([key, rows.length, through]);
+  }
+  return out;
+}"""
+
+
+def test_every_ball_is_in_the_right_bin_and_clicks_to_its_own_tie(open_page, data, browser_name):
+    only_in(browser_name, "chromium")  # synthetic pointer events over the whole board: once is enough
+    page = open_page(reduced_motion="reduce")  # the finished board at once
+    page.locator("#machine").scroll_into_view_if_needed()
+    page.wait_for_timeout(400)
+    result = page.evaluate(FIND_BALLS)
+    assert result["balls"] == len(data["ties"])
+    assert result["wrongBin"] == [], result["wrongBin"][:3]  # the chance in the tooltip belongs where the ball sits
+    assert result["wrongTie"] == [], result["wrongTie"][:3]  # a click opens exactly that tie, with its winner highlighted
+
+
 # ---------- printing ----------
 
 def test_printout_shows_every_section_in_final_form(open_page, browser_name, data):

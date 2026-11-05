@@ -1,0 +1,16 @@
+Real Madrid: do the elevens explain it? (1871 of 1872 Champions League matches linked, from 2013-14)
+
+1. Rotation: share of the club's own best eleven (by market value) fielded; knockouts minus league
+   Real Madrid  league 0.839  knockouts 0.909  gap +0.070 (se 0.019, 13 seasons)
+   the other 15 clubs: mean gap +0.054, spread between clubs 0.031; Real ranks 5 of 16
+
+2. Strength: goals a match better than the model expected, on the eleven fielded (1746 matches)
+   eleven stronger than usual: +0.294 (se 0.194)   gap in squad quality: +0.066 (se 0.032)
+   Real, groups     82 matches: +0.193 goals a match (se 0.218); explained by the eleven fielded -0.003, by squad quality +0.116
+   Real, knockouts  76 matches: +0.443 goals a match (se 0.197); explained by the eleven fielded -0.001, by squad quality +0.029
+
+3. The manager: points a match better than the model expected
+   ancelotti at real     77 matches (39 knockout): +0.393 (se 0.132)
+   zidane at real        53 matches (29 knockout): +0.232 (se 0.176)
+   others at real        28 matches (8 knockout): +0.084 (se 0.250)
+   ancelotti elsewhere   24 matches (4 knockout): +0.030 (se 0.255)

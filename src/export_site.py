@@ -124,6 +124,14 @@ def real_madrid_section(headline):
         print(f"Warning: results/real_madrid.json is out of date ({analysis['won']} of {analysis['ties']} ties, "
               f"the page has {headline['real_won']} of {headline['real_ties']}). Run src/real_madrid.py. Leaving it out.")
         return None
+    # The line-up check needs Transfermarkt's files, so it is run separately. Only used if it covers the same seasons.
+    squad_path = RESULTS / "real_madrid_squad.json"
+    if squad_path.exists():
+        squad = json.loads(squad_path.read_text(encoding="utf-8"))
+        if squad.get("through_season") == analysis.get("through_season"):
+            analysis["squad"] = squad
+        else:
+            print("Warning: results/real_madrid_squad.json covers different seasons. Run src/real_madrid_squad.py. Leaving it out.")
     return analysis
 
 

@@ -181,3 +181,22 @@ def test_readme_real_madrid_checks(readme):
     ]
     missing = [text for text in expected if text not in readme]
     assert not missing, missing
+
+
+@pytest.mark.readme
+def test_readme_line_up_check(readme):
+    r = json.loads((ROOT / "results" / "real_madrid_squad.json").read_text(encoding="utf-8"))
+    rotation, strength, managers = r["rotation"], r["strength"], r["managers"]
+    knockouts = strength["real"]["knockouts"]
+    explained = knockouts["explained_by_fielded"] + knockouts["explained_by_quality"]
+    expected = [
+        f"{rotation['real']['knockouts']:.0%} of their best eleven's value in knockout matches against {rotation['real']['league']:.0%} in the league",
+        f"The gap is {rotation['real']['gap']:+.3f} for Real and {rotation['others']['gap']:+.3f} on average for the other {rotation['others']['clubs']} clubs, and Real ranks {rotation['real_rank']}th of {rotation['clubs']}",
+        f"({strength['fielded_vs_usual']['coefficient']:+.2f} goals a match, standard error {strength['fielded_vs_usual']['se']:.2f})",
+        f"only {explained:+.2f} of their {knockouts['actual']:+.2f} goals a match in knockouts",
+        f"under Ancelotti ({managers['ancelotti_at_real']['points']:+.2f} points a match) and under Zidane ({managers['zidane_at_real']['points']:+.2f})",
+        f"Ancelotti's {managers['ancelotti_elsewhere']['matches']} matches elsewhere ({managers['ancelotti_elsewhere']['points']:+.2f})",
+    ]
+    missing = [text for text in expected if text not in readme]
+    assert not missing, missing
+
