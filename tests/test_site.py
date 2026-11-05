@@ -638,7 +638,7 @@ def test_real_madrid_checks_are_drawn_from_the_analysis(open_page, data):
     page = open_page(reduced_motion="reduce")
     assert page.locator("#rm").is_visible()
     assert page.locator("#rm-split circle").count() == 8  # four kinds of ending, a hollow and a solid dot each
-    assert page.locator("#rm-last circle:not(.hit)").count() == len(rm["clubs"])
+    assert page.locator("#rm-last circle:not(.hit)").count() == 4  # two halves, a hollow and a solid dot each
     verdict = page.text_content("#rm-verdict")
     h1, h2, n = rm["halves"][0], rm["halves"][1], rm["normal_time"]
     assert f"{h1['won']} of {h1['ties']} ties won when {h1['expected']:.1f} were expected, then {h2['won']} of {h2['ties']} when {h2['expected']:.1f} were" in verdict
@@ -647,16 +647,37 @@ def test_real_madrid_checks_are_drawn_from_the_analysis(open_page, data):
     assert f"error per tie {rm['forecast']['without']:.2f} down to {rm['forecast']['with']:.2f}" in verdict
 
 
+def test_did_it_last_uses_plain_words_and_only_says_real_madrid_stands_alone_when_it_does(open_page, data):
+    """No luck-units or correlations on the page. "Only club to do it in both halves" follows the data."""
+    import json
+    rm = data["real_madrid"]
+    page = open_page(reduced_motion="reduce")
+    text = page.text_content("#rm")
+    assert "luck-unit" not in text and "correlate" not in text
+    others = [c for c in rm["clubs"] if c["club"] != rm["club"]]
+    real = next(c for c in rm["clubs"] if c["club"] == rm["club"])
+    wide = lambda c: c["first"] > 1.5 and c["second"] > 1.5  # a wide margin, in both halves
+    alone = wide(real) and not any(wide(c) for c in others)
+    assert alone == (f"the only one of the {len(rm['clubs'])} clubs" in page.text_content("#rm-last-note")), "the note must follow the data"
+    assert alone == ("No other club did the same in both halves" in page.text_content("#rm-verdict")), "so must the verdict"
+    # If a rival matches Real in both halves, the page stops saying Real is the only one.
+    rival = {**others[0], "first": real["first"], "second": real["second"]}
+    changed = json.dumps({**data, "real_madrid": {**rm, "clubs": [real, rival, *others[1:]]}})
+    page = open_page(reduced_motion="reduce", routes={"**/data.json": lambda route: route.fulfill(body=changed, content_type="application/json")})
+    assert "the only one" not in page.text_content("#rm-last-note") and "No other club did" not in page.text_content("#rm-verdict")
+
+
 def test_real_madrid_dot_and_rows_explain_themselves(open_page, data):
     rm = data["real_madrid"]
     page = open_page(reduced_motion="reduce")
     page.locator("#rm-last").scroll_into_view_if_needed()
     page.wait_for_timeout(150)  # scrolling (correctly) hides tooltips
     tip = page.locator("#tip")
-    page.locator("#rm-last circle.hit").last.hover()  # Real Madrid is drawn last, on top
-    real = next(c for c in rm["clubs"] if c["club"] == "Real Madrid")
+    page.locator("#rm-last rect.hit").last.hover()
+    second = rm["halves"][1]
     assert "on" in tip.get_attribute("class")
-    assert "Real Madrid" in tip.text_content() and f"First seven seasons ({real['ties_first']} ties)" in tip.text_content()
+    assert "Last seven seasons" in tip.text_content() and f"Won {second['won']} of {second['ties']} ties" in tip.text_content()
+    assert f"the model expected {second['expected']:.1f}" in tip.text_content()
     page.mouse.move(5, 300)
     page.locator("#rm-split rect.hit").first.hover()
     n = rm["normal_time"]["won_normal"]

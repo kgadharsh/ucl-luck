@@ -663,36 +663,33 @@ function drawRmSplit(data) {
   });
 }
 
-// One dot per club: how far it was from the model's expectation in the first seven seasons (across)
-// and the last seven (up). Distances are in units of normal luck: 0 is exactly as expected and
-// beyond 2 is more than luck usually allows.
+// Real Madrid's ties won in each half of the 14 seasons, against how many the model expected. A lucky
+// run fades and a real edge carries on, so the second half is the fair test.
 function drawRmLast(data) {
   const rm = data.real_madrid;
   if (!rm) return;
+  const rows = rm.halves.map((h, i) => [`${i ? "Last" : "First"} seven seasons`, h]);
   const box = document.getElementById("rm-last");
-  const side = Math.max(box.clientWidth, 280);
-  const { root, width, height } = canvas(box, Math.round(Math.min(380, Math.max(270, side * 0.85))));
-  const m = { l: 34, r: 12, t: 10, b: 40 };
-  const lim = 3.2;
-  const x = (v) => m.l + ((v + lim) / (2 * lim)) * (width - m.l - m.r);
-  const y = (v) => m.t + (1 - (v + lim) / (2 * lim)) * (height - m.t - m.b);
-  [-2, 0, 2].forEach((v) => {
-    const mid = v === 0;
-    svg("line", { x1: x(v), x2: x(v), y1: m.t, y2: height - m.b, stroke: mid ? css("--axis") : css("--grid") }, root);
-    svg("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v), stroke: mid ? css("--axis") : css("--grid") }, root);
-    svg("text", { x: x(v), y: height - m.b + 15, "text-anchor": "middle" }, root).textContent = signed(v, 0);
-    svg("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = signed(v, 0);
-  });
-  svg("text", { x: (m.l + width - m.r) / 2, y: height - 6, "text-anchor": "middle" }, root).textContent = "First seven seasons →";
-  svg("text", { x: 11, y: (m.t + height - m.b) / 2, "text-anchor": "middle", transform: `rotate(-90 11 ${(m.t + height - m.b) / 2})` }, root).textContent = "Last seven seasons →";
-  const ordered = [...rm.clubs].sort((a, b) => (a.club === rm.club) - (b.club === rm.club)); // Real Madrid drawn last, on top
-  ordered.forEach((c) => {
-    const real = c.club === rm.club;
-    svg("circle", { cx: x(c.first), cy: y(c.second), r: real ? 7 : 4.5, fill: real ? css("--s2") : css("--s1"),
-      "fill-opacity": real ? 1 : 0.55, stroke: css("--surface"), "stroke-width": 1.5 }, root);
-    if (real) svg("text", { x: x(c.first) - 11, y: y(c.second) + 4, "text-anchor": "end", class: "label-strong" }, root).textContent = clean(c.club);
-    hover(svg("circle", { cx: x(c.first), cy: y(c.second), r: 11, class: "hit" }, root),
-      `<b>${clean(c.club)}</b><br>First seven seasons (${c.ties_first} ties): ${signed(c.first)}<br>Last seven (${c.ties_second} ties): ${signed(c.second)}<br><span style="opacity:.6">0 is exactly what the model expected</span>`);
+  const rowH = 46;
+  const { root, width, height } = canvas(box, rows.length * rowH + 40);
+  const m = { l: 150, r: 14, t: 8, b: 30 }; // room for "First seven seasons"
+  const max = Math.ceil(Math.max(...rows.map(([, h]) => Math.max(h.won, h.expected))) / 5) * 5;
+  const x = (v) => m.l + (v / max) * (width - m.l - m.r);
+  for (let v = 0; v <= max; v += 5) {
+    svg("line", { x1: x(v), x2: x(v), y1: m.t, y2: height - m.b, stroke: css("--grid") }, root);
+    svg("text", { x: x(v), y: height - 10, "text-anchor": "middle" }, root).textContent = v;
+  }
+  svg("text", { x: m.l - 10, y: height - 10, "text-anchor": "end" }, root).textContent = "Ties";
+  legend("rm-last-legend", [["What happened", css("--s2")], ["Model expected", css("--muted")]]);
+  rows.forEach(([label, h], i) => {
+    const cy = m.t + rowH * (i + 0.5);
+    svg("text", { x: m.l - 10, y: cy - 1, "text-anchor": "end", class: "label-strong" }, root).textContent = label;
+    svg("text", { x: m.l - 10, y: cy + 14, "text-anchor": "end" }, root).textContent = h.seasons;
+    svg("line", { x1: x(h.expected), x2: x(h.won), y1: cy, y2: cy, stroke: css("--s2"), "stroke-width": 2 }, root);
+    svg("circle", { cx: x(h.expected), cy, r: 5, fill: css("--surface"), stroke: css("--muted"), "stroke-width": 2 }, root);
+    svg("circle", { cx: x(h.won), cy, r: 5, fill: css("--s2"), stroke: css("--surface"), "stroke-width": 2 }, root);
+    hover(svg("rect", { x: 0, y: cy - rowH / 2, width, height: rowH, class: "hit" }, root),
+      `<b>${label} (${h.seasons})</b><br>Won ${h.won} of ${h.ties} ties; the model expected ${h.expected.toFixed(1)} (${oneIn(h.p_at_least)} by luck)`);
   });
 }
 
@@ -718,12 +715,14 @@ function fillRealMadrid(data) {
   if (!rm) return;
   document.getElementById("rm-lead").textContent = "So is it luck, or something the model can't see? Two checks follow, then what I make of them.";
   const others = rm.clubs.filter((c) => c.club !== rm.club);
-  const mean = (list) => list.reduce((a, b) => a + b, 0) / list.length;
-  const [mx, my] = [mean(others.map((c) => c.first)), mean(others.map((c) => c.second))];
-  const corr = others.reduce((s, c) => s + (c.first - mx) * (c.second - my), 0)
-    / Math.sqrt(others.reduce((s, c) => s + (c.first - mx) ** 2, 0) * others.reduce((s, c) => s + (c.second - my) ** 2, 0));
+  const real = rm.clubs.find((c) => c.club === rm.club);
+  // A wide margin is 1.5 on the analysis's z-score. One other club reaches it in one half (the second),
+  // so the page can say Real Madrid is the only club to do it in both, and no more than that.
+  const WIDE = 1.5;
+  const alone = Boolean(real) && real.first > WIDE && real.second > WIDE && !others.some((c) => c.first > WIDE && c.second > WIDE);
   document.getElementById("rm-last-note").textContent =
-    `Distances are in luck-units: 0 is exactly what the model expected, and beyond 2 is more than luck usually allows. The other ${others.length} clubs scatter around the middle, and a good first half told you nothing about the second (the two correlate at ${signed(corr, 2)}). Real Madrid are top right: ahead of the model in both halves.`;
+    "Real Madrid beat the model in both halves, by about the same amount." +
+    (alone ? ` It is the only one of the ${rm.clubs.length} clubs with at least four ties in each half to beat it by a wide margin in both.` : "");
 
   const [h1, h2] = rm.halves, f = rm.forecast, n = rm.normal_time;
   const stage = Object.fromEntries(rm.stages.map((s) => [s.label, s]));
@@ -732,7 +731,7 @@ function fillRealMadrid(data) {
   const separate = knockouts.gap - knockouts.error > liga.gap + liga.error;
   document.getElementById("rm-verdict").innerHTML = `
     <p><b>The short answer: mostly not luck, though a bit of it is.</b> The model only sees league results and Champions League scores, and it keeps underrating Real Madrid in Europe.</p>
-    <p><b>It doesn't look like a lucky streak.</b> Split the ${rm.seasons} seasons in half and Real Madrid beat the model by about the same amount in both: ${h1.won} of ${h1.ties} ties won when ${h1.expected.toFixed(1)} were expected, then ${h2.won} of ${h2.ties} when ${h2.expected.toFixed(1)} were. They were ahead of it in ${rm.seasons_above} of ${rm.seasons} seasons. A boost worked out from the first seven seasons alone would have forecast the next seven clearly better (error per tie ${f.without.toFixed(2)} down to ${f.with.toFixed(2)}). Ordinary clubs don't show that: no other club is further than ${rm.others.largest_z.toFixed(1)} luck-units from the model.</p>
+    <p><b>It doesn't look like a lucky streak.</b> Split the ${rm.seasons} seasons in half and Real Madrid beat the model by about the same amount in both: ${h1.won} of ${h1.ties} ties won when ${h1.expected.toFixed(1)} were expected, then ${h2.won} of ${h2.ties} when ${h2.expected.toFixed(1)} were. They were ahead of it in ${rm.seasons_above} of ${rm.seasons} seasons. A boost worked out from the first seven seasons alone would have forecast the next seven clearly better (error per tie ${f.without.toFixed(2)} down to ${f.with.toFixed(2)}).${alone ? " No other club did the same in both halves." : ""}</p>
     <p><b>It isn't a Spanish thing.</b> Barcelona won ${barca.won} of ${barca.ties} ties when ${barca.expected.toFixed(1)} were expected, and Atlético Madrid ${atleti.won} of ${atleti.ties} when ${atleti.expected.toFixed(1)} were. Real Madrid's own La Liga results are close to the model's too: ${liga.points.toFixed(2)} points a match against ${liga.expected.toFixed(2)} expected.</p>
     <p><b>Part of it is probably luck.</b> ${n.extra_time.actual} of Real's ties went to extra time or penalties, which are close to coin flips, and they won all ${n.won_extra.actual} (about ${n.won_extra.expected.toFixed(1)} expected). That run is the likeliest piece of pure luck. But they also lost only ${n.lost_normal.actual} ties in normal time when the model expected ${n.lost_normal.expected.toFixed(0)}, and that part isn't a coin flip.</p>
 ${squadParagraphs(rm, { liga, groups, knockouts, separate })}`;
