@@ -358,6 +358,28 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
 .swing { font-size: 15px; color: var(--ink-2); min-height: 22px; }
 .swing b { color: var(--ink); }
 
+/* ---------- skill vs luck ---------- */
+.sk-controls { display: flex; flex-wrap: wrap; gap: 16px 36px; margin-bottom: 26px; }
+.sk-controls label { display: flex; flex-direction: column; gap: 6px; flex: 1 1 260px; max-width: 420px; font: 11px var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.sk-controls output { color: var(--ink); font: 800 28px/1 var(--display); font-stretch: 62%; text-transform: none; letter-spacing: 0; }
+.sk-controls input[type="range"] { width: 100%; accent-color: var(--s2); min-height: 36px; cursor: pointer; }
+.sk-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-bottom: 22px; }
+.sk-stat b { display: block; font: 800 56px/.95 var(--display); font-stretch: 62%; font-variant-numeric: tabular-nums; }
+.sk-stat.red b { color: var(--s2); }
+.sk-stat span { display: block; margin-top: 4px; font: 12px/1.35 var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--ink-2); }
+@media (max-width: 760px) {
+  .sk-stats { gap: 10px; }
+  .sk-stat b { font-size: 38px; }
+  .sk-stat span { font-size: 11px; letter-spacing: 0; }
+}
+
+/* ---------- glossary ---------- */
+.term {
+  cursor: help; text-decoration: underline dotted var(--muted); text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+}
+.term:hover, .term:focus-visible { text-decoration-color: var(--s2); }
+.tip i { color: var(--ink-2); }
+
 /* ---------- comeback meter ---------- */
 .cb-controls { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: end; margin-bottom: 24px; }
 .cb-controls label { display: flex; flex-direction: column; gap: 4px; font: 11px var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }

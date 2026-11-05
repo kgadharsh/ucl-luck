@@ -7,6 +7,7 @@ printouts, a deep link landing in the wrong place, and so on.
 
 import io
 import re
+from math import comb
 
 import pytest
 from pypdf import PdfReader
@@ -336,6 +337,132 @@ def test_calibration_view_switch_leaves_the_comeback_meter_alone(open_page):
     page.click(".cal-view [data-view='full']")
     assert venue() == before
     assert page.locator(".cal-view [data-view='full']").get_attribute("aria-pressed") == "true"
+
+
+# ---------- skill vs luck, the wildest seasons, the glossary ----------
+
+def exact_standings(n, p):
+    """Chance that a side winning each tie with chance p ends n ties ahead, level or behind."""
+    ahead = level = behind = 0.0
+    for k in range(n + 1):
+        q = comb(n, k) * p**k * (1 - p) ** (n - k)
+        if 2 * k > n:
+            ahead += q
+        elif 2 * k == n:
+            level += q
+        else:
+            behind += q
+    return ahead, level, behind
+
+
+def ties_until_sure(p, cap=150):
+    """The fewest ties after which the weaker side finishing ahead is rarer than 1 in 20, for good."""
+    last_bad = max((n for n in range(1, cap + 1) if exact_standings(n, p)[2] > 0.05), default=0)
+    return last_bad + 1 if last_bad < cap else None
+
+
+def shown_chance(x):
+    """How the page writes a chance (never rounds a near-certainty to 100% or a long shot to 0%)."""
+    if 0.995 < x < 1:
+        return ">99%"
+    if 0 < x < 0.005:
+        return "<1%"
+    return f"{x * 100:.0f}%"
+
+
+def set_range(page, selector, value):
+    page.evaluate("""([selector, value]) => {
+      const input = document.querySelector(selector);
+      input.value = value;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }""", [selector, str(value)])
+
+
+def test_skill_slider_matches_the_exact_odds(open_page, data):
+    page = open_page(reduced_motion="reduce")
+    typical = round(data["headline"]["favourite_expected"] * 100)
+    assert page.input_value("#sk-edge") == str(typical)  # starts at what a typical favourite really had
+    for edge, n in [(typical, 1), (68, 5), (68, 4), (90, 1), (75, 7), (55, 30)]:
+        set_range(page, "#sk-edge", edge)
+        set_range(page, "#sk-n", n)
+        shown = page.evaluate("['sk-ahead', 'sk-level', 'sk-behind'].map((id) => document.getElementById(id).textContent)")
+        assert shown == [shown_chance(x) for x in exact_standings(n, edge / 100)], (edge, n)
+        assert page.locator("#sk-chart rect:not(.hit)").count() == n + 1  # one bar for each possible number of wins
+        assert page.text_content("#sk-n-out") == f"{n} {'tie' if n == 1 else 'ties'}"
+
+
+def test_skill_slider_says_how_many_ties_it_takes(open_page):
+    page = open_page(reduced_motion="reduce")
+    set_range(page, "#sk-edge", 68)
+    assert f"about {ties_until_sure(0.68)} ties" in page.text_content("#sk-text")
+    set_range(page, "#sk-edge", 55)  # so close to a coin toss that 150 ties still isn't enough
+    assert ties_until_sure(0.55) is None and "more than 150 ties" in page.text_content("#sk-text")
+
+
+def test_skill_sliders_work_from_the_keyboard(open_page):
+    page = open_page(reduced_motion="reduce")
+    page.locator("#sk-n").focus()
+    page.keyboard.press("ArrowRight")
+    page.keyboard.press("ArrowRight")
+    assert page.text_content("#sk-n-out") == "3 ties"
+    assert page.locator("#sk-chart rect:not(.hit)").count() == 4
+    assert "Level" not in page.text_content("#sk-legend")  # three ties can't finish level
+    page.keyboard.press("ArrowRight")
+    assert "Level" in page.text_content("#sk-legend")
+
+
+def test_wild_seasons_match_the_ties_and_link_to_them(open_page, data):
+    seasons = {}
+    for t in data["ties"]:
+        chance_of_winner = t["p_a"] if t["winner"] == t["team_a"] else 1 - t["p_a"]
+        row = seasons.setdefault(t["season"], {"ties": 0, "upsets": 0, "expected": 0.0})
+        row["ties"] += 1
+        row["upsets"] += chance_of_winner < 0.5
+        row["expected"] += min(t["p_a"], 1 - t["p_a"])
+    ranked = sorted(seasons, key=lambda s: seasons[s]["expected"] - seasons[s]["upsets"])  # wildest first
+    gap = lambda s: seasons[s]["upsets"] - seasons[s]["expected"]
+    page = open_page(reduced_motion="reduce")
+    labels = page.evaluate("""[...document.querySelectorAll('#wild-chart text')].map((t) => t.textContent)""")
+    assert [x for x in labels if re.fullmatch(r"20\d\d-\d\d", x)] == ranked
+    assert [x for x in labels if re.fullmatch(r"[+−]?\d+\.\d", x)] == [
+        f"{'+' if gap(s) > 0 else '−' if gap(s) < 0 else ''}{abs(gap(s)):.1f}" for s in ranked]
+    page.locator("#wild-chart rect.hit").first.click()  # the wildest season opens in the tie explorer
+    assert page.input_value("#f-season") == ranked[0]
+    assert page.text_content("#ties-count") == f"{seasons[ranked[0]]['ties']} ties"
+    assert str(seasons[ranked[0]]["upsets"]) in page.text_content("#wild-note")
+
+
+def test_glossary_terms_open_on_hover(open_page):
+    page = open_page(reduced_motion="reduce")
+    terms = page.locator(".term")
+    assert terms.count() >= 4
+    assert all(terms.nth(i).get_attribute("aria-description") for i in range(terms.count()))  # nothing undefined
+    terms.first.scroll_into_view_if_needed()
+    page.wait_for_timeout(150)  # scrolling (correctly) hides tooltips
+    tip = page.locator("#tip")
+    terms.first.hover()
+    assert "on" in tip.get_attribute("class") and "Pre-match chance" in tip.text_content()
+    page.mouse.move(5, 300)
+    assert "on" not in tip.get_attribute("class")
+
+
+def test_glossary_terms_open_from_the_keyboard_even_far_down_the_page(open_page):
+    page = open_page()  # with motion, so the page scrolls smoothly to the term
+    tip = page.locator("#tip")
+    page.locator(".term").last.focus()
+    page.wait_for_function("document.getElementById('tip').classList.contains('on')", timeout=5000)
+    assert "Elo" in tip.text_content()
+    page.keyboard.press("Escape")
+    assert "on" not in tip.get_attribute("class")
+
+
+def test_a_tap_opens_a_glossary_term_on_touch_screens(open_page, browser_name):
+    only_in(browser_name, "chromium", "webkit")  # Playwright's Firefox can't emulate touch
+    page = open_page(width=375, has_touch=True, is_mobile=browser_name == "chromium", reduced_motion="reduce")
+    page.locator(".term").first.scroll_into_view_if_needed()
+    page.wait_for_timeout(150)
+    page.locator(".term").first.tap()
+    assert "on" in page.locator("#tip").get_attribute("class")  # tapping elsewhere-on-the-page closes tooltips, but not this
 
 
 # ---------- printing ----------

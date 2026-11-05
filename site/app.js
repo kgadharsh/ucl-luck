@@ -71,7 +71,40 @@ function hover(node, html, onPick) {
   node.addEventListener("pointerdown", (e) => { if (e.pointerType === "touch") showTip(text(), e); });
   if (onPick) node.addEventListener("click", onPick);
 }
-document.addEventListener("pointerdown", (e) => { if (e.pointerType === "touch" && !e.target.closest(".chart")) hideTip(); });
+document.addEventListener("pointerdown", (e) => { if (e.pointerType === "touch" && !e.target.closest(".chart, .term")) hideTip(); });
+
+// ---------- glossary ----------
+// The few terms that are left in the text. Dotted words open a one-line definition on hover,
+// tap or keyboard focus, so a reader never has to leave the page to look something up.
+const GLOSSARY = {
+  "pre-match": ["Pre-match chance", "A team's chance of going through, worked out by the model before the first leg using only matches played earlier. If a tie were replayed ten times from the same start, a team with 70% would win about seven of them."],
+  "closing-odds": ["Final (closing) odds", "The bookmakers' odds just before kick-off. By then they include team news and all the money that has been bet, so they're the hardest benchmark to beat."],
+  "dixon-coles": ["Dixon–Coles", "A model that works out how many goals each side would score and concede against an average opponent, then turns that into the chances of a win, draw or loss."],
+  "elo": ["Elo", "A rating borrowed from chess. Each club has one number that goes up after a win and down after a loss, by more when the result was a surprise."],
+};
+function setupGlossary() {
+  document.querySelectorAll(".term").forEach((node) => {
+    const entry = GLOSSARY[node.dataset.term];
+    if (!entry) return;
+    const [title, text] = entry;
+    node.setAttribute("aria-description", `${title}: ${text}`);
+    hover(node, `<b>${title}</b><br>${text}`);
+    // Keyboard: show it under the word once the page has stopped scrolling to it. (The page
+    // scrolls smoothly, and scrolling hides tooltips, so showing it straight away would be undone.)
+    node.addEventListener("focus", () => {
+      let lastTop = null, frames = 0;
+      const settle = () => {
+        if (document.activeElement !== node || ++frames > 300) return; // a long smooth scroll takes ~2s
+        const box = node.getBoundingClientRect();
+        if (box.top !== lastTop) { lastTop = box.top; requestAnimationFrame(settle); return; }
+        showTip(`<b>${title}</b><br>${text}`, { clientX: box.left, clientY: box.bottom - 10 }, node);
+      };
+      requestAnimationFrame(settle);
+    });
+    node.addEventListener("blur", () => { if (tipOwner === node) hideTip(); });
+    node.addEventListener("keydown", (e) => { if (e.key === "Escape") hideTip(); });
+  });
+}
 
 function legend(id, items) {
   document.getElementById(id).innerHTML = items
@@ -81,18 +114,20 @@ function legend(id, items) {
 
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
+// One more tie. dist[k] is the chance of exactly k wins so far; p is the chance of winning this one.
+function addTie(dist, p) {
+  const next = new Array(dist.length + 1).fill(0);
+  dist.forEach((q, k) => { next[k] += q * (1 - p); next[k + 1] += q * p; });
+  return next;
+}
+
 // "1 in N": how rarely a club would win at least as many ties as it did if the model's tie
 // chances were right. Exact (the tail of a Poisson-binomial distribution), not a normal
 // approximation, which says 1 in 13,000 for Real Madrid instead of 1 in 11,500.
 function oddsOfDoingAsWell(ties, club) {
   const mine = ties.filter((t) => t.team_a === club || t.team_b === club);
   let dist = [1]; // dist[k]: chance of exactly k ties won so far
-  for (const t of mine) {
-    const p = t.team_a === club ? t.p_a : 1 - t.p_a;
-    const next = new Array(dist.length + 1).fill(0);
-    dist.forEach((q, k) => { next[k] += q * (1 - p); next[k + 1] += q * p; });
-    dist = next;
-  }
+  for (const t of mine) dist = addTie(dist, t.team_a === club ? t.p_a : 1 - t.p_a);
   const won = mine.filter((t) => t.winner === club).length;
   const tail = dist.slice(won).reduce((a, b) => a + b, 0);
   return tail > 0 ? Number((1 / tail).toPrecision(3)).toLocaleString("en-GB") : "";
@@ -418,6 +453,137 @@ function drawRounds(data) {
     const hit = svg("rect", { x: cx - step / 2, y: m.t, width: step, height: height - m.t - m.b, class: "hit" }, root);
     hover(hit, `<b>${row.round}</b> (${row.ties} ties)<br>Model expected the favourite through: ${pct(row.expected)}<br>Actually went through: ${pct(row.won)}, give or take ${pct(row.error)}`);
   });
+}
+
+// ---------- skill vs luck: the better side over many ties ----------
+// The chance of every number of wins for a side that wins each tie with chance p. Exact.
+function winsDistribution(n, p) {
+  let dist = [1];
+  for (let i = 0; i < n; i++) dist = addTie(dist, p);
+  return dist;
+}
+// Ahead (more wins than losses), level, or behind.
+function standings(dist) {
+  const n = dist.length - 1;
+  const out = { ahead: 0, level: 0, behind: 0 };
+  dist.forEach((q, k) => { out[2 * k > n ? "ahead" : 2 * k === n ? "level" : "behind"] += q; });
+  return out;
+}
+// How many ties until the weaker side finishing ahead is rarer than 1 in 20, and stays that rare.
+// (It isn't smooth: an even number of ties can finish level, which is not "behind".)
+function tiesUntilSure(p, cap = 150) {
+  let dist = [1], lastBad = 0;
+  for (let n = 1; n <= cap; n++) {
+    dist = addTie(dist, p);
+    if (standings(dist).behind > 0.05) lastBad = n;
+  }
+  return lastBad < cap ? lastBad + 1 : null;
+}
+
+function setupSkill(data) {
+  const edge = document.getElementById("sk-edge");
+  const count = document.getElementById("sk-n");
+  edge.value = Math.round(data.headline.favourite_expected * 100); // what a typical favourite really had
+  const sure = {}; // tiesUntilSure for each edge, so dragging the other slider stays instant
+  function draw() {
+    const p = Number(edge.value) / 100, n = Number(count.value);
+    document.getElementById("sk-edge-out").textContent = `${edge.value}%`;
+    document.getElementById("sk-n-out").textContent = `${n} ${n === 1 ? "tie" : "ties"}`;
+    const dist = winsDistribution(n, p);
+    const { ahead, level, behind } = standings(dist);
+    document.getElementById("sk-ahead").textContent = chance(ahead);
+    document.getElementById("sk-level").textContent = chance(level);
+    document.getElementById("sk-behind").textContent = chance(behind);
+
+    const colour = (k) => (2 * k > n ? css("--s1") : 2 * k === n ? css("--s3") : css("--s2"));
+    legend("sk-legend", [["Better side finishes ahead", css("--s1")], ...(n % 2 ? [] : [["Level", css("--s3")]]), ["Weaker side finishes ahead", css("--s2")]]);
+    const box = document.getElementById("sk-chart");
+    const { root, width, height } = canvas(box, 230);
+    const m = { l: 44, r: 8, t: 12, b: 46 };
+    const top = Math.ceil(Math.max(...dist) * 10) / 10;
+    const y = (v) => m.t + (1 - v / top) * (height - m.t - m.b);
+    for (let v = 0; v <= top + 1e-9; v += top > 0.5 ? 0.2 : 0.1) {
+      svg("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v), stroke: css("--grid") }, root);
+      svg("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = pct(v);
+    }
+    const step = (width - m.l - m.r) / (n + 1);
+    const every = n <= 12 ? 1 : n <= 20 ? 2 : 5;
+    dist.forEach((q, k) => {
+      const cx = m.l + step * (k + 0.5), w = Math.min(step * 0.78, 38);
+      svg("rect", { x: cx - w / 2, y: y(q), width: w, height: Math.max(0, height - m.b - y(q)), fill: colour(k) }, root);
+      if (k % every === 0) svg("text", { x: cx, y: height - m.b + 16, "text-anchor": "middle" }, root).textContent = k;
+      const hit = svg("rect", { x: cx - step / 2, y: m.t, width: step, height: height - m.t - m.b, class: "hit" }, root);
+      hover(hit, `<b>${k} of ${n} won by the better side</b><br>${chance(q)} of the time<br>${2 * k > n ? "Better side finishes ahead" : 2 * k === n ? "Level" : "Weaker side finishes ahead"}`);
+    });
+    svg("text", { x: (m.l + width - m.r) / 2, y: height - 6, "text-anchor": "middle" }, root).textContent = "Ties won by the better side";
+
+    sure[edge.value] ??= tiesUntilSure(p);
+    const until = sure[edge.value];
+    const needed = until ? `It takes about ${until} ties before the weaker side finishing ahead is rarer than 1 in 20.` : "It would take more than 150 ties before the weaker side finishing ahead is rarer than 1 in 20.";
+    document.getElementById("sk-text").innerHTML = n === 1
+      ? `In a single tie, even the better side goes out ${chance(1 - p)} of the time. That's the lottery. ${needed}`
+      : `Winning <b>every</b> one of ${n} ties is much harder: ${chance(p ** n)}. ${needed}`;
+    box.setAttribute("aria-label", `Chance of each number of wins for the better side over ${n} ${n === 1 ? "tie" : "ties"}: ahead ${chance(ahead)}, level ${chance(level)}, behind ${chance(behind)}`);
+  }
+  [edge, count].forEach((input) => input.addEventListener("input", draw));
+  return draw;
+}
+
+// ---------- the wildest seasons ----------
+// Per season: how many underdogs went through (an underdog is the side with the lower pre-match
+// chance), how many the model expected, and who they were.
+function seasonUpsets(ties) {
+  const seasons = new Map();
+  for (const t of ties) {
+    const row = seasons.get(t.season) ?? { season: t.season, ties: 0, expected: 0, variance: 0, upsets: [] };
+    const favourite = Math.max(t.p_a, 1 - t.p_a);
+    const chanceOfWinner = t.winner === t.team_a ? t.p_a : 1 - t.p_a;
+    row.ties++;
+    row.expected += 1 - favourite;
+    row.variance += favourite * (1 - favourite);
+    if (chanceOfWinner < 0.5) row.upsets.push({ club: t.winner, over: t.winner === t.team_a ? t.team_b : t.team_a, chance: chanceOfWinner });
+    seasons.set(t.season, row);
+  }
+  return [...seasons.values()].map((r) => ({ ...r, actual: r.upsets.length, z: (r.upsets.length - r.expected) / Math.sqrt(r.variance) }));
+}
+
+function drawWild(data) {
+  const box = document.getElementById("wild-chart");
+  const rows = seasonUpsets(data.ties).sort((a, b) => (b.actual - b.expected) - (a.actual - a.expected));
+  const rowH = 30;
+  const { root, width, height } = canvas(box, rows.length * rowH + 40);
+  const m = { l: 64, r: 48, t: 8, b: 30 };
+  const max = Math.ceil(Math.max(...rows.map((r) => Math.max(r.actual, r.expected))));
+  const x = (v) => m.l + (v / max) * (width - m.l - m.r);
+  for (let v = 0; v <= max; v++) {
+    svg("line", { x1: x(v), x2: x(v), y1: m.t, y2: height - m.b, stroke: css("--grid") }, root);
+    svg("text", { x: x(v), y: height - 10, "text-anchor": "middle" }, root).textContent = v;
+  }
+  svg("text", { x: m.l - 10, y: height - 10, "text-anchor": "end" }, root).textContent = "Underdogs";
+  legend("wild-legend", [["Underdogs that went through", css("--s1")], ["Wildest season", css("--s2")], ["Model expected", css("--muted")]]);
+  rows.forEach((row, i) => {
+    const cy = m.t + rowH * (i + 0.5);
+    const colour = i === 0 ? css("--s2") : css("--s1");
+    const gap = row.actual - row.expected;
+    svg("text", { x: m.l - 10, y: cy + 4, "text-anchor": "end", class: i === 0 ? "label-strong" : "" }, root).textContent = row.season;
+    svg("line", { x1: x(row.expected), x2: x(row.actual), y1: cy, y2: cy, stroke: colour, "stroke-width": 2, pathLength: 1, class: "draw", style: `--d:${400 + i * 45}ms` }, root);
+    svg("circle", { cx: x(row.expected), cy, r: 5, fill: css("--surface"), stroke: css("--muted"), "stroke-width": 2, class: "pop", style: `--d:${200 + i * 45}ms` }, root);
+    svg("circle", { cx: x(row.actual), cy, r: 5, fill: colour, stroke: css("--surface"), "stroke-width": 2, class: "pop", style: `--d:${600 + i * 45}ms` }, root);
+    svg("text", { x: width - 2, y: cy + 4, "text-anchor": "end" }, root).textContent = `${gap > 0 ? "+" : gap < 0 ? "−" : ""}${Math.abs(gap).toFixed(1)}`;
+    const hit = svg("rect", { x: 0, y: cy - rowH / 2, width, height: rowH, class: "hit" }, root);
+    const upsets = row.upsets.sort((a, b) => a.chance - b.chance);
+    const names = upsets.slice(0, 7).map((u) => `${clean(u.club)} over ${clean(u.over)} (${chance(u.chance)})`).join("<br>");
+    hover(hit, `<b>${row.season}</b><br>${row.actual} underdog${row.actual === 1 ? "" : "s"} went through; the model expected ${row.expected.toFixed(1)}<br>${names}${upsets.length > 7 ? `<br>and ${upsets.length - 7} more` : ""}<br><i>Click to see this season's ties</i>`,
+      () => filterTies({ season: row.season }, true));
+  });
+  const wild = rows[0], calm = rows[rows.length - 1];
+  const sizes = rows.map((r) => r.ties), few = Math.min(...sizes), many = Math.max(...sizes);
+  const odd = rows.filter((r) => Math.abs(r.z) >= 2).map((r) => r.season);
+  document.getElementById("wild-note").textContent =
+    `${wild.season} was the wildest: ${wild.actual} underdogs went through against ${wild.expected.toFixed(1)} expected. ${calm.season} was the calmest: ${calm.actual} against ${calm.expected.toFixed(1)}. `
+    + (odd.length
+      ? `${odd.join(" and ")} ${odd.length === 1 ? "is" : "are"} further from the model than luck usually allows.`
+      : `With only ${few === many ? few : `${few} to ${many}`} ties a season, swings like this are normal: none of them is far enough from what the model expected to call it anything but luck.`);
 }
 
 // ---------- clubs: expected vs actual ----------
@@ -1147,12 +1313,14 @@ function start(data) {
   setupCalibration(data);
   setupTies(data);
   fillLive(data);
+  setupGlossary();
+  const redrawSkill = setupSkill(data);
   const redrawButterfly = setupButterfly(data);
   const redrawHeat = setupComeback(data);
   setupWire(data);
   const redrawMachine = setupMachine(data);
   const redrawTicker = setupTicker(data);
-  drawAll = () => { redrawMachine(); redrawTicker(); drawRuns(data); drawRounds(data); drawClubs(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
+  drawAll = () => { redrawMachine(); redrawTicker(); drawRuns(data); redrawSkill(); drawRounds(data); drawWild(data); drawClubs(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
   drawAll();
   const luck = document.querySelector("h1 em");
   document.fonts.ready.then(() => setTimeout(() => scramble(luck), 500));

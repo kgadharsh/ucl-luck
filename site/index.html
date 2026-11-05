@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-  <link rel="stylesheet" href="style.css?v=26">
+  <link rel="stylesheet" href="style.css?v=27">
   <script>
     // Before anything paints or draws: mark that JS is on, and apply a saved light/dark choice,
     // so charts are never drawn in the system theme's colours and the page doesn't flash.
@@ -47,9 +47,11 @@
       <span class="brand">Knockout Luck</span>
       <nav>
         <a href="#runs">Champions</a>
+        <a href="#skill">Skill vs luck</a>
         <a href="#butterfly">What if?</a>
         <a href="#comeback">Comebacks</a>
         <a href="#rounds">Favourites</a>
+        <a href="#wild">Wild seasons</a>
         <a href="#ties">Every tie</a>
         <a href="#blind-spot">Real Madrid</a>
         <a href="#honest">Is the model honest?</a>
@@ -65,7 +67,7 @@
       <h1>How much of a Champions League knockout is <em>luck?</em></h1>
       <div class="hero-grid">
         <div class="hero-text">
-          <p class="lede">Before the first leg of every knockout tie, a model worked out each team's chance of going through, using only matches played earlier. We call it the <b>pre-match chance</b>. Then we checked what actually happened.</p>
+          <p class="lede">Before the first leg of every knockout tie, a model worked out each team's chance of going through, using only matches played earlier. We call it the <b><span class="term" tabindex="0" data-term="pre-match">pre-match chance</span></b>. Then we checked what actually happened.</p>
           <div class="stats">
             <div class="stat">
               <span class="stat-value" data-fill="underdog"></span>
@@ -106,6 +108,27 @@
       <div class="chart" id="runs-chart" role="img" aria-label="Bar chart of each champion's chance of winning its run"></div>
       <div class="filters run-pick"><label>Show the run of <select id="runs-pick"></select></label></div>
       <div class="path" id="runs-path" aria-live="polite"></div>
+    </section>
+
+    <section id="skill" class="card">
+      <h2>One tie is a lottery. A season isn't.</h2>
+      <p class="sub">Say one side is better, and wins any single tie with the chance you choose. Drag the number of ties it plays and see how often the better side really comes out on top. Luck rules one tie, but it washes out over many.</p>
+      <div class="sk-controls">
+        <label>The better side's chance in one tie <output id="sk-edge-out" for="sk-edge"></output>
+          <input id="sk-edge" type="range" min="55" max="90" step="1" value="68">
+        </label>
+        <label>Ties played <output id="sk-n-out" for="sk-n"></output>
+          <input id="sk-n" type="range" min="1" max="30" step="1" value="1">
+        </label>
+      </div>
+      <div class="sk-stats">
+        <div class="sk-stat"><b id="sk-ahead"></b><span>better side finishes ahead on wins</span></div>
+        <div class="sk-stat"><b id="sk-level"></b><span>level on wins</span></div>
+        <div class="sk-stat red"><b id="sk-behind"></b><span>weaker side finishes ahead</span></div>
+      </div>
+      <div class="legend" id="sk-legend"></div>
+      <div class="chart" id="sk-chart" role="img" aria-label="How many of its ties the better side wins, and how likely each number is"></div>
+      <p class="swing" id="sk-text" aria-live="polite"></p>
     </section>
 
     <section id="butterfly" class="card">
@@ -180,9 +203,17 @@
       <div class="chart" id="rounds-chart" role="img" aria-label="Favourite win rate by round, expected and actual"></div>
     </section>
 
+    <section id="wild" class="card">
+      <h2>Which season was the wildest?</h2>
+      <p class="sub">An underdog is the side with the lower pre-match chance. For each season, the solid dot is how many underdogs actually went through and the hollow dot is how many the model expected. The number on the right is the gap. Click a season to see its ties.</p>
+      <div class="legend" id="wild-legend"></div>
+      <div class="chart" id="wild-chart" role="img" aria-label="Underdogs that went through each season, against how many the model expected"></div>
+      <p class="small" id="wild-note"></p>
+    </section>
+
     <section id="ties" class="card">
       <h2>Every knockout tie</h2>
-      <p class="sub">Each bar splits the pre-match chances between the two teams. ✓ marks the team that went through.</p>
+      <p class="sub">Each bar splits the <span class="term" tabindex="0" data-term="pre-match">pre-match chances</span> between the two teams. ✓ marks the team that went through.</p>
       <figure class="ticker">
         <figcaption><b>Season by season.</b> One bar per tie, grouped by round within each season, from the play-offs to the final. A bar's height is the winner's pre-match chance; the dotted line is 50%, so <span class="red">red bars, below it, are ties the underdog won</span>. Click a season, or choose one below, to zoom in.</figcaption>
         <div class="strip-nav" id="strip-nav" hidden>
@@ -217,7 +248,7 @@
 
     <section id="honest" class="card">
       <h2>Is the model honest?</h2>
-      <p class="sub">A luck study is only as good as its chances. So the model was tested on <span data-fill="test-matches"></span> league matches from seasons it never saw (2017-18 onwards), against the bookmakers' final odds just before kick-off, which are the toughest benchmark there is.</p>
+      <p class="sub">A luck study is only as good as its chances. So the model was tested on <span data-fill="test-matches"></span> league matches from seasons it never saw (2017-18 onwards), against the bookmakers' <span class="term" tabindex="0" data-term="closing-odds">final odds</span> just before kick-off, which are the toughest benchmark there is.</p>
       <div class="split">
         <div>
           <h3>When it says 60%, does it happen 60% of the time?</h3>
@@ -276,13 +307,13 @@
     </section>
 
     <footer class="foot">
-      <p>Data: league results and closing odds from football-data.co.uk; Champions League results from openfootball (public domain). Models: a goals model (Dixon–Coles) and a simpler rating system (Elo), each only ever shown matches played before the one it predicts. Built <span data-fill="built"></span>.</p>
+      <p>Data: league results and closing odds from football-data.co.uk; Champions League results from openfootball (public domain). Models: a goals model (<span class="term" tabindex="0" data-term="dixon-coles">Dixon–Coles</span>) and a simpler rating system (<span class="term" tabindex="0" data-term="elo">Elo</span>), each only ever shown matches played before the one it predicts. Built <span data-fill="built"></span>.</p>
     </footer>
   </main>
 
   <a class="to-top" id="to-top" href="#top" hidden>↑ Top</a>
   <div class="tip" id="tip" aria-hidden="true"></div>
   <script src="motion.js?v=10"></script>
-  <script src="app.js?v=31"></script>
+  <script src="app.js?v=32"></script>
 </body>
 </html>

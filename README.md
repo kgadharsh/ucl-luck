@@ -54,15 +54,17 @@ What's on it:
 - **The luck machine.** Every tie drops through a Galton board and lands on the winner's chance before the first leg, so the pile you end up with is the shape of the luck. Hover a ball to see its tie, or click it to jump to it in the explorer.
 - An upsets ticker (ties won by a side given under 35%) and the headline numbers.
 - Each champion's run, with a funnel showing its chances shrinking tie by tie.
+- **One tie is a lottery, a season isn't.** Two sliders: how likely the better side is to win one tie (it starts at what a typical favourite really had) and how many ties it plays. You see how often it finishes ahead, level or behind, and how long it takes before the weaker side getting ahead becomes rare. Winning every single tie, which is what a trophy asks for, stays unlikely however good you are.
 - **What if?** Pick the winner of any tie in any season since 2012-13 and every club's chance of winning the trophy is recalculated exactly (`src/brackets.py`). Strengths are frozen just before the round of 16. Before 2024-25 the later rounds were drawn one at a time, so for those seasons it uses the draws as they actually happened. Your picks are saved in the page's address, so "Share these picks" gives you a link that opens with exactly the same bracket.
 - **A comeback meter.** Pick a first-leg score, where it was played, how strong your team is and which rules apply, and it gives you the exact chance of still going through (second leg, extra time, penalties, and away goals if you want them). Next to that is what actually happened in real ties that started the same way: 337 ties in all, from Champions League knockouts since 2011-12 and the Europa League seasons above. One thing it shows nicely: real teams that lost the first leg away usually went through more often than the "evenly matched" model says, because they were usually the seeded side and had the second leg at home.
 - How often the favourite went through in each round.
+- **Which season was the wildest?** For each season, how many underdogs went through against how many the model expected. Hover a season to see who they were; click it to open its ties in the explorer.
 - An explorer for all 226 ties, with a season-by-season strip and filters.
 - The Real Madrid section.
 - How honest the model is against the bookmakers, and the live ratings and prediction ledger.
 - An upsets watch: the upcoming league games where the model rates a result well above the bookmakers do, so you can see each weekend whether the model or the market was right.
 
-I tried to write the page for football fans rather than statisticians. The one idea it leans on, a team's chance of going through before the first leg, gets one name (the "pre-match chance") and is used everywhere. It works on phones, in light and dark mode, with a keyboard, and printed to PDF. If your system asks for reduced motion, you get the finished page without the animation.
+I tried to write the page for football fans rather than statisticians. The one idea it leans on, a team's chance of going through before the first leg, gets one name (the "pre-match chance") and is used everywhere. The few technical words that are left, like Elo, are underlined with dots: hover, tap or tab to one for a one-line explanation. It works on phones, in light and dark mode, with a keyboard, and printed to PDF. If your system asks for reduced motion, you get the finished page without the animation.
 
 Shared links show a preview card (`site/preview.png`), which `src/preview.py` draws from the same numbers as the page. The daily workflow refreshes `site/data.json` and the preview, and `.github/workflows/pages.yml` republishes the site after each daily update and every push to `main` that touches `site/`.
 
