@@ -739,9 +739,11 @@ ${squadParagraphs(rm, { liga, groups, knockouts, separate })}`;
 }
 
 // ---------- calibration ----------
-// Two views of the same bins. "Gap" plots how far each model was from honest, which is
-// where the differences between models are visible; "full" is the classic diagonal chart.
-let calView = "gap";
+// Two views of the same bins. "Full" is the classic diagonal chart and the one that answers the
+// heading's question (lines hugging the diagonal mean the chances were honest), so it comes first.
+// "Gap" plots how far each model was from honest, which is where the small differences between
+// models are visible.
+let calView = "full";
 function drawCalibration(data) {
   const box = document.getElementById("cal-chart");
   const gapView = calView === "gap";
@@ -781,7 +783,9 @@ function drawCalibration(data) {
     svg("text", { x: x(0) + 8, y: height - m.b - 8 }, root).textContent = roomy ? "↓ Home side won less often than predicted" : "↓ Won less than predicted";
   } else {
     svg("line", { x1: x(0), y1: y(0), x2: x(1), y2: y(1), stroke: css("--ink-2"), "stroke-width": 1.5, "stroke-dasharray": "2 4" }, root);
-    svg("text", { x: x(0.62), y: y(0.62) + 18, "text-anchor": "start", class: "label-strong" }, root).textContent = "Perfectly honest";
+    // Up and to the left of the diagonal is empty: the lines hug it, so a label there covers nothing.
+    const roomy = x(0.5) - x(0) > 16 * 6.7 + 8;
+    svg("text", { x: x(0.5), y: y(0.62) + 4, "text-anchor": "end", class: "label-strong" }, root).textContent = roomy ? "Perfectly honest ↘" : "Honest ↘";
   }
   legend("cal-legend", data.calibration.map((s) => [MODEL_NAMES[s.name] || s.name, colors[s.name], dashed[s.name] ? "line dash" : "line"]));
 
@@ -811,7 +815,8 @@ function drawCalibration(data) {
   document.getElementById("cal-note").innerHTML = `On average, the home side's real win rate was off from the prediction by ` +
     misses.map((s) => `<b>${(s.miss * 100).toFixed(1)} points</b> for ${s.name === "Bookmakers" ? "the bookmakers" : (MODEL_NAMES[s.name] || s.name).toLowerCase()}`)
       .join(", ").replace(/, ([^,]*)$/, " and $1") +
-    `. Gaps that small mean all three are honest. Near 0% and 100% there are few matches, so the lines showing the likely range get long.`;
+    `. Gaps that small mean all three are honest. Near 0% and 100% there are few matches, so the lines showing the likely range get long.` +
+    (gapView ? ` This view is the same points with the honest line laid flat at 0, so that small gaps show.` : "");
 }
 
 function setupCalibration(data) {

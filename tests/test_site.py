@@ -336,9 +336,23 @@ def test_calibration_view_switch_leaves_the_comeback_meter_alone(open_page):
     page = open_page(reduced_motion="reduce")
     venue = lambda: page.evaluate("[...document.querySelectorAll('.cb-controls .seg button')].map((b) => b.getAttribute('aria-pressed')).join()")
     before = venue()
-    page.click(".cal-view [data-view='full']")
+    page.click(".cal-view [data-view='gap']")
     assert venue() == before
+    assert page.locator(".cal-view [data-view='gap']").get_attribute("aria-pressed") == "true"
+
+
+def test_calibration_opens_on_the_whole_picture_and_can_zoom_in(open_page):
+    """The heading asks "when it says 60%, does it happen 60% of the time?" and the diagonal answers it."""
+    page = open_page(reduced_motion="reduce")
     assert page.locator(".cal-view [data-view='full']").get_attribute("aria-pressed") == "true"
+    assert page.locator(".cal-view button").first.get_attribute("data-view") == "full"
+    texts = lambda: page.evaluate("[...document.querySelectorAll('#cal-chart text')].map((t) => t.textContent).join('|')")
+    assert "honest" in texts().lower() and "How often the home team actually won" in texts()
+    assert "laid flat" not in page.text_content("#cal-note")
+    page.click(".cal-view [data-view='gap']")
+    assert "How far off" in texts() and "laid flat" in page.text_content("#cal-note")
+    page.click(".cal-view [data-view='full']")
+    assert "How often the home team actually won" in texts()
 
 
 # ---------- skill vs luck, the wildest seasons, the glossary ----------
