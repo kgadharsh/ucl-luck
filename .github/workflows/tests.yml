@@ -13,7 +13,8 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # Not ubuntu-latest: it moved to Ubuntu 26, which this Playwright can't install browsers on yet.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
