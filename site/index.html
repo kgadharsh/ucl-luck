@@ -143,23 +143,9 @@
 
     <section id="skill" class="card">
       <h2>One tie is a lottery. A season isn't.</h2>
-      <p class="sub">Say one side is better, and wins any single tie with the chance you choose. Drag the number of ties it plays and see how often the better side really comes out on top. Luck rules one tie, but it washes out over many.</p>
-      <div class="sk-controls">
-        <label>The better side's chance in one tie <output id="sk-edge-out" for="sk-edge"></output>
-          <input id="sk-edge" type="range" min="55" max="90" step="1" value="68">
-        </label>
-        <label>Ties played <output id="sk-n-out" for="sk-n"></output>
-          <input id="sk-n" type="range" min="1" max="30" step="1" value="1">
-        </label>
-      </div>
-      <div class="sk-stats">
-        <div class="sk-stat"><b id="sk-ahead"></b><span>better side finishes ahead on wins</span></div>
-        <div class="sk-stat"><b id="sk-level"></b><span>level on wins</span></div>
-        <div class="sk-stat red"><b id="sk-behind"></b><span>weaker side finishes ahead</span></div>
-      </div>
-      <div class="legend" id="sk-legend"></div>
-      <div class="chart" id="sk-chart" role="img" aria-label="How many of its ties the better side wins, and how likely each number is"></div>
-      <p class="swing" id="sk-text" aria-live="polite"></p>
+      <p class="sub" id="sk-sub"></p>
+      <div class="sk-stats" id="sk-stats"></div>
+      <p class="swing" id="sk-text"></p>
     </section>
 
     <section id="butterfly" class="card">

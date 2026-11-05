@@ -382,7 +382,7 @@ def test_calibration_opens_on_the_whole_picture_and_can_zoom_in(open_page):
     assert "How often the home team actually won" in texts()
 
 
-# ---------- skill vs luck, the wildest seasons, the glossary ----------
+# ---------- the lottery, the wildest seasons, the glossary ----------
 
 def exact_standings(n, p):
     """Chance that a side winning each tie with chance p ends n ties ahead, level or behind."""
@@ -398,12 +398,6 @@ def exact_standings(n, p):
     return ahead, level, behind
 
 
-def ties_until_sure(p, cap=150):
-    """The fewest ties after which the weaker side finishing ahead is rarer than 1 in 20, for good."""
-    last_bad = max((n for n in range(1, cap + 1) if exact_standings(n, p)[2] > 0.05), default=0)
-    return last_bad + 1 if last_bad < cap else None
-
-
 def shown_chance(x):
     """How the page writes a chance (never rounds a near-certainty to 100% or a long shot to 0%)."""
     if 0.995 < x < 1:
@@ -413,45 +407,18 @@ def shown_chance(x):
     return f"{x * 100:.0f}%"
 
 
-def set_range(page, selector, value):
-    page.evaluate("""([selector, value]) => {
-      const input = document.querySelector(selector);
-      input.value = value;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    }""", [selector, str(value)])
-
-
-def test_skill_slider_matches_the_exact_odds(open_page, data):
+def test_the_lottery_section_gives_the_exact_odds_for_a_typical_favourite(open_page, data):
+    """Nothing to drag: three fixed numbers and a sentence, all from the typical favourite's chance."""
+    p = data["headline"]["favourite_expected"]
     page = open_page(reduced_motion="reduce")
-    typical = round(data["headline"]["favourite_expected"] * 100)
-    assert page.input_value("#sk-edge") == str(typical)  # starts at what a typical favourite really had
-    for edge, n in [(typical, 1), (68, 5), (68, 4), (90, 1), (75, 7), (55, 30)]:
-        set_range(page, "#sk-edge", edge)
-        set_range(page, "#sk-n", n)
-        shown = page.evaluate("['sk-ahead', 'sk-level', 'sk-behind'].map((id) => document.getElementById(id).textContent)")
-        assert shown == [shown_chance(x) for x in exact_standings(n, edge / 100)], (edge, n)
-        assert page.locator("#sk-chart rect:not(.hit)").count() == n + 1  # one bar for each possible number of wins
-        assert page.text_content("#sk-n-out") == f"{n} {'tie' if n == 1 else 'ties'}"
-
-
-def test_skill_slider_says_how_many_ties_it_takes(open_page):
-    page = open_page(reduced_motion="reduce")
-    set_range(page, "#sk-edge", 68)
-    assert f"about {ties_until_sure(0.68)} ties" in page.text_content("#sk-text")
-    set_range(page, "#sk-edge", 55)  # so close to a coin toss that 150 ties still isn't enough
-    assert ties_until_sure(0.55) is None and "more than 150 ties" in page.text_content("#sk-text")
-
-
-def test_skill_sliders_work_from_the_keyboard(open_page):
-    page = open_page(reduced_motion="reduce")
-    page.locator("#sk-n").focus()
-    page.keyboard.press("ArrowRight")
-    page.keyboard.press("ArrowRight")
-    assert page.text_content("#sk-n-out") == "3 ties"
-    assert page.locator("#sk-chart rect:not(.hit)").count() == 4
-    assert "Level" not in page.text_content("#sk-legend")  # three ties can't finish level
-    page.keyboard.press("ArrowRight")
-    assert "Level" in page.text_content("#sk-legend")
+    assert page.locator("#skill input").count() == 0
+    tiles = page.evaluate("[...document.querySelectorAll('#sk-stats .sk-stat')].map((t) => [t.querySelector('b').textContent, t.querySelector('span').textContent])")
+    assert [label for _, label in tiles] == ["after 1 tie", "after 10 ties", "after 30 ties"]
+    assert [value for value, _ in tiles] == [shown_chance(exact_standings(n, p)[2]) for n in (1, 10, 30)]  # more losses than wins
+    sub = page.text_content("#sk-sub")
+    assert f"{p:.0%} chance of winning a tie" in sub and f"1 time in {round(1 / (1 - p))}" in sub
+    text = page.text_content("#sk-text")
+    assert f"{shown_chance(p ** 4)} for four and {shown_chance(p ** 5)} for five" in text and "every" in text
 
 
 def test_wild_seasons_match_the_ties_and_link_to_them(open_page, data):
