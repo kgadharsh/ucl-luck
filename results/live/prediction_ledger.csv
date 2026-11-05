@@ -1,1 +1,1 @@
-competition,season,date,kickoff,home,away,p_home,p_draw,p_away,exp_home_goals,exp_away_goals,predicted_at,home_goals,away_goals,book_home,book_draw,book_away,brier,book_brier
+competition,season,date,kickoff,home,away,odds_home,odds_draw,odds_away,p_home,p_draw,p_away,exp_home_goals,exp_away_goals,predicted_at,home_goals,away_goals,book_home,book_draw,book_away,brier,book_brier
