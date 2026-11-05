@@ -30,6 +30,8 @@ Once the study was done I checked every Champions League match against Transferm
 | [football-data.co.uk](https://www.football-data.co.uk/) | League results with bookmaker odds, including closing odds (e.g. `PSCH`, Pinnacle's closing home odds) | Free to use; check their terms before building anything public on it |
 | [openfootball/champions-league](https://github.com/openfootball/champions-league) | Champions League results from 2011-12, and Europa League results from 2020-21 to 2024-25 (the only Europa League seasons it has), including extra time and penalties | CC0 (public domain) |
 
+| [Wikipedia](https://en.wikipedia.org/wiki/UEFA_Champions_League) | The league phase of the season in progress: fixtures and results, read through the MediaWiki API. Only the season forecast uses it, because openfootball hasn't published the season | CC BY-SA 4.0 (credited on the page) |
+
 `scripts/download_data.py` downloads everything into `data/raw/`, which isn't committed.
 
 ## Running it
@@ -43,6 +45,7 @@ python3 -m venv .venv
 To build and view the dashboard locally:
 
 ```bash
+.venv/bin/python src/forecast.py                 # this season's forecast, results/forecast.json (while the season is on)
 .venv/bin/python src/export_site.py              # writes site/data.json from results/
 python3 -m http.server 8123 --directory site     # then open http://localhost:8123
 ```
@@ -56,6 +59,7 @@ What's on it:
 - **The luck machine.** Every tie drops through a Galton board and lands on the winner's chance before the first leg, so the pile you end up with is the shape of the luck. Hover a ball to see its tie, or click it to jump to it in the explorer.
 - An upsets ticker (ties won by a side given under 35%) and the headline numbers.
 - Each champion's run, with a funnel showing its chances shrinking tie by tie.
+- **Who'll win this season?** Every club's chance of finishing in the top eight, reaching each knockout round and winning the trophy, from 100,000 simulated seasons (more below). Click a heading to sort by it. The section appears while the season's league phase is on and is refreshed every morning.
 - **One tie is a lottery, a season isn't.** Two sliders: how likely the better side is to win one tie (it starts at what a typical favourite really had) and how many ties it plays. You see how often it finishes ahead, level or behind, and how long it takes before the weaker side getting ahead becomes rare. Winning every single tie, which is what a trophy asks for, stays unlikely however good you are.
 - **What if?** Pick the winner of any tie in any season since 2012-13 and every club's chance of winning the trophy is recalculated exactly (`src/brackets.py`). Strengths are frozen just before the round of 16. Before 2024-25 the later rounds were drawn one at a time, so for those seasons it uses the draws as they actually happened. Your picks are saved in the page's address, so "Share these picks" gives you a link that opens with exactly the same bracket.
 - **A comeback meter.** Pick a first-leg score, where it was played, how strong your team is and which rules apply, and it gives you the exact chance of still going through (second leg, extra time, penalties, and away goals if you want them). Next to that is what actually happened in real ties that started the same way: 337 ties in all, from Champions League knockouts since 2011-12 and the Europa League seasons above. One thing it shows nicely: real teams that lost the first leg away usually went through more often than the "evenly matched" model says, because they were usually the seeded side and had the second leg at home.
@@ -83,7 +87,29 @@ Once a prediction is in the ledger it never changes, so I can't quietly improve 
 
 `.github/workflows/update.yml` runs this on GitHub Actions every morning and commits the results.
 
-Not covered yet: the 2026-27 Champions League itself. openfootball stopped updating in September 2026 and I haven't found a free source that works without a key. football-data.org has a free plan with a personal key, but I still need to check whether it includes the Champions League.
+Not covered by the ledger: the 2026-27 Champions League matches themselves. openfootball stopped updating in September 2026, and I haven't found a free source that works without a key for scoring them as predictions. (The season forecast below reads this season's results from Wikipedia instead, but only for itself: they aren't in the main data.)
+
+## Who'll win this season?
+
+`src/forecast.py` plays out the rest of the season 100,000 times and counts how often each club gets how far. It runs every morning after the update, writes `results/forecast.json`, and the dashboard shows it as a table you can sort.
+
+```bash
+.venv/bin/python scripts/download_data.py --refresh-current   # also fetches this season's league phase from Wikipedia
+.venv/bin/python src/forecast.py
+```
+
+How it works:
+
+1. **Strengths.** The same Dixon–Coles model and settings as everything else, fitted on all matches up to today plus the league-phase matches already played this season (those come from Wikipedia, so `data/wikipedia_names.csv` maps its club names onto the model's). A club with no earlier matches in the data is rated from this season alone, and the page marks it.
+2. **League phase.** Each match still to play gets a scoreline drawn from the model's chances. The table is sorted the way UEFA sorts it down to away wins, and what comes after that (opponents' results, discipline, coefficients) is left to chance.
+3. **Knockouts.** The top eight go straight to the last 16; 9th to 24th play off for the other eight places, and the rest of the bracket is fixed. The draws are random with no country protection, the better-placed side hosts the second leg, and a team that knocks out a better seed takes that seed's place. These are the 2025-26 rules, and they are checked against what happened that season: `test_the_bracket_is_the_one_used_in_2025_26` replays its knockouts through the bracket in the code, and checking against that season is what showed that "better-placed" means the seed's place and not the club's own league-phase position. Each tie uses the exact chance of going through two legs from `src/knockouts.py` (extra time, then penalties), and the final is one match on neutral ground.
+
+What to keep in mind:
+
+- It's the model's view, not a price. Strengths are frozen at today's, and it knows nothing about injuries, transfers, line-ups or the betting market. Treating each club's strength as known also makes the favourites look a little surer than they should. I haven't compared the numbers with bookmakers' title odds (there's no free source), so I wouldn't read the top club's figure as better than that.
+- The 100,000 simulations leave each figure good to a few tenths of a point. A fixed random seed means rerunning on the same data gives the same numbers.
+- The forecast covers the league phase and the weeks before the play-offs. It reads no knockout results, so once the play-offs start it removes itself, and the page leaves it out if it hasn't been refreshed for two weeks.
+- Not done: using squad market values (Transfermarkt) to correct clubs the results can't tell apart yet, like a newly promoted side with a good start.
 
 ## Tests
 
@@ -95,6 +121,8 @@ Not covered yet: the 2026-27 Champions League itself. openfootball stopped updat
 ```
 
 `tests/test_pipeline.py` covers the daily job: failed downloads keep the old data, only fixtures that haven't kicked off get predicted (in UK time), a moved match is never predicted twice, the season rolls over on 1 July, and unfinished two-legged ties are skipped.
+
+`tests/test_forecast.py` covers the season forecast: reading Wikipedia's league phase, the table's tie-breakers one by one, the bracket against what happened in 2025-26, simulations that must come out a known way (identical clubs get identical chances, a team that wins everything wins the trophy, every stage has the right number of clubs), and what happens when the data is missing or the season moves on.
 
 `tests/test_data.py` checks that `site/data.json` agrees with itself (each champion's run is the product of its ties, the calibration chart uses the same matches as the scores) and that the numbers in this README match the data.
 

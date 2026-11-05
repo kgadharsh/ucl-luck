@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-  <link rel="stylesheet" href="style.css?v=29">
+  <link rel="stylesheet" href="style.css?v=33">
   <script>
     // Before anything paints or draws: mark that JS is on, and apply a saved light/dark choice,
     // so charts are never drawn in the system theme's colours and the page doesn't flash.
@@ -47,6 +47,7 @@
       <span class="brand">Knockout Luck</span>
       <nav>
         <a href="#runs">Champions</a>
+        <a href="#forecast" hidden>Who'll win?</a>
         <a href="#skill">Skill vs luck</a>
         <a href="#butterfly">What if?</a>
         <a href="#comeback">Comebacks</a>
@@ -108,6 +109,25 @@
       <div class="chart" id="runs-chart" role="img" aria-label="Bar chart of each champion's chance of winning its run"></div>
       <div class="filters run-pick"><label>Show the run of <select id="runs-pick"></select></label></div>
       <div class="path" id="runs-path" aria-live="polite"></div>
+    </section>
+
+    <section id="forecast" class="card" hidden>
+      <h2 id="fc-title">Who'll win this season?</h2>
+      <p class="sub" id="fc-sub"></p>
+      <div class="fc-scroll">
+        <table class="table fc" id="fc-table">
+          <caption class="sr">Each club's chance of reaching each stage of the Champions League, from the simulated seasons. Use the headings to sort.</caption>
+          <thead><tr id="fc-head"></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <button class="more" id="fc-more" type="button"></button>
+      <p class="swing" id="fc-text"></p>
+      <p class="small" id="fc-new" hidden></p>
+      <details class="nerds" id="fc-how">
+        <summary>How this is worked out</summary>
+        <ul class="fc-how" id="fc-how-list"></ul>
+      </details>
     </section>
 
     <section id="skill" class="card">
@@ -329,13 +349,13 @@
     </section>
 
     <footer class="foot">
-      <p>Data: league results and closing odds from football-data.co.uk; Champions League results from openfootball (public domain). Models: a goals model (<span class="term" tabindex="0" data-term="dixon-coles">Dixon–Coles</span>) and a simpler rating system (<span class="term" tabindex="0" data-term="elo">Elo</span>), each only ever shown matches played before the one it predicts. Built <span data-fill="built"></span>.</p>
+      <p>Data: league results and closing odds from football-data.co.uk; Champions League results from openfootball (public domain); this season's league-phase fixtures and results from <a href="https://en.wikipedia.org/wiki/UEFA_Champions_League" rel="noopener">Wikipedia</a> (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>). Models: a goals model (<span class="term" tabindex="0" data-term="dixon-coles">Dixon–Coles</span>) and a simpler rating system (<span class="term" tabindex="0" data-term="elo">Elo</span>), each only ever shown matches played before the one it predicts. Built <span data-fill="built"></span>.</p>
     </footer>
   </main>
 
   <a class="to-top" id="to-top" href="#top" hidden>↑ Top</a>
   <div class="tip" id="tip" aria-hidden="true"></div>
   <script src="motion.js?v=12"></script>
-  <script src="app.js?v=35"></script>
+  <script src="app.js?v=38"></script>
 </body>
 </html>

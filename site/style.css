@@ -242,6 +242,7 @@ main { counter-reset: sec; }
   background: linear-gradient(var(--rule), var(--rule)) 0 0 / 100% 3px no-repeat;
   padding: 17px 0 44px; margin: 48px 0 0;
 }
+.card[hidden] { display: none; } /* a section left out for want of data: the grid layout below would show it anyway */
 h2 {
   font: 800 clamp(30px, 4.6vw, 48px)/.95 var(--display); font-stretch: 62%;
   text-transform: uppercase; margin: 0 0 12px; max-width: 24ch;
@@ -443,6 +444,34 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
 .rbar { display: block; height: 8px; background: var(--s1); }
 .table tbody tr:first-child .rbar { background: var(--s2); }
 .table tr.best td { font-weight: 600; }
+/* ---------- the season forecast ---------- */
+.fc-scroll { overflow-x: auto; }
+.fc th.num { padding: 0; }
+.fc-sort {
+  appearance: none; background: none; border: 0; margin: 0; padding: 6px 8px; width: 100%;
+  font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; text-align: right; cursor: pointer; white-space: nowrap;
+}
+.fc-sort:hover { color: var(--ink); }
+.fc-sort:focus-visible { outline: 2px solid var(--s2); outline-offset: -2px; }
+.fc th[aria-sort="descending"] .fc-sort { color: var(--ink); }
+.fc th[aria-sort="descending"] .fc-sort::after { content: " \25BE"; }
+.fc td.fc-club { white-space: nowrap; }
+.fc-star { color: var(--red-text); margin-left: 2px; }
+.fc .fc-pts { color: var(--muted); }
+/* The number sits over a bar as long as the chance, so a column reads like a chart. */
+.fc td.fc-cell { position: relative; isolation: isolate; }
+.fc td.fc-cell::before { content: ""; position: absolute; z-index: -1; left: 0; top: 3px; bottom: 3px; width: calc(var(--p) * 100%); background: var(--s1); opacity: .12; }
+.fc td.fc-win::before { opacity: .28; }
+#fc-more { margin-top: 14px; }
+#fc-text { margin: 16px 0 0; max-width: 72ch; }
+#fc-new { margin: 8px 0 0; max-width: 72ch; }
+.fc-how { margin: 6px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 15px; max-width: 72ch; }
+.fc-how li { margin: 0 0 8px; }
+.fc-how b { color: var(--ink); }
+@media (max-width: 760px) { .fc .fc-pts, .fc .fc-top24, .fc .fc-quarter { display: none; } }
+@media (max-width: 440px) { .fc .fc-top8 { display: none; } .fc td.fc-club { white-space: normal; } }
+@media (max-width: 380px) { .fc-sort { padding-left: 2px; padding-right: 2px; } }
+
 .ledger { display: grid; grid-template-columns: 1fr 1fr; border-top: 2px solid var(--rule); }
 .ledger .stat { border-left: 0; border-top: 0; border-bottom: 1px solid var(--border); padding: 10px 8px 10px 0; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
 .ledger .stat-value { font-size: 40px; color: var(--ink); }

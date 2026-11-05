@@ -284,7 +284,7 @@ def test_nav_highlights_the_section_you_are_reading(open_page):
       const max = document.documentElement.scrollHeight - innerHeight; let bad = 0;
       for (let y = 0; y <= max; y += 350) {
         window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60));
-        const passed = [...document.querySelectorAll('main > section.card[id]')].filter((s) => s.getBoundingClientRect().top <= innerHeight * 0.4);
+        const passed = [...document.querySelectorAll('main > section.card[id]')].filter((s) => !s.hidden && s.getBoundingClientRect().top <= innerHeight * 0.4);
         const expected = scrollY >= max - 2 ? 'live' : passed.length ? passed[passed.length - 1].id : null;
         const current = document.querySelector('nav a[aria-current]')?.hash.slice(1) ?? null;
         if (current !== expected) bad++;
@@ -649,6 +649,167 @@ def test_without_the_line_up_check_the_verdict_says_why_it_cannot_tell(open_page
     page = open_page(reduced_motion="reduce", routes={"**/data.json": lambda route: route.fulfill(body=without, content_type="application/json")})
     verdict = page.text_content("#rm-verdict")
     assert "There are no line-ups, injuries or bookmaker odds" in verdict and "isn't the line-ups" not in verdict
+
+
+# ---------- the season forecast ----------
+
+def without_forecast(data):
+    import json
+    return json.dumps({**data, "forecast": None})
+
+
+def with_forecast(data, **changes):
+    import json
+    return json.dumps({**data, "forecast": {**data["forecast"], **changes}})
+
+
+def serve(body):
+    return {"**/data.json": lambda route: route.fulfill(body=body, content_type="application/json")}
+
+
+def forecast_chance(stage, p):
+    """How the table writes a chance: a decimal for a small chance of winning, never 0% or 100% for what isn't."""
+    if stage == "win" and 0 < p < 0.1:
+        return "<0.1%" if p < 0.0005 else f"{p * 100:.1f}%"
+    return shown_chance(p)
+
+
+def number_in(text):
+    return float(re.sub(r"[^0-9.]", "", text))
+
+
+STAGES = ["top8", "top24", "last16", "quarter", "semi", "final", "win"]
+
+
+def forecast_rows(page):
+    return page.evaluate("""() => [...document.querySelectorAll('#fc-table tbody tr')].map((tr) => ({
+      club: tr.dataset.club, name: tr.children[0].textContent, points: tr.querySelector('.fc-pts').textContent,
+      cells: [...tr.querySelectorAll('.fc-cell')].map((td) => td.textContent), bars: [...tr.querySelectorAll('.fc-cell')].map((td) => td.style.getPropertyValue('--p'))}))""")
+
+
+@pytest.fixture
+def forecast(data):
+    if not data.get("forecast"):
+        pytest.skip("no forecast in the data outside the league phase")
+    return data["forecast"]
+
+
+def test_the_forecast_table_shows_the_saved_chances_best_first(open_page, forecast):
+    page = open_page(reduced_motion="reduce")
+    assert page.locator("#forecast").is_visible() and page.locator("nav a[href='#forecast']").is_visible()
+    assert forecast["season"] in page.text_content("#fc-title")
+    rows = forecast_rows(page)
+    assert len(rows) == 12  # the top of the table; the rest are one click away
+    best = sorted(forecast["clubs"], key=lambda c: -c["win"])[:12]
+    assert [r["club"] for r in rows] == [c["club"] for c in best]
+    for row, club in zip(rows, best):
+        assert row["points"] == str(club["points"])
+        for stage, text, bar in zip(STAGES, row["cells"], row["bars"]):
+            assert text == forecast_chance(stage, club[stage]) or abs(number_in(text) - club[stage] * 100) <= (0.05 if stage == "win" and club[stage] < 0.1 else 0.5) + 1e-9, (club["club"], stage, text)
+            assert float(bar) == pytest.approx(club[stage])  # the bar is as long as the chance
+    assert [r["cells"][-1] for r in rows[:1]] == [forecast_chance("win", best[0]["win"])]
+
+
+def test_the_forecast_says_where_it_stands_and_how_it_was_made(open_page, forecast):
+    page = open_page(reduced_motion="reduce")
+    sub = page.text_content("#fc-sub")
+    assert f"{forecast['played']} of the {forecast['matches']} matches" in sub and f"the other {forecast['left']}" in sub
+    assert f"{forecast['simulations']:,} times" in sub
+    best = max(forecast["clubs"], key=lambda c: c["win"])
+    text = page.text_content("#fc-text")
+    assert f"wins in {round(best['win'] * 100)}% of the simulated seasons" in text
+    top_five = sum(sorted((c["win"] for c in forecast["clubs"]), reverse=True)[:5])
+    assert f"the five best clubs together win {round(top_five * 100)}%" in text
+    page.click("#fc-how summary")
+    how = page.text_content("#fc-how")
+    assert "Wikipedia" in how and "CC BY-SA 4.0" in how and "betting advice" in how
+    assert page.locator("#fc-how a[href^='https://en.wikipedia.org/wiki/']").count() == 1
+
+
+def test_a_heading_sorts_the_forecast_by_that_stage(open_page, forecast):
+    page = open_page(reduced_motion="reduce")
+    sort_state = lambda: page.evaluate("[...document.querySelectorAll('#fc-head th')].map((th) => th.getAttribute('aria-sort'))")
+    assert [s for s in sort_state() if s] == ["none"] * 6 + ["descending"]  # the win column leads
+    for stage in ("top8", "semi", "win"):
+        page.click(f"#fc-head [data-stage='{stage}']")
+        order = [r["club"] for r in forecast_rows(page)]
+        expected = sorted(forecast["clubs"], key=lambda c: (-c[stage], -c["win"], c["club"]))[:12]
+        assert order == [c["club"] for c in expected], stage
+        assert sort_state().count("descending") == 1 and sort_state()[2 + STAGES.index(stage)] == "descending"
+
+
+def test_the_forecast_shows_every_club_on_request(open_page, forecast):
+    page = open_page(reduced_motion="reduce")
+    more = page.locator("#fc-more")
+    assert more.text_content() == f"Show all {len(forecast['clubs'])} clubs"
+    more.click()
+    assert len(forecast_rows(page)) == len(forecast["clubs"]) and more.text_content() == "Show the top 12"
+    page.click("#fc-head [data-stage='top8']")  # sorting keeps the whole table
+    assert len(forecast_rows(page)) == len(forecast["clubs"])
+    more.click()
+    assert len(forecast_rows(page)) == 12
+
+
+def test_a_short_forecast_has_nothing_more_to_show(open_page, data, forecast):
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, clubs=forecast["clubs"][:10])))
+    assert len(forecast_rows(page)) == 10 and page.locator("#fc-more").is_hidden()
+
+
+def test_a_cell_says_exactly_what_it_means(open_page, forecast):
+    page = open_page(reduced_motion="reduce")
+    page.evaluate(REVEAL)
+    best = max(forecast["clubs"], key=lambda c: c["win"])
+    cell = page.locator("#fc-table tbody tr").first.locator(".fc-win")
+    cell.scroll_into_view_if_needed()
+    page.wait_for_timeout(150)
+    cell.hover()
+    tip = page.locator("#tip").text_content()
+    assert f"{best['win'] * 100:.1f}% to win the trophy" in tip and f"{best['points']} points after {best['played']} matches" in tip
+    one_in = float(format(1 / best["win"], ".2g"))  # two significant figures, like every "1 in N" on the page
+    assert f"(about 1 in {one_in:g})" in tip
+
+
+def test_clubs_with_no_history_are_marked_and_explained(open_page, data, forecast):
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, new_clubs=[forecast["clubs"][0]["club"], forecast["clubs"][1]["club"]])))
+    assert page.locator("#fc-table tbody tr .fc-star").count() == 2
+    note = page.text_content("#fc-new")
+    assert note.startswith("* ") and "have no earlier matches" in note and " and " in note
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, new_clubs=[])))
+    assert page.locator(".fc-star").count() == 0 and page.locator("#fc-new").is_hidden()
+
+
+def test_a_forecast_after_the_league_phase_says_so(open_page, data, forecast):
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, left=0, played=forecast["matches"])))
+    assert "league phase is over" in page.text_content("#fc-sub")
+    assert "Every match" in page.text_content("#fc-how")
+
+
+def test_without_a_forecast_the_section_and_its_link_disappear(open_page, data):
+    page = open_page(reduced_motion="reduce", routes=serve(without_forecast(data)))
+    assert page.locator("#forecast").is_hidden() and page.locator("nav a[href='#forecast']").is_hidden()
+    assert page.locator("#ties-list .tie").count() > 0  # the rest of the page is untouched
+
+
+def test_the_forecast_explains_its_terms(open_page, forecast):
+    page = open_page(reduced_motion="reduce")
+    page.evaluate(REVEAL)
+    terms = page.locator("#fc-sub .term")
+    assert [terms.nth(i).get_attribute("data-term") for i in range(terms.count())] == ["league-phase", "simulation"]
+    terms.first.scroll_into_view_if_needed()
+    page.wait_for_timeout(150)
+    terms.first.hover()
+    assert "36 clubs each play eight" in page.locator("#tip").text_content()
+
+
+@pytest.mark.parametrize("width, shown", [(375, ["Club", "Last 16", "SF", "Final", "Win"]), (320, ["Club", "Last 16", "SF", "Final", "Win"]),
+                                           (768, ["Club", "Pts", "Top 8", "Top 24", "Last 16", "QF", "SF", "Final", "Win"])])
+def test_the_forecast_table_keeps_what_fits_on_a_phone(open_page, forecast, width, shown):
+    page = open_page(width=width, reduced_motion="reduce")
+    page.evaluate(REVEAL)
+    visible = page.evaluate("[...document.querySelectorAll('#fc-head th')].filter((th) => getComputedStyle(th).display !== 'none').map((th) => th.textContent)")
+    assert visible == shown if width < 440 else set(shown) <= set(visible)
+    box = page.evaluate("(() => { const s = document.querySelector('.fc-scroll'); return [s.scrollWidth, s.clientWidth]; })()")
+    assert box[0] <= box[1], f"the table scrolls sideways at {width}px"
 
 
 # ---------- the luck machine: the ball and its tie ----------

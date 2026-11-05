@@ -4,6 +4,9 @@ League results with bookmaker odds come from football-data.co.uk, and
 Champions League and Europa League results come from openfootball.
 Files already on disk are skipped, so it is safe to run again.
 
+The league phase of the season in progress (fixtures and results, for src/forecast.py) comes from
+Wikipedia's API; its text is available under CC BY-SA 4.0.
+
 Transfermarkt's open dataset (starting elevens and player market values, CC0 on GitHub) is only
 needed for src/real_madrid_squad.py and is about 135 MB, so it is fetched only on request.
 
@@ -13,8 +16,10 @@ Usage:
     python scripts/download_data.py --transfermarkt    # also the Transfermarkt files
 """
 
+import json
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import date
 from pathlib import Path
@@ -42,21 +47,28 @@ PAUSE_SECONDS = 1  # be polite to free servers
 TRANSFERMARKT = "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/"
 TRANSFERMARKT_FILES = ["competitions", "games", "game_lineups", "player_valuations"]
 
+# Wikipedia asks API users to say who they are.
+WIKIPEDIA = "https://en.wikipedia.org/w/api.php"
+WIKIPEDIA_HEADERS = {"User-Agent": "ucl-luck/1.0 (https://github.com/kgadharsh/ucl-luck)"}
+
 
 def seasons():
     for year in range(FIRST_SEASON, LAST_SEASON + 1):
         yield year
 
 
-def fetch(url, dest, refresh=False, timeout=30):
+def fetch(url, dest, refresh=False, timeout=30, headers=None, valid=None):
     """Download url to dest. A failed download never removes a copy already on disk:
-    the old file stays until a new one has arrived in full."""
+    the old file stays until a new one has arrived in full. If given, valid(data) says
+    whether what arrived is usable (an error message with a 200 status is not)."""
     if dest.exists() and not refresh:
         return "kept"
     try:
-        with urllib.request.urlopen(url, timeout=timeout) as response:
+        with urllib.request.urlopen(urllib.request.Request(url, headers=headers or {}), timeout=timeout) as response:
             data = response.read()
-    except (urllib.error.URLError, TimeoutError) as err:
+        if valid and not valid(data):
+            raise ValueError("not what was asked for")
+    except (urllib.error.URLError, TimeoutError, ValueError) as err:
         reason = err.code if isinstance(err, urllib.error.HTTPError) else err
         return f"kept old copy, fetch failed ({reason})" if dest.exists() else f"missing ({reason})"
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -71,6 +83,20 @@ def transfermarkt():
     for name in TRANSFERMARKT_FILES:
         result = fetch(f"{TRANSFERMARKT}{name}.csv.gz", RAW / "transfermarkt" / f"{name}.csv.gz", timeout=600)
         print(f"transfermarkt {name}: {result}")
+
+
+def league_phase(year, refresh=False):
+    """Wikipedia's article on the league phase of the season starting in `year`."""
+    season = f"{year}-{(year + 1) % 100:02d}"
+    title = f"{year}\u2013{(year + 1) % 100:02d}_UEFA_Champions_League_league_phase"
+    query = urllib.parse.urlencode({"action": "parse", "page": title, "prop": "wikitext", "format": "json",
+                                    "formatversion": 2, "redirects": 1})
+
+    def has_text(data):  # a page that doesn't exist (yet) comes back as {"error": ...}
+        return "wikitext" in json.loads(data).get("parse", {})
+
+    return fetch(f"{WIKIPEDIA}?{query}", RAW / "wikipedia" / f"{season}-league-phase.json", refresh,
+                 headers=WIKIPEDIA_HEADERS, valid=has_text)
 
 
 def main(refresh_current=False, with_transfermarkt=False):
@@ -92,6 +118,10 @@ def main(refresh_current=False, with_transfermarkt=False):
             url = f"https://raw.githubusercontent.com/openfootball/champions-league/master/{name}/{comp}.txt"
             result = fetch(url, RAW / "europe" / name / f"{comp}.txt", refresh)
             print(f"{name} {comp}: {result}")
+
+    # Only the season in progress: it is the one the forecast is about.
+    print(f"{LAST_SEASON}-{(LAST_SEASON + 1) % 100:02d} league phase (Wikipedia): "
+          f"{league_phase(LAST_SEASON, refresh=refresh_current)}")
 
 
 if __name__ == "__main__":

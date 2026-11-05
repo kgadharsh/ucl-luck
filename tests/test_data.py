@@ -108,6 +108,23 @@ def test_live_section_describes_its_fit(data):
         assert live.get(key) is not None, key
 
 
+def test_forecast_section_adds_up(data):
+    forecast = data.get("forecast")
+    if forecast is None:
+        pytest.skip("no season forecast: out of season, or too old to show")
+    clubs = forecast["clubs"]
+    assert len(clubs) == 36 and len({c["club"] for c in clubs}) == 36
+    assert forecast["played"] + forecast["left"] == forecast["matches"] == 144
+    assert sum(c["played"] for c in clubs) == 2 * forecast["played"]
+    # Every simulated season has exactly this many clubs at each stage, so the shares add up to it.
+    for stage, size in {"top8": 8, "top24": 24, "last16": 16, "quarter": 8, "semi": 4, "final": 2, "win": 1}.items():
+        assert sum(c[stage] for c in clubs) == pytest.approx(size, abs=1e-3), stage
+    for c in clubs:  # a club can't reach a stage without reaching the one before
+        assert 0 <= c["win"] <= c["final"] <= c["semi"] <= c["quarter"] <= c["last16"] <= c["top24"] <= 1, c["club"]
+        assert c["top8"] <= c["last16"], c["club"]
+    assert [c["win"] for c in clubs] == sorted((c["win"] for c in clubs), reverse=True)
+
+
 # ---------- the README against data.json ----------
 
 @pytest.mark.readme

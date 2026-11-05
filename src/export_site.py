@@ -1,6 +1,6 @@
 """Collect everything the dashboard shows into site/data.json.
 
-Run after evaluate_elo.py, evaluate_dc.py, knockouts.py and (optionally) update.py.
+Run after evaluate_elo.py, evaluate_dc.py, knockouts.py and (optionally) update.py and forecast.py.
 """
 
 import json
@@ -27,6 +27,9 @@ SITE = ROOT / "site"
 # The calibration chart uses exactly the same matches, so the two agree and neither drifts
 # as the season in progress adds games.
 EVALUATED_THROUGH = pd.Timestamp("2026-11-02")
+# The season forecast (src/forecast.py) is shown only while it is current: if its data stops arriving,
+# the old forecast must not stay on the page as if it were today's.
+FORECAST_FRESH_DAYS = 14
 
 
 def calibration_points(p_home, won, bins=10, minimum=30):
@@ -140,6 +143,23 @@ UPCOMING = ["competition", "date", "kickoff", "home", "away", "p_home", "p_draw"
             "odds_home", "odds_draw", "odds_away"]
 
 
+def today():
+    return pd.Timestamp(datetime.now(timezone.utc).date())
+
+
+def forecast_section():
+    """Who will win this season's Champions League (src/forecast.py), if it was made recently."""
+    path = RESULTS / "forecast.json"
+    if not path.exists():
+        return None
+    forecast = json.loads(path.read_text(encoding="utf-8"))
+    age = (today() - pd.Timestamp(forecast["as_of"])).days
+    if age > FORECAST_FRESH_DAYS:
+        print(f"Leaving out the season forecast: it is {age} days old (run src/forecast.py)")
+        return None
+    return forecast
+
+
 def live_section():
     ratings_path, ledger_path = RESULTS / "live" / "ratings.csv", RESULTS / "live" / "prediction_ledger.csv"
     if not ratings_path.exists():
@@ -216,6 +236,7 @@ def main():
         "calibration": calibration(matches),
         "matches": int(len(matches)),
         "live": live_section(),
+        "forecast": forecast_section(),
         "comebacks": first_legs(matches),
         "brackets": build_brackets(matches, pd.read_csv(RESULTS / "dixon_coles_settings.csv").iloc[0]),
     }

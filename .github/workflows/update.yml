@@ -1,5 +1,6 @@
-# Refits the model every morning, predicts upcoming fixtures, scores finished ones,
-# and commits the updated ledger, ratings and scorecard back to the repository.
+# Refits the model every morning, predicts upcoming fixtures, scores finished ones, replays the
+# rest of the Champions League season for the forecast, and commits the updated ledger, ratings,
+# scorecard and forecast back to the repository.
 name: Daily update
 
 on:
@@ -42,6 +43,13 @@ jobs:
       - name: Refit, predict and score
         run: python src/update.py
 
+      # Only while the season's league phase is on. It must never stop the day's predictions from
+      # being saved: if Wikipedia can't be read, the last forecast stays (with its date) and the
+      # dashboard drops it after two weeks.
+      - name: Forecast the season
+        continue-on-error: true
+        run: python src/forecast.py
+
       - name: Refresh dashboard data
         run: python src/export_site.py
 
@@ -56,7 +64,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add results/live site/data.json site/preview.png
+          # results/ as a whole, so that a forecast taken down when its stage ends is committed as a deletion too
+          git add -A results site/data.json site/preview.png
           git diff --cached --quiet || git commit -m "Daily update: predictions and scorecard"
           git pull --rebase   # in case something was pushed while this job ran
           git push

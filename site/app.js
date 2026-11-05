@@ -11,7 +11,7 @@ const CLUB_NAMES = {
   "Dinamo Kiev": "Dynamo Kyiv", "Ein Frankfurt": "Eintracht Frankfurt", "FC Basel 1893": "Basel",
   "FC København": "Copenhagen", "FC Porto": "Porto", "FK Bodø/Glimt": "Bodø/Glimt", "KAA Gent": "Gent",
   "M'gladbach": "Gladbach", "Malaga": "Málaga", "Man City": "Manchester City", "Man United": "Manchester United",
-  "Olympiakos": "Olympiacos", "PSV": "PSV Eindhoven", "Paris SG": "Paris Saint-Germain", "Sociedad": "Real Sociedad",
+  "Olympiakos": "Olympiacos", "ŠK Slovan Bratislava": "Slovan Bratislava", "Slavia Praha": "Slavia Prague", "AEK Athen": "AEK Athens", "PSV": "PSV Eindhoven", "Paris SG": "Paris Saint-Germain", "Sociedad": "Real Sociedad",
   "Zenit St. Petersburg": "Zenit", "Leicester": "Leicester City", "Newcastle": "Newcastle United",
 };
 const clean = (name) => { const plain = name.replace(/ \([A-Z]{3}\)$/, ""); return CLUB_NAMES[plain] || plain; };
@@ -82,6 +82,8 @@ const GLOSSARY = {
   "pre-match": ["Pre-match chance", "A team's chance of going through, worked out by the model before the first leg using only matches played earlier. If a tie were replayed ten times from the same start, a team with 70% would win about seven of them."],
   "closing-odds": ["Final (closing) odds", "The bookmakers' odds just before kick-off. By then they include team news and all the money that has been bet, so they're the hardest benchmark to beat."],
   "dixon-coles": ["Dixon–Coles", "A model that works out how many goals each side would score and concede against an average opponent, then turns that into the chances of a win, draw or loss."],
+  "league-phase": ["League phase", "The opening stage since 2024-25. 36 clubs each play eight different opponents, and one table ranks them all. The top eight go straight to the last 16, 9th to 24th play off for the other eight places, and the rest are out."],
+  "simulation": ["Simulation", "Playing the rest of the season out on a computer, match by match, using the model's chances for each. Do it many thousands of times and the share of seasons in which a club gets to a stage is its chance of getting there."],
   "elo": ["Elo", "A rating borrowed from chess. Each club has one number that goes up after a win and down after a loss, by more when the result was a surprise."],
 };
 function setupGlossary() {
@@ -1364,6 +1366,101 @@ function setupComeback(data) {
   return drawHeat;
 }
 
+// ---------- the season forecast ----------
+// Who will win this season's Champions League, from src/forecast.py: the rest of the season played out
+// 100,000 times. Each number is the share of those seasons in which the club got that far.
+const FORECAST_STAGES = [
+  ["top8", "Top 8", "finish the league phase in the top eight, straight into the last 16"],
+  ["top24", "Top 24", "finish the league phase in the top 24 and reach the knockouts"],
+  ["last16", "Last 16", "reach the round of 16"],
+  ["quarter", "QF", "reach the quarter-finals"],
+  ["semi", "SF", "reach the semi-finals"],
+  ["final", "Final", "reach the final"],
+  ["win", "Win", "win the trophy"],
+];
+const FORECAST_ROWS = 12;
+// A small chance of winning needs a decimal, or the foot of the table would be a column of "1%"s.
+const forecastChance = (stage, p) => (stage === "win" && p > 0 && p < 0.1 ? (p < 0.0005 ? "<0.1%" : `${(p * 100).toFixed(1)}%`) : chance(p));
+const forecastDate = (iso) => new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+
+function fillForecast(data) {
+  const fc = data.forecast;
+  const section = document.getElementById("forecast");
+  const link = document.querySelector('nav a[href="#forecast"]');
+  section.hidden = link.hidden = !fc;
+  if (!fc) return;
+  const sims = fc.simulations.toLocaleString("en-GB");
+  const day = forecastDate(fc.as_of);
+  const term = (key, text) => `<span class="term" tabindex="0" data-term="${key}">${text}</span>`;
+  document.getElementById("fc-title").textContent = `Who'll win ${fc.season}?`;
+  document.getElementById("fc-sub").innerHTML = (fc.left
+    ? `As of ${day}, ${fc.played} of the ${fc.matches} matches of the ${term("league-phase", "league phase")} have been played. The model plays the other ${fc.left}, then the whole knockout phase, `
+    : `As of ${day}, the ${term("league-phase", "league phase")} is over. The model plays the whole knockout phase `) +
+    `${sims} times (a ${term("simulation", "simulation")}) and counts how often each club gets how far. It runs again every morning.`;
+
+  const byClub = new Map(fc.clubs.map((c) => [c.club, c]));
+  const isNew = new Set(fc.new_clubs || []);
+  let sortBy = "win";
+  let expanded = false;
+  const head = document.getElementById("fc-head");
+  head.innerHTML = `<th scope="col">Club</th><th scope="col" class="num fc-pts" title="Points so far in the league phase">Pts</th>` +
+    FORECAST_STAGES.map(([stage, label, what]) =>
+      `<th scope="col" class="num fc-${stage}"><button class="fc-sort" type="button" data-stage="${stage}" title="Sort by the chance to ${what}">${label}</button></th>`).join("");
+  const body = document.querySelector("#fc-table tbody");
+  const more = document.getElementById("fc-more");
+
+  const render = () => {
+    const ordered = [...fc.clubs].sort((a, b) => b[sortBy] - a[sortBy] || b.win - a.win || a.club.localeCompare(b.club));
+    const shown = expanded ? ordered : ordered.slice(0, FORECAST_ROWS);
+    body.innerHTML = shown.map((c) =>
+      `<tr data-club="${c.club.replace(/"/g, "&quot;")}"><td class="fc-club">${clean(c.club)}${isNew.has(c.club) ? `<span class="fc-star" title="Rated from this season's matches alone">*</span>` : ""}</td>` +
+      `<td class="num fc-pts">${c.points}</td>` +
+      FORECAST_STAGES.map(([stage]) =>
+        `<td class="num fc-cell fc-${stage}" data-stage="${stage}" style="--p:${c[stage]}">${stage === "win" ? `<b>${forecastChance(stage, c[stage])}</b>` : forecastChance(stage, c[stage])}</td>`).join("") + "</tr>").join("");
+    head.querySelectorAll("th").forEach((th) => {
+      const button = th.querySelector(".fc-sort");
+      if (!button) return;
+      th.setAttribute("aria-sort", button.dataset.stage === sortBy ? "descending" : "none");
+    });
+    body.querySelectorAll(".fc-cell").forEach((cell) => hover(cell, () => {
+      const c = byClub.get(cell.closest("tr").dataset.club);
+      const [stage, , what] = FORECAST_STAGES.find(([key]) => key === cell.dataset.stage);
+      const p = c[stage];
+      return `<b>${clean(c.club)}</b><br>${p > 0 && p < 0.5 ? `${(p * 100).toFixed(1)}% to ${what} (about ${oneIn(p)})` : `${(p * 100).toFixed(1)}% to ${what}`}<br>${c.points} points after ${c.played} matches`;
+    }));
+    more.textContent = expanded ? `Show the top ${FORECAST_ROWS}` : `Show all ${fc.clubs.length} clubs`;
+    more.hidden = fc.clubs.length <= FORECAST_ROWS;
+  };
+  head.addEventListener("click", (e) => {
+    const button = e.target.closest(".fc-sort");
+    if (!button) return;
+    sortBy = button.dataset.stage;
+    render();
+  });
+  more.addEventListener("click", () => { expanded = !expanded; render(); });
+  render();
+
+  const best = [...fc.clubs].sort((a, b) => b.win - a.win);
+  const topFive = best.slice(0, 5).reduce((sum, c) => sum + c.win, 0);
+  document.getElementById("fc-text").innerHTML =
+    `The favourite is <b>${clean(best[0].club)}</b>, which wins in ${pct(best[0].win)} of the simulated seasons, about ${Math.round(1 / best[0].win) === 1 ? "every one" : `1\u00a0in\u00a0${Math.round(1 / best[0].win)}`}. ` +
+    `Even the five best clubs together win ${pct(topFive)}, so in about ${Math.round(1 / (1 - topFive)) <= 1 ? "no" : `1\u00a0in\u00a0${Math.round(1 / (1 - topFive))}`} seasons the trophy goes to a club outside them.`;
+  const strangers = (fc.new_clubs || []).map(clean);
+  const note = document.getElementById("fc-new");
+  note.hidden = !strangers.length;
+  if (strangers.length) {
+    const names = strangers.length > 1 ? `${strangers.slice(0, -1).join(", ")} and ${strangers.at(-1)}` : strangers[0];
+    note.textContent = `* ${names} ${strangers.length > 1 ? "have" : "has"} no earlier matches in the data, so ${strangers.length > 1 ? "are" : "is"} rated from this season's matches alone. Their numbers are the least certain.`;
+  }
+  document.getElementById("fc-how-list").innerHTML = [
+    `<b>Strength.</b> The same goals model that rates every club on this page, fitted to results up to ${day}, including this season's league-phase matches. Clubs don't improve or decline during the season in the simulations, and the model knows nothing about injuries, transfers, line-ups or the betting market.`,
+    `<b>League phase.</b> ${fc.left ? `Each of the ${fc.left} matches still to play` : "Every match"} gets a scoreline drawn at random from the model's chances. The table is sorted the way UEFA sorts it: points, goal difference, goals scored, away goals scored, wins, away wins. What UEFA looks at after that is left to chance.`,
+    `<b>Knockouts.</b> The top eight go straight to the last 16, and 9th to 24th play off for the other eight places. The bracket, and the second leg at home for the better-placed side, follow the 2025-26 rules, with random draws and no country protection, as then. Each tie uses the exact chance of going through two legs (extra time, then penalties); the final is one match on neutral ground.`,
+    `<b>How exact is it?</b> Each number comes from ${sims} simulated seasons, so it is good to a few tenths of a point. The bigger uncertainty is the model: it treats every club's strength as known, which makes favourites look a little surer than they are, and bookmakers' title odds also use team news and the betting market, so they will differ. This is a forecast from results alone, not betting advice.`,
+    `<b>Source.</b> This season's fixtures and results are read each morning from <a href="${fc.source}" rel="noopener">Wikipedia</a> (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>).`,
+  ].map((html) => `<li>${html}</li>`).join("");
+}
+
 // ---------- live ----------
 function fillLive(data) {
   const live = data.live;
@@ -1512,6 +1609,7 @@ function start(data) {
   setupCalibration(data);
   setupTies(data);
   fillLive(data);
+  fillForecast(data);
   setupGlossary();
   fillRealMadrid(data);
   const redrawSkill = setupSkill(data);

@@ -5,6 +5,7 @@ Everything runs on temporary files; nothing here touches data/ or results/.
 
 import importlib.util
 import io
+import json
 import urllib.error
 import warnings
 from datetime import date, datetime, timezone
@@ -79,6 +80,37 @@ def test_files_on_disk_are_kept_without_refresh(download, tmp_path, monkeypatch)
     dest.write_bytes(b"old")
     monkeypatch.setattr(download.urllib.request, "urlopen", _failing(AssertionError("should not download")))
     assert download.fetch("http://x", dest) == "kept"
+
+
+def test_a_reply_that_is_not_what_was_asked_for_is_never_saved(download, tmp_path, monkeypatch):
+    monkeypatch.setattr(download.urllib.request, "urlopen", _replying(b'{"error": {"code": "missingtitle"}}'))
+    has_text = lambda data: "parse" in json.loads(data)
+    dest = tmp_path / "page.json"
+    assert download.fetch("http://x", dest, valid=has_text).startswith("missing")
+    assert not dest.exists()
+    dest.write_bytes(b"old copy")
+    assert download.fetch("http://x", dest, refresh=True, valid=has_text).startswith("kept old copy")
+    assert dest.read_bytes() == b"old copy"
+
+
+def test_the_league_phase_is_fetched_from_wikipedia_by_name(download, tmp_path, monkeypatch):
+    seen = {}
+
+    def opener(request, timeout=30):
+        seen["url"], seen["agent"] = request.full_url, request.get_header("User-agent")
+        return _Reply(json.dumps({"parse": {"wikitext": "some text"}}).encode())
+
+    monkeypatch.setattr(download.urllib.request, "urlopen", opener)
+    monkeypatch.setattr(download, "RAW", tmp_path)
+    assert download.league_phase(2026) == "downloaded"
+    assert "page=2026%E2%80%9327_UEFA_Champions_League_league_phase" in seen["url"]  # with an en dash
+    assert "ucl-luck" in seen["agent"]  # Wikipedia asks who is calling
+    saved = json.loads((tmp_path / "wikipedia" / "2026-27-league-phase.json").read_text(encoding="utf-8"))
+    assert saved["parse"]["wikitext"] == "some text"
+    # A season whose article doesn't exist yet comes back as an error message, with a success status.
+    monkeypatch.setattr(download.urllib.request, "urlopen", _replying(b'{"error": {"code": "missingtitle"}}'))
+    assert download.league_phase(2027).startswith("missing")
+    assert not (tmp_path / "wikipedia" / "2027-28-league-phase.json").exists()
 
 
 @pytest.mark.parametrize("day, season", [
