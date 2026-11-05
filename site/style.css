@@ -464,6 +464,7 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
 .fc td.fc-win::before { opacity: .28; }
 #fc-more { margin-top: 14px; }
 .fc-history { margin-top: 28px; }
+#fc-history-note { margin: 0 0 14px; max-width: 72ch; }
 #fc-text { margin: 16px 0 0; max-width: 72ch; }
 #fc-new { margin: 8px 0 0; max-width: 72ch; }
 .fc-how { margin: 6px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 15px; max-width: 72ch; }

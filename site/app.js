@@ -1406,45 +1406,34 @@ const FORECAST_ROWS = 12;
 const forecastChance = (stage, p) => (stage === "win" && p > 0 && p < 0.1 ? (p < 0.0005 ? "<0.1%" : `${(p * 100).toFixed(1)}%`) : chance(p));
 const forecastDate = (iso) => new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 
-// The title chance of the leading clubs on every day the forecast was made, from before the first matchday on.
-function drawForecastHistory(data) {
-  const fc = data.forecast, box = document.getElementById("fc-hist-chart"), section = document.getElementById("fc-history");
+// Where the title odds stand now against the forecast made before the first matchday: the six likeliest
+// winners side by side, and in words whether anything much has changed. A handful of forecasts spread over
+// two months is too few for a line chart to say more than this does.
+function fillForecastHistory(data) {
+  const fc = data.forecast, section = document.getElementById("fc-history");
   const h = fc && fc.history;
   section.hidden = !(h && h.dates.length >= 2);
   if (section.hidden) return;
-  const lead = Object.keys(h.win).sort((a, b) => h.win[b].at(-1) - h.win[a].at(-1)).slice(0, 6);
-  const times = h.dates.map((d) => Date.parse(`${d}T12:00:00Z`));
-  const t0 = times[0], t1 = times.at(-1);
-  const top = Math.max(...lead.map((c) => Math.max(...h.win[c])));
-  const maxY = Math.ceil(top * 20) / 20;
-  const { root, width, height } = canvas(box, 260);
-  const m = { l: 36, r: width < 560 ? 100 : 150, t: 10, b: 28 };
-  const x = (i) => m.l + ((times[i] - t0) / (t1 - t0 || 1)) * (width - m.l - m.r);
-  const y = (v) => height - m.b - (v / maxY) * (height - m.t - m.b);
-  for (let v = 0; v <= maxY + 1e-9; v += 0.05) {
-    svg("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v), stroke: css("--grid") }, root);
-    svg("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = pct(v);
-  }
+  const last = h.dates.length - 1;
   const day = (iso) => forecastDate(iso).replace(/ \d{4}$/, "");
-  [0, h.dates.length - 1].forEach((i) => svg("text", { x: x(i), y: height - 8, "text-anchor": i ? "end" : "start" }, root).textContent = i ? day(h.dates[i]) : "Before matchday 1");
-  const colours = [css("--s2"), css("--s1"), css("--s3"), css("--muted"), css("--ink-2"), css("--axis")];
-  const ends = [];
-  lead.forEach((club, k) => {
-    const pts = h.win[club].map((v, i) => `${x(i)},${y(v)}`).join(" ");
-    svg("polyline", { points: pts, fill: "none", stroke: colours[k], "stroke-width": k === 0 ? 3 : 2, "stroke-linejoin": "round" }, root);
-    h.win[club].forEach((v, i) => svg("circle", { cx: x(i), cy: y(v), r: 3, fill: colours[k] }, root));
-    ends.push({ club, y: y(h.win[club].at(-1)), colour: colours[k] });
-  });
-  ends.sort((a, b) => a.y - b.y);  // keep the end labels from landing on top of each other
-  for (let i = 1; i < ends.length; i++) ends[i].y = Math.max(ends[i].y, ends[i - 1].y + 14);
-  ends.forEach((e) => svg("text", { x: width - m.r + 8, y: e.y + 4, fill: e.colour === css("--axis") ? css("--ink-2") : e.colour }, root).textContent = width < 560 ? shortClub(e.club) : clean(e.club));
-  h.dates.forEach((d, i) => {
-    const left = i ? (x(i - 1) + x(i)) / 2 : 0, right = i < h.dates.length - 1 ? (x(i) + x(i + 1)) / 2 : width - m.r;
-    const hit = svg("rect", { x: left, y: 0, width: Math.max(right - left, 8), height, class: "hit" }, root);
-    hover(hit, () => `<b>${i ? `After ${day(d)}` : "Before matchday 1"}</b>` + lead.map((c) => `<br>${clean(c)} ${forecastChance("win", h.win[c][i])}`).join(""));
-  });
-  document.getElementById("fc-history-note").textContent =
-    `One forecast for each day of results so far, from before the first matchday to ${day(h.dates.at(-1))}. Each is made only from what was known on that day. The six clubs shown are today's most likely winners.`;
+  const clubs = Object.keys(h.win);
+  const lead = [...clubs].sort((a, b) => h.win[b][last] - h.win[a][last]).slice(0, 6);
+  const move = (club) => h.win[club][last] - h.win[club][0];
+  const favouriteAt = (i) => clubs.reduce((a, b) => (h.win[b][i] > h.win[a][i] ? b : a));
+  const always = h.dates.every((_, i) => favouriteAt(i) === lead[0]); // the same club led at every forecast
+  const mover = clubs.reduce((a, b) => (Math.abs(move(b)) > Math.abs(move(a)) ? b : a));
+  const calm = Math.abs(move(mover)) < 0.05; // under five points anywhere in the field
+  document.getElementById("fc-history-note").innerHTML =
+    `${calm ? "Not much has changed" : "The odds have moved"} since the forecast made before the first matchday (${day(h.dates[0])}). ` +
+    (always ? `<b>${clean(lead[0])}</b> have led at every forecast. `
+      : `<b>${clean(favouriteAt(0))}</b> started as the favourites and <b>${clean(lead[0])}</b> are now. `) +
+    `The biggest move in the whole field is <b>${clean(mover)}</b>, ${forecastChance("win", h.win[mover][0])} to ${forecastChance("win", h.win[mover][last])}.`;
+  document.getElementById("fc-hist-before").textContent = "Before matchday 1";
+  document.getElementById("fc-hist-now").textContent = `Now (${day(h.dates[last])})`;
+  document.querySelector("#fc-hist-table tbody").innerHTML = lead.map((club) =>
+    `<tr data-club="${club.replace(/"/g, "&quot;")}"><td>${clean(club)}</td>` +
+    `<td class="num">${forecastChance("win", h.win[club][0])}</td><td class="num"><b>${forecastChance("win", h.win[club][last])}</b></td>` +
+    `<td class="num">${signed(move(club) * 100, 1)}</td></tr>`).join("");
 }
 
 function fillForecast(data) {
@@ -1684,6 +1673,7 @@ function start(data) {
   setupTies(data);
   fillLive(data);
   fillForecast(data);
+  fillForecastHistory(data);
   setupGlossary();
   fillRealMadrid(data);
   const redrawSkill = setupSkill(data);
@@ -1692,7 +1682,7 @@ function start(data) {
   setupWire(data);
   const redrawMachine = setupMachine(data);
   const redrawTicker = setupTicker(data);
-  drawAll = () => { drawForecastHistory(data); redrawMachine(); redrawTicker(); drawRuns(data); redrawSkill(); drawRounds(data); drawWild(data); drawClubs(data); drawRmSplit(data); drawRmLast(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
+  drawAll = () => { redrawMachine(); redrawTicker(); drawRuns(data); redrawSkill(); drawRounds(data); drawWild(data); drawClubs(data); drawRmSplit(data); drawRmLast(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
   drawAll();
   const luck = document.querySelector("h1 em");
   document.fonts.ready.then(() => setTimeout(() => scramble(luck), 500));

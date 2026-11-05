@@ -126,8 +126,14 @@
       <p class="small" id="fc-new" hidden></p>
       <div class="fc-history" id="fc-history" hidden>
         <h3>How the title odds have moved</h3>
-        <p class="small" id="fc-history-note"></p>
-        <div class="chart" id="fc-hist-chart" role="img" aria-label="Each leading club's chance of winning the trophy, forecast before the first matchday and after each day since"></div>
+        <p class="swing" id="fc-history-note"></p>
+        <div class="fc-scroll">
+          <table class="table" id="fc-hist-table">
+            <caption class="sr">Each leading club's chance of winning the trophy in the forecast made before the first matchday, and now, with the change in percentage points.</caption>
+            <thead><tr><th scope="col">Club</th><th scope="col" class="num" id="fc-hist-before"></th><th scope="col" class="num" id="fc-hist-now"></th><th scope="col" class="num">Change (points)</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
       <details class="nerds" id="fc-how">
         <summary>How this is worked out</summary>

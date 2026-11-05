@@ -831,22 +831,47 @@ def test_a_cell_says_exactly_what_it_means(open_page, forecast):
     assert f"(about 1 in {one_in:g})" in tip
 
 
-def test_the_title_odds_chart_follows_the_history(open_page, data, forecast):
+def signed_points(v):
+    """How the page writes a change in points: one decimal, a real minus sign, no sign on zero."""
+    size = f"{abs(v):.1f}"
+    return size if float(size) == 0 else f"{'−' if v < 0 else '+'}{size}"
+
+
+def title_odds_rows(page):
+    return page.evaluate("""() => [...document.querySelectorAll('#fc-hist-table tbody tr')].map((tr) =>
+      ({club: tr.dataset.club, cells: [...tr.children].map((td) => td.textContent)}))""")
+
+
+def test_the_title_odds_table_sets_the_first_forecast_beside_the_latest(open_page, data, forecast):
     history = forecast.get("history")
     if not history or len(history["dates"]) < 2:
         pytest.skip("not enough days of forecasts yet")
     page = open_page(reduced_motion="reduce")
     assert page.locator("#fc-history").is_visible()
-    lead = sorted(history["win"], key=lambda c: -history["win"][c][-1])[:6]
-    assert page.locator("#fc-hist-chart polyline").count() == 6
-    assert page.locator("#fc-hist-chart circle").count() == 6 * len(history["dates"])
-    labels = page.evaluate("[...document.querySelectorAll('#fc-hist-chart text')].map((t) => t.textContent)")
-    assert "Before matchday 1" in labels and len(labels) >= 6 + 2
-    page.locator("#fc-hist-chart rect.hit").last.scroll_into_view_if_needed()
-    page.wait_for_timeout(150)
-    page.locator("#fc-hist-chart rect.hit").last.hover()
-    tip = page.locator("#tip").text_content()
-    assert "After " in tip and forecast_chance("win", history["win"][lead[0]][-1]) in tip
+    win = history["win"]
+    lead = sorted(win, key=lambda c: -win[c][-1])[:6]
+    rows = title_odds_rows(page)
+    assert [r["club"] for r in rows] == lead  # the six likeliest winners today, best first
+    for r in rows:
+        first, now = win[r["club"]][0], win[r["club"]][-1]
+        assert r["cells"][1:] == [forecast_chance("win", first), forecast_chance("win", now), signed_points((now - first) * 100)]
+    note = page.text_content("#fc-history-note")
+    move = lambda c: win[c][-1] - win[c][0]
+    assert ("Not much has changed" in note) == (abs(move(max(win, key=lambda c: abs(move(c))))) < 0.05)
+    led_throughout = all(max(win, key=lambda c: win[c][i]) == lead[0] for i in range(len(history["dates"])))
+    assert led_throughout == (f"{rows[0]['cells'][0]} have led at every forecast" in note)
+
+
+def test_the_title_odds_say_so_when_the_favourite_or_the_odds_have_changed(open_page, data, forecast):
+    now = sorted(forecast["clubs"], key=lambda c: -c["win"])
+    first, second = now[0]["club"], now[1]["club"]
+    shifted = {"dates": ["2026-09-07", forecast["as_of"]],
+               "win": {c["club"]: [0.30 if c["club"] == second else 0.01, c["win"]] for c in forecast["clubs"]}}  # the second club led at first
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, history=shifted)))
+    note = page.text_content("#fc-history-note")
+    rows = title_odds_rows(page)
+    assert rows[0]["club"] == first and "The odds have moved" in note and "Not much has changed" not in note
+    assert "started as the favourites" in note and "have led at every forecast" not in note
 
 
 def test_the_title_odds_chart_waits_for_a_second_forecast(open_page, data, forecast):
