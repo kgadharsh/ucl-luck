@@ -113,6 +113,20 @@ def test_the_league_phase_is_fetched_from_wikipedia_by_name(download, tmp_path, 
     assert not (tmp_path / "wikipedia" / "2027-28-league-phase.json").exists()
 
 
+def test_the_knockout_phase_and_the_final_are_fetched_as_two_articles(download, tmp_path, monkeypatch):
+    seen = []
+
+    def opener(request, timeout=30):
+        seen.append(request.full_url)
+        return _Reply(json.dumps({"parse": {"wikitext": "text"}}).encode())
+
+    monkeypatch.setattr(download.urllib.request, "urlopen", opener)
+    monkeypatch.setattr(download, "RAW", tmp_path)
+    assert download.knockout_phase(2026) == {"knockout phase": "downloaded", "final": "downloaded"}
+    assert "page=2026%E2%80%9327_UEFA_Champions_League_knockout_phase" in seen[0] and "page=2027_UEFA_Champions_League_final" in seen[1]
+    assert sorted(p.name for p in (tmp_path / "wikipedia").iterdir()) == ["2026-27-final.json", "2026-27-knockout-phase.json"]
+
+
 @pytest.mark.parametrize("day, season", [
     (date(2026, 6, 30), 2025), (date(2026, 7, 1), 2026), (date(2027, 1, 15), 2026), (date(2027, 7, 1), 2027)])
 def test_current_season_rolls_over_on_1_july(download, day, season):

@@ -30,8 +30,9 @@ import numpy as np
 import pandas as pd
 
 from dixon_coles import MAX_GOALS, fit, score_matrix
-from knockouts import single_match, two_legs
+from knockouts import extra_time_split, single_match, two_legs
 from matches import load_matches
+from parse_knockouts import final_winner, load_knockouts, tie_winner
 from parse_league_phase import check_league_phase, data_path, load_league_phase, season_title
 from update import season_of, settings
 
@@ -123,7 +124,32 @@ def scoreline_cdfs(model, teams, fixtures, rho, newcomer):
     return np.cumsum(grid.reshape(len(fixtures), -1), axis=1)
 
 
-def tie_chances(model, teams, rho, newcomer):
+def after_first_leg(lam2, nu2, lead, rho):
+    """The chance the club that hosted the first leg goes through, once that leg has been played and it
+    leads by `lead` goals (below 0: trails). lam2 is the goals expected from the second leg's home side,
+    nu2 from the visitors, who are the first leg's hosts."""
+    grid = score_matrix(np.array([lam2]), np.array([nu2]), rho)[0]  # [home side's goals, visitors' goals]
+    home, away = np.meshgrid(np.arange(MAX_GOALS + 1), np.arange(MAX_GOALS + 1), indexing="ij")
+    ahead = lead + away - home
+    et_home, et_away, et_grid = extra_time_split(lam2, nu2)
+    return float(grid[ahead > 0].sum() + grid[ahead == 0].sum() * (et_away + 0.5 * np.trace(et_grid)))
+
+
+def real_tie_chance(model, tie, rho, newcomer):
+    """The chance the first-leg host (tie["host"]) goes through a tie in its real state: not started,
+    first leg played, or over."""
+    host, other, leg1, leg2 = tie["host"], tie["other"], tie["leg1"], tie["leg2"]
+    if leg2 is not None:  # over: the aggregate, then the shoot-out
+        won = tie_winner({"leg1": leg1, "leg2": leg2, "pens": tie["pens"]})
+        return 0.5 if won is None else float(won == 1)
+    lam1, nu1 = model.expected_goals(host, other, False, newcomer)
+    lam2, nu2 = model.expected_goals(other, host, False, newcomer)
+    if leg1 is None:
+        return two_legs(lam1, nu1, lam2, nu2, rho, False)
+    return after_first_leg(lam2, nu2, leg1[0] - leg1[1], rho)
+
+
+def tie_chances(model, teams, rho, newcomer, real=()):
     """through[a, b]: the chance a goes through a two-legged tie with b, when a hosts the first leg.
     final[a, b]: the chance a beats b in a one-off match on neutral ground."""
     count = len(teams)
@@ -137,6 +163,11 @@ def tie_chances(model, teams, rho, newcomer):
             through[a, b] = two_legs(lam1, nu1, lam2, nu2, rho, False)
             lam, nu = model.expected_goals(teams[a], teams[b], True, newcomer)
             final[a, b] = single_match(lam, nu, rho)
+    # Ties that are really under way: what has been played, whoever the simulation would have had host the first leg.
+    for host, other, chance in real["ties"] if real else ():
+        through[host, other], through[other, host] = chance, 1 - chance
+    for winner, loser in (real["final"],) if real and real["final"] else ():
+        final[winner, loser], final[loser, winner] = 1.0, 0.0
     return through, final
 
 
@@ -170,10 +201,13 @@ def league_phase(table, fixtures, cdfs, n, rng):
     return np.argsort(-key, axis=0)
 
 
-def knockouts(order, through, final, rng):
+def knockouts(order, through, final, rng, plan=None):
     """Play the knockout phase for every simulated season at once. Returns, for each stage, the
-    teams that reached it (an array with one column per simulated season)."""
+    teams that reached it (an array with one column per simulated season). `plan` holds the draws
+    already made: {"playoffs": {seeded team: its unseeded opponent}, "last16": {top-eight team: its opponent}}."""
     n = order.shape[1]
+    plan = plan or {}
+    fixed = lambda team: np.full(n, team)
 
     def tie(first_leg_host, second_leg_host):
         return np.where(rng.random(n) < through[first_leg_host, second_leg_host], first_leg_host, second_leg_host)
@@ -181,6 +215,10 @@ def knockouts(order, through, final, rng):
     # Play-offs. A draw settles which of the two seeded teams in a section meets which unseeded one.
     winners = []
     for seeded, unseeded in PLAYOFFS:
+        if "playoffs" in plan:  # drawn: the real opponents
+            drawn = [fixed(plan["playoffs"][order[s, 0]]) for s in seeded]
+            winners.append((tie(drawn[0], order[seeded[0]]), tie(drawn[1], order[seeded[1]])))
+            continue
         swap = rng.random(n) < 0.5
         first = np.where(swap, order[unseeded[1]], order[unseeded[0]])
         second = np.where(swap, order[unseeded[0]], order[unseeded[1]])
@@ -189,6 +227,10 @@ def knockouts(order, through, final, rng):
     # Round of 16: the seeded team hosts the second leg. Whoever wins takes the seed's place.
     place = {}
     for (low, high), (first, second) in zip(ROUND_OF_16_SEEDS, winners):
+        if "last16" in plan:
+            place[low] = tie(fixed(plan["last16"][order[low, 0]]), order[low])
+            place[high] = tie(fixed(plan["last16"][order[high, 0]]), order[high])
+            continue
         swap = rng.random(n) < 0.5
         place[low] = tie(np.where(swap, second, first), order[low])
         place[high] = tie(np.where(swap, first, second), order[high])
@@ -219,22 +261,80 @@ def nudged(model, noise, rng):
     return other
 
 
-def simulate(table, fixtures, cdfs, through, final, n=SIMULATIONS, seed=SEED):
+def simulate(table, fixtures, cdfs, through, final, n=SIMULATIONS, seed=SEED, plan=None):
     """How often each team reaches each stage: {stage: array with one share per team}."""
     rng = np.random.default_rng(seed)
     order = league_phase(table, fixtures, cdfs, n, rng)
-    reached = knockouts(order, through, final, rng)
+    if plan:  # the league phase is over and the draws are made, so the table is what it is
+        order = np.tile(order[:, :1], (1, n))
+        for key, rows in (("playoffs", range(8, 16)), ("last16", range(8))):
+            if key in plan and set(plan[key]) != {order[r, 0] for r in rows}:
+                raise NoForecast(f"the {key} draw doesn't match the league table this forecast worked out")
+    reached = knockouts(order, through, final, rng, plan)
     teams = len(table["points"])
     return {stage: np.bincount(teams_at.ravel(), minlength=teams) / n for stage, teams_at in reached.items()}
 
 
+# ---------- the knockouts as they stand ----------
+
+ROUND_LABELS = (("Playoffs", "playoffs"), ("Round of 16", "last16"), ("Quarterfinals", "quarter"), ("Semifinals", "semi"))
+FINAL_SHOWN_DAYS = 3  # a forecast stays up this long after the final, saying who won
+
+
+def phase_of(left, knock):
+    """Where the season is: league, playoffs, last16, quarter, semi, final, or done."""
+    if left:
+        return "league"
+    ties = knock["ties"] if knock else {}
+    for name, label in ROUND_LABELS:
+        if not ties.get(name) or any(tie_winner(t) is None for t in ties[name]):
+            return label
+    return "done" if final_winner(knock["final"]) else "final"
+
+
+def knockout_state(knock, league, index):
+    """The knockouts as the articles list them, in the model's names: the ties (with their legs), the draws
+    already made (only for a whole round of eight, which is when a draw is complete) and the final if played."""
+    names = {}
+    for side in ("home", "away"):
+        names.update(zip(league[f"{side}_page"], league[side]))
+
+    by_page = dict(zip(*pd.read_csv(NAMES)[["wikipedia_page", "canonical"]].T.values))
+
+    def club(team):
+        """The article's club in the model's names: by its article, else through the name table, else by the name shown."""
+        page, shown = team
+        for name in (names.get(page), by_page.get(page), shown):
+            if name in index:
+                return index[name]
+        near = [n for n in index if n.startswith(f"{shown} (")]
+        if len(near) == 1:
+            return index[near[0]]
+        raise NoForecast(f"the knockout article lists {shown}, who is not in the league phase")
+
+    ties, plan = [], {}
+    for name, label in ROUND_LABELS:
+        listed = knock["ties"].get(name, [])
+        for t in listed:
+            ties.append((club(t["team1"]), club(t["team2"]), {"leg1": t["leg1"], "leg2": t["leg2"], "pens": t["pens"]}))
+        if name in ("Playoffs", "Round of 16") and len(listed) == 8:
+            plan[label if label == "last16" else "playoffs"] = {club(t["team2"]): club(t["team1"]) for t in listed}
+    final = None
+    if knock["final"] and final_winner(knock["final"]):
+        one, two = club(knock["final"]["team1"]), club(knock["final"]["team2"])
+        final = (one, two) if final_winner(knock["final"]) == 1 else (two, one)
+    return {"ties": ties, "plan": plan, "final": final}
+
+
 # ---------- putting it together ----------
 
-def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None, league=None, noise=0.0, worlds=1):
+def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None, league=None, noise=0.0, worlds=1, knockouts=False):
     """The forecast as plain data, ready for results/forecast.json. Raises NoForecast when the season
     is not at a stage this covers. `league` is the season's league phase as parse_league_phase reads it
     (read from the downloaded article if not given); `history` is the matches to fit on. With `noise`, the
-    simulations are split over `worlds` versions of the ratings, each nudged at random by that much."""
+    simulations are split over `worlds` versions of the ratings, each nudged at random by that much.
+    `knockouts` is the knockout phase as parse_knockouts reads it (read from the downloaded articles if
+    not given; None for none yet): the draws made, and the legs played, are then taken as they are."""
     as_of = pd.Timestamp(as_of or datetime.now(timezone.utc).date())
     season = season or season_of(pd.Series([as_of])).iloc[0]
     league = load_league_phase(season) if league is None else league
@@ -252,8 +352,13 @@ def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None, le
 
     played = league[league.home_goals.notna()]
     left = league[league.home_goals.isna()]
-    if left.empty and as_of > league.date.max() + pd.Timedelta(days=KNOCKOUTS_START_DAYS):
-        raise NoForecast("the league phase is over and the knockout phase has begun", over=True)
+    knock = load_knockouts(season) if knockouts is False else knockouts
+    ties_listed = bool(knock and knock["ties"])
+    if left.empty and not ties_listed and as_of > league.date.max() + pd.Timedelta(days=KNOCKOUTS_START_DAYS):
+        raise NoForecast("the league phase is over, the knockout phase has begun, and its results haven't been read", over=True)
+    final_done = final_winner(knock["final"]) if knock else None
+    if final_done and as_of > knock["final"]["date"] + pd.Timedelta(days=FINAL_SHOWN_DAYS):
+        raise NoForecast("the final has been played", over=True)
 
     # Learn from this season's matches too, unless the main data already has them.
     have = set(zip(history.date, history.home, history.away))
@@ -271,13 +376,19 @@ def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None, le
     index = {team: i for i, team in enumerate(teams)}
     table = standings(league, teams)
     fixtures = np.array([(index[h], index[a]) for h, a in zip(left.home, left.away)], dtype=int).reshape(-1, 2)
+    state = knockout_state(knock, league, index) if left.empty and ties_listed else None
+    plan = state["plan"] if state else None
     reach = {stage: np.zeros(len(teams)) for stage in STAGES}
     for world in range(worlds if noise else 1):
         version = nudged(model, noise, np.random.default_rng([seed, world])) if noise else model
         share = n // (worlds if noise else 1) + (n % worlds if noise and world == worlds - 1 else 0)
         cdfs = scoreline_cdfs(version, teams, fixtures, rho, newcomer) if len(fixtures) else np.empty((0, (MAX_GOALS + 1) ** 2))
-        through, final = tie_chances(version, teams, rho, newcomer)
-        found = simulate(table, fixtures, cdfs, through, final, share, seed + world)
+        real = None
+        if state:
+            real = {"ties": [(h, o, real_tie_chance(version, {**t, "host": teams[h], "other": teams[o]}, rho, newcomer)) for h, o, t in state["ties"]],
+                    "final": state["final"]}
+        through, final = tie_chances(version, teams, rho, newcomer, real)
+        found = simulate(table, fixtures, cdfs, through, final, share, seed + world, plan)
         for stage in STAGES:
             reach[stage] += found[stage] * share / n
 
@@ -295,6 +406,7 @@ def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None, le
         "season": season, "as_of": f"{as_of:%Y-%m-%d}", "simulations": n, "seed": seed,
         "matches": int(len(league)), "played": int(len(played)), "left": int(len(left)),
         "last_match": f"{league.date.max():%Y-%m-%d}",
+        "phase": phase_of(len(left), knock),
         "new_clubs": new_clubs,
         "source": f"https://en.wikipedia.org/wiki/{season_title(season)}",
         "clubs": clubs}

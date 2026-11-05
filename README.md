@@ -59,7 +59,7 @@ What's on it:
 - **The luck machine.** Every tie drops through a Galton board and lands on the winner's chance before the first leg, so the pile you end up with is the shape of the luck. Hover a ball to see its tie, or click it to jump to it in the explorer.
 - An upsets ticker (ties won by a side given under 35%) and the headline numbers.
 - Each champion's run, with a funnel showing its chances shrinking tie by tie.
-- **Who'll win this season?** Every club's chance of finishing in the top eight, reaching each knockout round and winning the trophy, from 100,000 simulated seasons (more below). Click a heading to sort by it. The section appears while the season's league phase is on and is refreshed every morning.
+- **Who'll win this season?** Every club's chance of finishing in the top eight, reaching each knockout round and winning the trophy, from 100,000 simulated seasons (more below). Click a heading to sort by it. The section runs from the start of the league phase to the final and is refreshed every morning. Below the table is a chart of how the leading clubs' title odds have moved, from one forecast per day (`results/forecast_history.csv`).
 - **One tie is a lottery, a season isn't.** Two sliders: how likely the better side is to win one tie (it starts at what a typical favourite really had) and how many ties it plays. You see how often it finishes ahead, level or behind, and how long it takes before the weaker side getting ahead becomes rare. Winning every single tie, which is what a trophy asks for, stays unlikely however good you are.
 - **What if?** Pick the winner of any tie in any season since 2012-13 and every club's chance of winning the trophy is recalculated exactly (`src/brackets.py`). Strengths are frozen just before the round of 16. Before 2024-25 the later rounds were drawn one at a time, so for those seasons it uses the draws as they actually happened. Your picks are saved in the page's address, so "Share these picks" gives you a link that opens with exactly the same bracket.
 - **A comeback meter.** Pick a first-leg score, where it was played, how strong your team is and which rules apply, and it gives you the exact chance of still going through (second leg, extra time, penalties, and away goals if you want them). Next to that is what actually happened in real ties that started the same way: 337 ties in all, from Champions League knockouts since 2011-12 and the Europa League seasons above. One thing it shows nicely: real teams that lost the first leg away usually went through more often than the "evenly matched" model says, because they were usually the seeded side and had the second leg at home.
@@ -94,7 +94,7 @@ Not covered by the ledger: the 2026-27 Champions League matches themselves. open
 `src/forecast.py` plays out the rest of the season 100,000 times and counts how often each club gets how far. It runs every morning after the update, writes `results/forecast.json`, and the dashboard shows it as a table you can sort.
 
 ```bash
-.venv/bin/python scripts/download_data.py --refresh-current   # also fetches this season's league phase from Wikipedia
+.venv/bin/python scripts/download_data.py --refresh-current   # also fetches this season's league phase, knockout phase and final from Wikipedia
 .venv/bin/python src/forecast.py
 ```
 
@@ -108,7 +108,7 @@ What to keep in mind:
 
 - It's the model's view, not a price. Strengths are frozen at today's, and it knows nothing about injuries, transfers, line-ups or the betting market. Treating each club's strength as known also makes the favourites look a little surer than they should. I haven't compared the numbers with bookmakers' title odds (there's no free source), so I wouldn't read the top club's figure as better than that. The backtest below shows how the favourites fared in the two earlier seasons.
 - The 100,000 simulations leave each figure good to a few tenths of a point. A fixed random seed means rerunning on the same data gives the same numbers.
-- The forecast covers the league phase and the weeks before the play-offs. It reads no knockout results, so once the play-offs start it removes itself, and the page leaves it out if it hasn't been refreshed for two weeks.
+- **Once the knockouts start it plays them from where they stand.** The knockout phase and final articles on Wikipedia are read every morning (`src/parse_knockouts.py`). A draw that has been made is the draw that is played, a tie that is over is settled, and after a first leg the second is played out knowing its score (`after_first_leg` in `src/forecast.py`, checked against the whole tie in the tests). Before a draw, the draw is still random. `test_last_seasons_knockouts_are_played_out_from_where_each_stage_stood` runs this on 2025-26 at five points in the knockouts. The forecast comes down three days after the final, and the page leaves it out if it hasn't been refreshed for two weeks.
 - Not done: using squad market values (Transfermarkt) to correct clubs the results can't tell apart yet, like a newly promoted side with a good start.
 
 ### Does it hold up?
@@ -131,7 +131,7 @@ What to keep in mind:
 
 `tests/test_pipeline.py` covers the daily job: failed downloads keep the old data, only fixtures that haven't kicked off get predicted (in UK time), a moved match is never predicted twice, the season rolls over on 1 July, and unfinished two-legged ties are skipped.
 
-`tests/test_forecast_backtest.py` covers the backtest's scoring and what it counts as having happened. `tests/test_forecast.py` covers the season forecast: reading Wikipedia's league phase, the table's tie-breakers one by one, the bracket against what happened in 2025-26, simulations that must come out a known way (identical clubs get identical chances, a team that wins everything wins the trophy, every stage has the right number of clubs), and what happens when the data is missing or the season moves on.
+`tests/test_knockout_forecast.py` covers reading the knockout articles (the fixtures in `tests/fixtures/` are trimmed from Wikipedia's 2025-26 pages) and playing out ties in progress. `tests/test_forecast_backtest.py` covers the backtest's scoring and what it counts as having happened. `tests/test_forecast.py` covers the season forecast: reading Wikipedia's league phase, the table's tie-breakers one by one, the bracket against what happened in 2025-26, simulations that must come out a known way (identical clubs get identical chances, a team that wins everything wins the trophy, every stage has the right number of clubs), and what happens when the data is missing or the season moves on.
 
 `tests/test_data.py` checks that `site/data.json` agrees with itself (each champion's run is the product of its ties, the calibration chart uses the same matches as the scores) and that the numbers in this README match the data.
 

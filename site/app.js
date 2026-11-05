@@ -1436,10 +1436,20 @@ function fillForecast(data) {
   const day = forecastDate(fc.as_of);
   const term = (key, text) => `<span class="term" tabindex="0" data-term="${key}">${text}</span>`;
   document.getElementById("fc-title").textContent = `Who'll win ${fc.season}?`;
-  document.getElementById("fc-sub").innerHTML = (fc.left
-    ? `As of ${day}, ${fc.played} of the ${fc.matches} matches of the ${term("league-phase", "league phase")} have been played. The model plays the other ${fc.left}, then the whole knockout phase, `
-    : `As of ${day}, the ${term("league-phase", "league phase")} is over. The model plays the whole knockout phase `) +
-    `${sims} times (a ${term("simulation", "simulation")}) and counts how often each club gets how far. It runs again every morning.`;
+  const PHASES = { // where the season is: what is over, what the model plays out
+    playoffs: ["the league phase is over", "the play-offs and then the rest of the knockout phase, "],
+    last16: ["the play-offs are over", "the last 16 and then the rest of the knockout phase, "],
+    quarter: ["the last 16 is over", "the quarter-finals and then the rest of the knockout phase, "],
+    semi: ["the quarter-finals are over", "the semi-finals and the final, "],
+    final: ["the semi-finals are over", "the final, "],
+  };
+  const phase = PHASES[fc.phase];
+  const suffix = `${sims} times (a ${term("simulation", "simulation")}) and counts how often each club gets how far. It runs again every morning.`;
+  document.getElementById("fc-sub").innerHTML = fc.phase === "done"
+    ? `As of ${day}, the final has been played: ${clean(fc.clubs.reduce((a, b) => (b.win > a.win ? b : a)).club)} won the trophy. This forecast comes down in a few days.`
+    : ((!fc.phase || fc.phase === "league") && fc.left
+      ? `As of ${day}, ${fc.played} of the ${fc.matches} matches of the ${term("league-phase", "league phase")} have been played. The model plays the other ${fc.left}, then the whole knockout phase, `
+      : `As of ${day}, ${phase ? phase[0] : `the ${term("league-phase", "league phase")} is over`}. The model plays out ${phase ? phase[1] : "the whole knockout phase, "}`) + suffix;
 
   const byClub = new Map(fc.clubs.map((c) => [c.club, c]));
   const isNew = new Set(fc.new_clubs || []);
@@ -1485,7 +1495,7 @@ function fillForecast(data) {
 
   const best = [...fc.clubs].sort((a, b) => b.win - a.win);
   const topFive = best.slice(0, 5).reduce((sum, c) => sum + c.win, 0);
-  document.getElementById("fc-text").innerHTML =
+  document.getElementById("fc-text").innerHTML = fc.phase === "done" ? `<b>${clean(best[0].club)}</b> won the trophy.` :
     `The favourite is <b>${clean(best[0].club)}</b>, which wins in ${pct(best[0].win)} of the simulated seasons, about ${Math.round(1 / best[0].win) === 1 ? "every one" : `1\u00a0in\u00a0${Math.round(1 / best[0].win)}`}. ` +
     `Even the five best clubs together win ${pct(topFive)}, so in about ${Math.round(1 / (1 - topFive)) <= 1 ? "no" : `1\u00a0in\u00a0${Math.round(1 / (1 - topFive))}`} seasons the trophy goes to a club outside them.`;
   const strangers = (fc.new_clubs || []).map(clean);
@@ -1498,7 +1508,7 @@ function fillForecast(data) {
   document.getElementById("fc-how-list").innerHTML = [
     `<b>Strength.</b> The same goals model that rates every club on this page, fitted to results up to ${day}, including this season's league-phase matches. Clubs don't improve or decline during the season in the simulations, and the model knows nothing about injuries, transfers, line-ups or the betting market.`,
     `<b>League phase.</b> ${fc.left ? `Each of the ${fc.left} matches still to play` : "Every match"} gets a scoreline drawn at random from the model's chances. The table is sorted the way UEFA sorts it: points, goal difference, goals scored, away goals scored, wins, away wins. What UEFA looks at after that is left to chance.`,
-    `<b>Knockouts.</b> The top eight go straight to the last 16, and 9th to 24th play off for the other eight places. The bracket, and the second leg at home for the better-placed side, follow the 2025-26 rules, with random draws and no country protection, as then. Each tie uses the exact chance of going through two legs (extra time, then penalties); the final is one match on neutral ground.`,
+    `<b>Knockouts.</b> ${fc.phase && fc.phase !== "league" ? "Once a draw is made the ties are the real ones, and every leg already played counts: after a first leg, the second is played out knowing its score. " : ""}The top eight go straight to the last 16, and 9th to 24th play off for the other eight places. The bracket, and the second leg at home for the better-placed side, follow the 2025-26 rules, with random draws and no country protection, as then. Each tie uses the exact chance of going through two legs (extra time, then penalties); the final is one match on neutral ground.`,
     `<b>How exact is it?</b> Each number comes from ${sims} simulated seasons, so it is good to a few tenths of a point. The bigger uncertainty is the model: it treats every club's strength as known, which makes favourites look a little surer than they are, and bookmakers' title odds also use team news and the betting market, so they will differ. This is a forecast from results alone, not betting advice.`,
     `<b>Source.</b> This season's fixtures and results are read each morning from <a href="${fc.source}" rel="noopener">Wikipedia</a> (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>).`,
   ].map((html) => `<li>${html}</li>`).join("");

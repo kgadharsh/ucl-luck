@@ -5091,7 +5091,7 @@
      "n": 1268
     },
     {
-     "predicted": 0.2532701787171135,
+     "predicted": 0.25327017871711355,
      "actual": 0.25091949325704943,
      "error": 0.017177918399711268,
      "n": 2447
@@ -5508,6 +5508,7 @@
   "played": 72,
   "left": 72,
   "last_match": "2027-01-27",
+  "phase": "league",
   "new_clubs": [
    "Sabah (AZE)",
    "Viking (NOR)"

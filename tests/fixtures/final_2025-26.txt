@@ -1,0 +1,10 @@
+Trimmed from Wikipedia's 2026 UEFA Champions League final (CC BY-SA 4.0).
+{{#invoke:football box|main
+|date       = {{Start date|2026|5|30|df=y}}
+|time       = {{CEST|18:00}}
+|team1      = [[Paris Saint-Germain FC|Paris Saint-Germain]] {{#invoke:flag|fbaicon|FRA}}
+|score      = 1–1
+|aet        = yes
+|team2      = {{#invoke:flag|fbaicon|ENG}} [[Arsenal F.C.|Arsenal]]
+|penaltyscore = 4–3
+}}

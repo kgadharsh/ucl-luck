@@ -808,6 +808,24 @@ def test_a_forecast_after_the_league_phase_says_so(open_page, data, forecast):
     assert "Every match" in page.text_content("#fc-how")
 
 
+@pytest.mark.parametrize("phase, over, next_up", [("playoffs", "the league phase is over", "the play-offs"), ("last16", "the play-offs are over", "the last 16"),
+                                                  ("quarter", "the last 16 is over", "the quarter-finals"), ("semi", "the quarter-finals are over", "the semi-finals"),
+                                                  ("final", "the semi-finals are over", "the final")])
+def test_the_forecast_says_which_part_of_the_season_it_is_playing_out(open_page, data, forecast, phase, over, next_up):
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, left=0, played=forecast["matches"], phase=phase)))
+    sub = page.text_content("#fc-sub")
+    assert over in sub and f"plays out {next_up}" in sub and "matches of the league phase" not in sub
+    page.click("#fc-how summary")
+    assert "every leg already played counts" in page.text_content("#fc-how")
+
+
+def test_a_forecast_after_the_final_names_the_champion(open_page, data, forecast):
+    clubs = [{**c, "win": 1.0 if i == 2 else 0.0} for i, c in enumerate(forecast["clubs"])]
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, clubs=clubs, left=0, phase="done")))
+    assert "the final has been played" in page.text_content("#fc-sub")
+    assert page.text_content("#fc-text").endswith("won the trophy.") and page.locator("#fc-table tbody tr").first.locator(".fc-win").text_content() == "100%"
+
+
 def test_without_a_forecast_the_section_and_its_link_disappear(open_page, data):
     page = open_page(reduced_motion="reduce", routes=serve(without_forecast(data)))
     assert page.locator("#forecast").is_hidden() and page.locator("nav a[href='#forecast']").is_hidden()

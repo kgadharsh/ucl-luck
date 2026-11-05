@@ -85,18 +85,31 @@ def transfermarkt():
         print(f"transfermarkt {name}: {result}")
 
 
-def league_phase(year, refresh=False):
-    """Wikipedia's article on the league phase of the season starting in `year`."""
-    season = f"{year}-{(year + 1) % 100:02d}"
-    title = f"{year}\u2013{(year + 1) % 100:02d}_UEFA_Champions_League_league_phase"
+def wikipedia_article(title, dest, refresh=False):
+    """One article's wikitext, saved as the API sends it."""
     query = urllib.parse.urlencode({"action": "parse", "page": title, "prop": "wikitext", "format": "json",
                                     "formatversion": 2, "redirects": 1})
 
     def has_text(data):  # a page that doesn't exist (yet) comes back as {"error": ...}
         return "wikitext" in json.loads(data).get("parse", {})
 
-    return fetch(f"{WIKIPEDIA}?{query}", RAW / "wikipedia" / f"{season}-league-phase.json", refresh,
-                 headers=WIKIPEDIA_HEADERS, valid=has_text)
+    return fetch(f"{WIKIPEDIA}?{query}", dest, refresh, headers=WIKIPEDIA_HEADERS, valid=has_text)
+
+
+def league_phase(year, refresh=False):
+    """Wikipedia's article on the league phase of the season starting in `year`."""
+    season = f"{year}-{(year + 1) % 100:02d}"
+    return wikipedia_article(f"{year}\u2013{(year + 1) % 100:02d}_UEFA_Champions_League_league_phase",
+                             RAW / "wikipedia" / f"{season}-league-phase.json", refresh)
+
+
+def knockout_phase(year, refresh=False):
+    """The articles on the knockout phase and the final, which exist from the play-off draw on."""
+    season = f"{year}-{(year + 1) % 100:02d}"
+    return {"knockout phase": wikipedia_article(f"{year}\u2013{(year + 1) % 100:02d}_UEFA_Champions_League_knockout_phase",
+                                                 RAW / "wikipedia" / f"{season}-knockout-phase.json", refresh),
+            "final": wikipedia_article(f"{year + 1}_UEFA_Champions_League_final",
+                                       RAW / "wikipedia" / f"{season}-final.json", refresh)}
 
 
 def main(refresh_current=False, with_transfermarkt=False):
@@ -122,6 +135,8 @@ def main(refresh_current=False, with_transfermarkt=False):
     # Only the season in progress: it is the one the forecast is about.
     print(f"{LAST_SEASON}-{(LAST_SEASON + 1) % 100:02d} league phase (Wikipedia): "
           f"{league_phase(LAST_SEASON, refresh=refresh_current)}")
+    for name, result in knockout_phase(LAST_SEASON, refresh=refresh_current).items():
+        print(f"{LAST_SEASON}-{(LAST_SEASON + 1) % 100:02d} {name} (Wikipedia): {result}")
 
 
 if __name__ == "__main__":
