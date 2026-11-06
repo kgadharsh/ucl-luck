@@ -10,7 +10,7 @@ import pytest
 
 from conftest import ROOT, needs_raw_data
 from knockouts import single_match, single_match_outcomes, two_leg_outcomes, two_legs
-from real_madrid import at_least, at_most, poisson_binomial, z_score
+from real_madrid import at_least, at_most, poisson_binomial, selection_corrected, z_score
 
 CLUB = "Real Madrid"
 
@@ -140,3 +140,70 @@ def test_saved_analysis_is_what_the_script_produces_today(saved):
             assert fresh == old, where
 
     same(json.loads(json.dumps(analyse())), saved)  # also fails on anything that isn't plain JSON
+
+
+# ---------- Real Madrid against the whole field ----------
+
+def small_field():
+    """Four clubs, four ties, every club in two of them: 16 possible seasons, so the answer can be worked out exactly."""
+    import pandas as pd
+    return pd.DataFrame({
+        "team_a": ["A", "C", "A", "B"], "team_b": ["B", "D", "C", "D"],
+        "p_a": [0.5, 0.5, 0.6, 0.5], "winner": ["A", "C", "A", "B"]})
+
+
+def exact_chance_of_best_z_at_least(ties, club, min_ties):
+    """Play every possible season (each tie goes one way or the other) and add up the chances of those where
+    some club's z-score is at least `club`'s real one."""
+    import pandas as pd
+    count = pd.concat([ties.team_a, ties.team_b]).value_counts()
+    teams = sorted(count[count >= min_ties].index)
+
+    def z_scores(winners):
+        out = []
+        for team in teams:
+            mine = [(t, w) for t, w in zip(ties.itertuples(), winners) if team in (t.team_a, t.team_b)]
+            ps = [t.p_a if t.team_a == team else 1 - t.p_a for t, _ in mine]
+            out.append(z_score(sum(w == team for _, w in mine), ps))
+        return np.array(out)
+
+    real = z_scores(list(ties.winner))[teams.index(club)]
+    total = 0.0
+    for goes in itertools.product([True, False], repeat=len(ties)):
+        winners = [t.team_a if a else t.team_b for t, a in zip(ties.itertuples(), goes)]
+        chance = np.prod([t.p_a if a else 1 - t.p_a for t, a in zip(ties.itertuples(), goes)])
+        if z_scores(winners).max() >= real - 1e-9:
+            total += chance
+    return total
+
+
+def test_the_field_test_matches_a_hand_enumeration_of_every_possible_season():
+    ties = small_field()
+    exact = exact_chance_of_best_z_at_least(ties, "A", 2)
+    found = selection_corrected(ties, club="A", min_ties=2, sims=400_000, seed=1)
+    assert 0 < exact < 1
+    assert found["chance"] == pytest.approx(exact, abs=0.004) and found["clubs"] == 4
+
+
+def test_the_field_test_is_never_easier_than_testing_one_club_and_grows_with_the_field():
+    import pandas as pd
+    ties = pd.read_csv(ROOT / "results" / "knockout_ties.csv")
+    wide, narrow = (selection_corrected(ties, min_ties=m, sims=100_000) for m in (4, 8))
+    ps = [at_least([x.p_a if x.team_a == CLUB else 1 - x.p_a for x in ties.itertuples() if CLUB in (x.team_a, x.team_b)],
+                   int((ties.winner == CLUB).sum()))]
+    assert wide["clubs"] > narrow["clubs"]                       # a lower bar lets more clubs in
+    assert narrow["chance"] >= ps[0]                              # picking the best of many is always easier than one club
+    assert wide["chance"] >= narrow["chance"] - 0.001            # and a bigger field only makes it easier still (noise aside)
+    assert 0 < wide["chance"] < 0.01                              # the effect is still real after the correction
+    assert selection_corrected(ties, min_ties=4, sims=100_000, seed=3) == selection_corrected(ties, min_ties=4, sims=100_000, seed=3)
+
+
+def test_the_saved_page_figure_is_the_field_test_on_the_pages_own_ties(data):
+    import pandas as pd
+    ties = pd.DataFrame(data["ties"])
+    shown = data["headline"]["real_selection"]
+    again = selection_corrected(ties, sims=200_000, seed=99)  # a different seed: the two simulations must still agree
+    assert (shown["clubs"], shown["min_ties"]) == (again["clubs"], again["min_ties"])
+    error = 4 * math.sqrt(shown["chance"] * (1 - shown["chance"]) / 400_000 + again["chance"] * (1 - again["chance"]) / 200_000)
+    assert abs(shown["chance"] - again["chance"]) <= error
+    assert shown["one_in"] == int(float(f"{1 / shown['chance']:.2g}"))

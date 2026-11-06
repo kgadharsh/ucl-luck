@@ -148,6 +148,8 @@ def test_readme_real_madrid(data, readme):
     assert f"{h['real_won']} of {h['real_ties']} ties" in readme
     assert f"expected {h['real_expected']:.1f}" in readme
     assert f"once in {odds_of_doing_as_well(data['ties'], 'Real Madrid')} tries" in readme
+    sel = h["real_selection"]
+    assert f"({sel['clubs']} clubs)" in readme and f"at least {sel['min_ties']} ties" in readme and f"once in {sel['one_in']} tries" in readme
 
 
 @pytest.mark.readme

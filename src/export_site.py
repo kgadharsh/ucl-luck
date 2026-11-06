@@ -19,6 +19,7 @@ from knockouts import LAST_AWAY_GOALS_SEASON, ROUNDS, actual_winner, tie_scores
 from matches import load_matches
 from outcomes import outcome_codes
 from preview import write_preview
+from real_madrid import selection_corrected
 from replays import season_replays
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -232,6 +233,7 @@ def main():
             "favourite_won": float((ties.p_winner >= 0.5).mean()),
             "median_champion_run": float(champions.path_probability.median()),
             "real_won": real["won"], "real_ties": real["ties"], "real_expected": real["expected"],
+            "real_selection": selection_corrected(ties),
         },
         "champions": champion_runs,
         "ties": tie_rows,

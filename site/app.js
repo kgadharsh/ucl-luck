@@ -163,9 +163,13 @@ function fillHeadline(data) {
     "test-matches": data.scores[0].matches.toLocaleString("en-GB"),
     finals: data.rounds.find((r) => r.round === "Final")?.ties ?? "",
     "real-odds": oddsOfDoingAsWell(data.ties, "Real Madrid"),
+    "real-sel-clubs": h.real_selection?.clubs ?? "",
+    "real-sel-min": h.real_selection?.min_ties ?? "",
+    "real-sel-odds": h.real_selection ? h.real_selection.one_in.toLocaleString("en-GB") : "",
     built: data.built,
   };
   document.querySelectorAll("[data-fill]").forEach((node) => { node.textContent = fills[node.dataset.fill] ?? ""; });
+  document.getElementById("real-sel").hidden = !h.real_selection; // an older data.json has no such figure: leave the sentence out
 }
 
 // ---------- season strip ----------
