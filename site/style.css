@@ -284,6 +284,8 @@ h3 { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .05e
 .load-error { border-left: 3px solid var(--s2); padding: 8px 0 8px 16px; margin: 32px 0; font-size: 16px; }
 .run-pick { margin: 18px 0 0; }
 .rounds-h { margin: 28px 0 6px; }
+.answer { margin: 0 0 22px; padding-left: 14px; border-left: 3px solid var(--s2); max-width: 60ch; }
+.answer b { color: var(--ink); }
 .fc-move { color: var(--ink-2); }
 @media (max-width: 560px) { .fc-move { display: none; } } /* the sentence under the table still names the biggest move */
 .rounds-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
