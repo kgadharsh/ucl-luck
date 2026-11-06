@@ -474,8 +474,9 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
 }
 .fc-sort:hover { color: var(--ink); }
 .fc-sort:focus-visible { outline: 2px solid var(--s2); outline-offset: -2px; }
-.fc th[aria-sort="descending"] .fc-sort { color: var(--ink); }
+.fc th[aria-sort="descending"] .fc-sort, .fc th[aria-sort="ascending"] .fc-sort { color: var(--ink); }
 .fc th[aria-sort="descending"] .fc-sort::after { content: " \25BE"; }
+.fc th[aria-sort="ascending"] .fc-sort::after { content: " \25B4"; }
 .fc td.fc-club { white-space: nowrap; }
 .fc-star { color: var(--red-text); margin-left: 2px; }
 .fc .fc-pts { color: var(--muted); }

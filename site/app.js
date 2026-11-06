@@ -1443,7 +1443,7 @@ function fillForecast(data) {
 
   const byClub = new Map(fc.clubs.map((c) => [c.club, c]));
   const isNew = new Set(fc.new_clubs || []);
-  let sortBy = "win";
+  let sortBy = "win", dir = -1;   // -1: biggest chance first, 1: smallest first
   let expanded = false;
   const head = document.getElementById("fc-head");
   // How far each club's chance of the trophy has moved since the forecast made before the first matchday, in points.
@@ -1457,7 +1457,7 @@ function fillForecast(data) {
   const more = document.getElementById("fc-more");
 
   const render = () => {
-    const ordered = [...fc.clubs].sort((a, b) => b[sortBy] - a[sortBy] || b.win - a.win || a.club.localeCompare(b.club));
+    const ordered = [...fc.clubs].sort((a, b) => dir * (a[sortBy] - b[sortBy]) || dir * (a.win - b.win) || a.club.localeCompare(b.club));
     const shown = expanded ? ordered : ordered.slice(0, FORECAST_ROWS);
     body.innerHTML = shown.map((c) =>
       `<tr data-club="${c.club.replace(/"/g, "&quot;")}"><td class="fc-club">${clean(c.club)}${isNew.has(c.club) ? `<span class="fc-star" title="Rated from this season's matches alone">*</span>` : ""}</td>` +
@@ -1468,8 +1468,7 @@ function fillForecast(data) {
     head.querySelectorAll("th").forEach((th) => {
       const button = th.querySelector(".fc-sort");
       if (!button) return;
-      th.setAttribute("aria-sort", button.dataset.stage === sortBy ? "descending" : "none");
-    });
+      th.setAttribute("aria-sort", button.dataset.stage === sortBy ? (dir < 0 ? "descending" : "ascending") : "none");    });
     body.querySelectorAll(".fc-cell").forEach((cell) => hover(cell, () => {
       const c = byClub.get(cell.closest("tr").dataset.club);
       const [stage, , what] = FORECAST_STAGES.find(([key]) => key === cell.dataset.stage);
@@ -1482,7 +1481,11 @@ function fillForecast(data) {
   head.addEventListener("click", (e) => {
     const button = e.target.closest(".fc-sort");
     if (!button) return;
-    sortBy = button.dataset.stage;
+    const stage = button.dataset.stage;
+    if (stage !== sortBy) { sortBy = stage; dir = -1; }
+    else if (dir < 0) dir = 1;
+    else if (stage === "win") dir = -1;
+    else { sortBy = "win"; dir = -1; }   // third click clears the choice: back to the trophy order
     render();
   });
   more.addEventListener("click", () => { expanded = !expanded; render(); });
