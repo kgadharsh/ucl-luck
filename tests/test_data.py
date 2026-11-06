@@ -279,3 +279,58 @@ def test_replays_of_a_tiny_bracket_match_a_hand_calculation():
     outcomes = [(0.6 * 0.6 * 0.7, "A"), (0.6 * 0.6 * 0.3, "C"), (0.6 * 0.4 * 0.8, "A"), (0.6 * 0.4 * 0.2, "D"),
                 (0.4 * 0.6 * 0.6, "B"), (0.4 * 0.6 * 0.4, "C"), (0.4 * 0.4 * 0.7, "B"), (0.4 * 0.4 * 0.3, "D")]
     assert r["less_surprising"] == pytest.approx(sum(p for p, _ in outcomes if p > actual))
+
+
+# ---------- how much of a tie is luck ----------
+
+def test_luck_share_is_worked_out_the_way_the_page_explains_it():
+    """Four ties by hand: the favourite went through in three, so a hit rate of 75%, which is half way from a coin flip
+    (50%) to a sure thing (100%): half skill, half luck."""
+    import pandas as pd
+    from export_site import luck_share
+    ties = pd.DataFrame({"team_a": ["A", "C", "E", "G"], "team_b": ["B", "D", "F", "H"], "p_a": [0.8, 0.6, 0.7, 0.4],
+                         "winner": ["A", "C", "E", "G"]})  # team_a went through every time; in the last tie it was the underdog
+    ties["p_winner"] = [0.8, 0.6, 0.7, 0.4]
+    luck = luck_share(ties)
+    assert luck["favourite_won"] == 0.75 and luck["luck"] == pytest.approx(0.5)
+    wide = 1.96 * math.sqrt(0.75 * 0.25 / 4)
+    share = lambda h: 1 - (min(max(h, 0.5), 1) - 0.5) / 0.5  # luck can't be below 0% or above 100%, however few the ties
+    assert luck["low"] == pytest.approx(share(0.75 + wide)) and luck["high"] == pytest.approx(share(0.75 - wide)) == pytest.approx(1.0)
+    assert luck["low"] < luck["luck"] < luck["high"]
+    brier = ((0.8 - 1) ** 2 + (0.6 - 1) ** 2 + (0.7 - 1) ** 2 + (0.4 - 1) ** 2) / 4  # team_a won all four
+    assert luck["brier"] == pytest.approx(brier) and luck["unexplained"] == pytest.approx(brier / 0.25)
+    # Always picking right, or always wrong, are the two ends of the scale.
+    sure = ties.assign(p_winner=0.9)
+    assert luck_share(sure)["luck"] == 0.0
+    assert luck_share(ties.assign(p_winner=0.2))["luck"] == 1.0  # never better than a coin flip: all luck, not more
+
+
+def test_the_luck_share_in_the_data_is_worked_out_from_its_own_ties(data):
+    import pandas as pd
+    from export_site import luck_share
+    ties = pd.DataFrame(data["ties"])
+    ties["p_winner"] = [t["p_a"] if t["winner"] == t["team_a"] else 1 - t["p_a"] for t in data["ties"]]
+    assert luck_share(ties) == pytest.approx(data["headline"]["luck"]) and data["headline"]["luck"]["ties"] == len(data["ties"])
+    assert data["headline"]["luck"]["favourite_won"] == pytest.approx(data["headline"]["favourite_won"])
+
+
+@pytest.mark.readme
+def test_readme_luck_share(data, readme):
+    l = data["headline"]["luck"]
+    assert f"right {l['favourite_won'] * 100:.1f}% of the time" in readme
+    assert f"takes you {round((1 - l['luck']) * 100)}% of the way" in readme and f"the other {round(l['luck'] * 100)}% is luck" in readme
+    assert f"the 95% range on that is {round(l['low'] * 100)}% to {round(l['high'] * 100)}%" in readme
+    assert f"tie Brier score is {l['brier']:.3f}" in readme and f"which puts it at {round(l['unexplained'] * 100)}%" in readme
+    assert f"differ by {round((l['unexplained'] - l['luck']) * 100)} points" in readme
+
+
+@pytest.mark.readme
+def test_readme_says_how_often_the_favourite_won_the_trophy(data, readme):
+    seasons = data["replays"]
+    favourites = sum(r["contenders"][0]["club"] == r["champion"] for r in seasons)
+    assert f"in only {favourites} of {len(seasons)} seasons" in readme
+
+
+def test_the_page_description_says_how_often_picking_the_favourite_is_right(data):
+    text = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
+    assert f"right about {round(data['headline']['luck']['favourite_won'] * 10)} times in 10" in text

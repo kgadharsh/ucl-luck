@@ -467,7 +467,7 @@ function fillSkill(data) {
     `<div class="sk-stat${n === 1 ? " red" : ""}"><b>${chance(behind(n))}</b><span>after ${n} ${n === 1 ? "tie" : "ties"}</span></div>`).join("");
   document.getElementById("sk-text").innerHTML =
     `But a trophy means winning <b>every</b> tie, four or five in a row. At ${pct(p)} each, that is ${chance(p ** 4)} for four and ${chance(p ** 5)} for five. ` +
-    "That is why even champions mostly got lucky.";
+    "That is why even the strongest club usually doesn't win it.";
 }
 
 // ---------- the wildest seasons ----------
@@ -642,6 +642,18 @@ function squadParagraphs(rm, { liga, groups, knockouts, separate }) {
   return `
     <p><b>It isn't the line-ups either.</b> Transfermarkt's starting elevens and market values test the obvious explanations. <i>Rotation:</i> Real do field a fuller eleven in the knockouts than in La Liga (${pct(rot.real.knockouts)} of their best eleven's value against ${pct(rot.real.league)}), but every big club does: the other ${rot.others.clubs} average ${signed(rot.others.gap, 3)} against Real's ${signed(rot.real.gap, 3)}, and Real are ${ordinal(rot.real_rank)} of ${rot.clubs}. <i>Strength:</i> between the eleven Real fielded and the gap in squad quality with their opponents, only ${signed(explained, 2)} of the ${signed(ko.actual, 2)} extra goals a match they scored in knockouts is explained by that. <i>The manager:</i> Real beat the model under Ancelotti (${signed(mg.ancelotti_at_real.points, 2)} points a match) and under Zidane (${signed(mg.zidane_at_real.points, 2)}), but Ancelotti's ${mg.ancelotti_elsewhere.matches} matches elsewhere (${signed(mg.ancelotti_elsewhere.points, 2)}) are too few to tell a coach from a club.</p>
     <p><b>What I still can't tell you is why.</b> It isn't rotation, a stronger eleven or (clearly) the manager, so what's left is something neither results nor line-ups can see (how Real manage a tie, experience in these games, or something about the club itself, to give three possibilities). Bookmaker odds for these matches would be the next test, since they'd show whether the market also rated Real above the model. ${climb}</p>`;
+}
+
+// The headline answer: how much of a tie is luck, on a yardstick a fan can check (see luck_share in src/export_site.py).
+function fillAnswer(data) {
+  const l = data.headline.luck, box = document.getElementById("luck-answer");
+  box.hidden = !l;
+  if (!l) return;
+  const whole = (x) => `${Math.round(x * 100)}%`;
+  box.innerHTML =
+    `<b>The short answer: about ${whole(l.luck)} of a knockout tie is luck.</b> Pick the favourite every time and you are right ${whole(l.favourite_won)} of the time. ` +
+    `A coin flip gets 50% and a perfect forecast 100%, so knowing the teams takes you ${whole(1 - l.luck)} of the way and the rest is luck, plus anything the model can't see, like injuries. ` +
+    `With ${l.ties} ties it could be anywhere from ${whole(l.low)} to ${whole(l.high)}.`;
 }
 
 function fillReplays(data) {
@@ -1697,6 +1709,7 @@ function start(data) {
   fillForecastHistory(data);
   setupGlossary();
   fillRealMadrid(data);
+  fillAnswer(data);
   fillReplays(data);
   fillRounds(data);
   fillSkill(data);

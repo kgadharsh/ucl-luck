@@ -81,6 +81,24 @@ def clubs_table(ties):
     return sorted(rows, key=lambda r: -r["z"])
 
 
+def luck_share(ties):
+    """How much of a knockout tie is luck, on the simplest yardstick that can be explained to a fan.
+
+    A coin flip picks the winner of a tie half the time and a perfect forecast always does, so the share of
+    the way from one to the other that "pick the favourite" gets you is its skill, and the rest is luck:
+    luck = 1 - (hit rate - 0.5) / 0.5. "Luck" here is whatever the teams' strength before the tie does not
+    explain, which also covers what the model cannot see (injuries, tactics). The interval is the 95% one
+    for a hit rate over this many ties. A stricter yardstick, the share of the variance in results the
+    model's chances leave unexplained, is the Brier score over the coin-flip 0.25; both are given."""
+    n = len(ties)
+    hit = float((ties.p_winner >= 0.5).mean())
+    wide = 1.96 * float(np.sqrt(hit * (1 - hit) / n))
+    luck = lambda h: 1 - (min(max(h, 0.5), 1.0) - 0.5) / 0.5
+    brier = float(np.mean((ties.p_a - (ties.winner == ties.team_a)) ** 2))
+    return {"ties": n, "favourite_won": hit, "luck": luck(hit), "low": luck(hit + wide), "high": luck(hit - wide),
+            "brier": brier, "unexplained": brier / 0.25}
+
+
 def rounds_table(ties):
     rows = []
     for rnd in ROUNDS:
@@ -234,6 +252,7 @@ def main():
             "median_champion_run": float(champions.path_probability.median()),
             "real_won": real["won"], "real_ties": real["ties"], "real_expected": real["expected"],
             "real_selection": selection_corrected(ties),
+            "luck": luck_share(ties),
         },
         "champions": champion_runs,
         "ties": tie_rows,

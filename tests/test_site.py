@@ -729,6 +729,21 @@ def test_the_live_section_appears_only_when_it_has_something_to_show(open_page, 
     assert page.locator("#live").is_visible() and page.locator("nav a[href='#live']").is_visible()
 
 
+def test_the_page_opens_with_how_much_of_a_tie_is_luck(open_page, data):
+    import json
+    l = data["headline"]["luck"]
+    whole = lambda x: f"{int(x * 100 + 0.5)}%"  # round half up, as the page does
+    page = open_page(reduced_motion="reduce")
+    text = page.text_content("#luck-answer")
+    assert f"about {whole(l['luck'])} of a knockout tie is luck" in text and f"right {whole(l['favourite_won'])} of the time" in text
+    assert f"from {whole(l['low'])} to {whole(l['high'])}" in text and f"With {l['ties']} ties" in text
+    assert page.locator("#luck-answer").is_visible()
+    assert "Even champions" not in page.text_content("body") and "Winning it all takes four or five wins in a row" in page.text_content("#runs")
+    older = json.dumps({**data, "headline": {k: v for k, v in data["headline"].items() if k != "luck"}})
+    page = open_page(reduced_motion="reduce", routes={"**/data.json": lambda route: route.fulfill(body=older, content_type="application/json")})
+    assert page.locator("#luck-answer").is_hidden()
+
+
 def test_the_real_madrid_odds_are_given_for_the_whole_field_too(open_page, data):
     import json
     sel = data["headline"]["real_selection"]
