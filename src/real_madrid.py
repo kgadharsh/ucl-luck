@@ -57,6 +57,46 @@ def z_score(won, ps):
     return float((won - ps.sum()) / np.sqrt((ps * (1 - ps)).sum()))
 
 
+def selection_corrected(ties, club=CLUB, min_ties=4, sims=400_000, seed=2012):
+    """How often would the most over-performing club look at least as unusual as `club` does, if every
+    tie were decided by the model's own chances?
+
+    A club's z-score (wins against what the model expected, in standard deviations) is only a fair test if
+    the club was picked before looking. Real Madrid stood out first and was tested after, so the fair
+    question is about the whole field: replay the ties `sims` times, each time giving every club its z-score,
+    and count the replays whose best z-score is at least `club`'s real one.
+
+    Every club with at least `min_ties` ties is in the field, not just the ones with 8 or more: a club needs
+    ties to be listed, and winning gets it more ties, so a stricter cut-off would flatter the result. Clubs
+    with one tie are left out because one tie gives a z-score that means nothing."""
+    ties = ties.reset_index(drop=True)
+    count = pd.concat([ties.team_a, ties.team_b]).value_counts()
+    teams = sorted(count[count >= min_ties].index)
+    index = {team: i for i, team in enumerate(teams)}
+    p = ties.p_a.to_numpy(np.float32)
+    as_a = np.zeros((len(ties), len(teams)), np.float32)  # as_a[t, c]: club c hosted the first leg of tie t
+    as_b = np.zeros_like(as_a)
+    for t, (a, b) in enumerate(zip(ties.team_a, ties.team_b)):
+        if a in index:
+            as_a[t, index[a]] = 1
+        if b in index:
+            as_b[t, index[b]] = 1
+    expected = as_a.T @ p + as_b.T @ (1 - p)
+    spread = np.sqrt((as_a + as_b).T @ (p * (1 - p)))
+    won = np.array([int((ties.winner == team).sum()) for team in teams])
+    z = (won - expected) / spread
+    real = float(z[index[club]])
+    rng = np.random.default_rng(seed)
+    hits, chunk = 0, 20_000
+    for _ in range(sims // chunk):
+        a_wins = (rng.random((chunk, len(ties))) < p).astype(np.float32)  # team_a goes through
+        wins = a_wins @ as_a + (1 - a_wins) @ as_b
+        hits += int((((wins - expected) / spread).max(axis=1) >= real - 1e-9).sum())
+    chance = hits / ((sims // chunk) * chunk)
+    return {"clubs": len(teams), "min_ties": min_ties, "z": real, "chance": chance,
+            "one_in": int(float(f"{1 / max(chance, 1e-9):.2g}"))}  # two significant figures: it is a simulation
+
+
 # ---------- 1. where: match by match ----------
 
 def match_table(matches, settings):

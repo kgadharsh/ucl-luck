@@ -269,7 +269,7 @@
       <div class="legend" id="clubs-legend"></div>
       <div class="chart" id="clubs-chart" role="img" aria-label="Expected and actual ties won per club"></div>
       <div class="note">
-        <p><b>Real Madrid went through <span data-fill="real-won"></span> ties when the model expected <span data-fill="real-expected"></span>.</b> If the model were right, that would happen about once in <span data-fill="real-odds"></span> tries. The model rates Real accurately in La Liga, but in Champions League knockout matches they take about a third of a point a match more than expected.</p>
+        <p><b>Real Madrid went through <span data-fill="real-won"></span> ties when the model expected <span data-fill="real-expected"></span>.</b> If the model were right, that would happen about once in <span data-fill="real-odds"></span> tries. <span id="real-sel">That is for Real Madrid on its own. I noticed Real before testing them, so the fairer question is how often the most unusual of all <span data-fill="real-sel-clubs"></span> clubs with at least <span data-fill="real-sel-min"></span> ties would look this extreme if every tie followed the model. It would still happen only about once in <span data-fill="real-sel-odds"></span> tries.</span> The model rates Real accurately in La Liga, but in Champions League knockout matches they take about a third of a point a match more than expected.</p>
         <p id="rm-lead">So part of Real Madrid's "luck" isn't luck. Either they lift their level for these matches, or something that matters here isn't visible in league results.</p>
       </div>
       <details class="rm nerds" id="rm" hidden>
@@ -354,6 +354,6 @@
   <a class="to-top" id="to-top" href="#top" hidden>↑ Top</a>
   <div class="tip" id="tip" aria-hidden="true"></div>
   <script src="motion.js?v=12"></script>
-  <script src="app.js?v=55"></script>
+  <script src="app.js?v=56"></script>
 </body>
 </html>

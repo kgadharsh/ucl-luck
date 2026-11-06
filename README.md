@@ -205,7 +205,7 @@ The biggest upsets, by the winner's pre-match chance:
 
 ### Luck, or a blind spot? Real Madrid
 
-Overall the tie probabilities are honest, but one club breaks them. Real Madrid went through 36 of 44 ties when the model expected 24.3. If the model were right, that would happen about once in 10,200 tries, which is still far too rare even after allowing for the fact that I checked 15 clubs. Every other club with 8 or more ties is within the normal range (none is further than 1.4 standard deviations from what the model expected).
+Overall the tie probabilities are honest, but one club breaks them. Real Madrid went through 36 of 44 ties when the model expected 24.3. If the model were right, that would happen about once in 10,200 tries, That is for Real Madrid on its own. I noticed Real Madrid before testing them, so the fair question is how often the most unusual club in the whole field would look this extreme if every tie followed the model. Replaying the 226 ties 400,000 times with every club that has at least 4 ties (31 clubs), it happens about once in 530 tries (`selection_corrected` in `src/real_madrid.py`), so the effect survives the correction. Every other club with 8 or more ties is within the normal range (none is further than 1.4 standard deviations from what the model expected).
 
 So is it luck or a blind spot? `src/real_madrid.py` runs every check below.
 

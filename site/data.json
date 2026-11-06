@@ -10,7 +10,14 @@
   "median_champion_run": 0.1102735,
   "real_won": 36,
   "real_ties": 44,
-  "real_expected": 24.346700000000002
+  "real_expected": 24.346700000000002,
+  "real_selection": {
+   "clubs": 31,
+   "min_ties": 4,
+   "z": 3.755860477957887,
+   "chance": 0.00187,
+   "one_in": 530
+  }
  },
  "champions": [
   {

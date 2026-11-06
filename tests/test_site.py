@@ -729,6 +729,18 @@ def test_the_live_section_appears_only_when_it_has_something_to_show(open_page, 
     assert page.locator("#live").is_visible() and page.locator("nav a[href='#live']").is_visible()
 
 
+def test_the_real_madrid_odds_are_given_for_the_whole_field_too(open_page, data):
+    import json
+    sel = data["headline"]["real_selection"]
+    page = open_page(reduced_motion="reduce")
+    text = page.text_content("#real-sel")
+    assert f"all {sel['clubs']} clubs with at least {sel['min_ties']} ties" in text and f"once in {sel['one_in']:,} tries" in text
+    assert page.locator("#real-sel").is_visible()
+    older = json.dumps({**data, "headline": {k: v for k, v in data["headline"].items() if k != "real_selection"}})
+    page = open_page(reduced_motion="reduce", routes={"**/data.json": lambda route: route.fulfill(body=older, content_type="application/json")})
+    assert page.locator("#real-sel").is_hidden()
+
+
 def test_the_prediction_ledger_waits_until_ten_matches_are_scored(open_page, data):
     import json
     def with_scored(n):
