@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-  <link rel="stylesheet" href="style.css?v=38">
+  <link rel="stylesheet" href="style.css?v=39">
   <script>
     // Before anything paints or draws: mark that JS is on, and apply a saved light/dark choice,
     // so charts are never drawn in the system theme's colours and the page doesn't flash.
@@ -53,7 +53,6 @@
         <a href="#skill">Skill vs luck</a>
         <a href="#butterfly">What if?</a>
         <a href="#comeback">Comebacks</a>
-        <a href="#rounds">Favourites</a>
         <a href="#wild">Wild seasons</a>
         <a href="#ties">Every tie</a>
         <a href="#blind-spot">Real Madrid</a>
@@ -136,13 +135,6 @@
       <div class="fc-history" id="fc-history" hidden>
         <h3>How the title odds have moved</h3>
         <p class="swing" id="fc-history-note"></p>
-        <div class="fc-scroll">
-          <table class="table" id="fc-hist-table">
-            <caption class="sr">Each leading club's chance of winning the trophy in the forecast made before the first matchday, and now, with the change in percentage points.</caption>
-            <thead><tr><th scope="col">Club</th><th scope="col" class="num" id="fc-hist-before"></th><th scope="col" class="num" id="fc-hist-now"></th><th scope="col" class="num">Change (points)</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
       </div>
       <details class="nerds" id="fc-how">
         <summary>How this is worked out</summary>
@@ -232,19 +224,15 @@
       </div>
     </section>
 
-    <section id="rounds" class="card">
-      <h2>The later the round, the closer the contest</h2>
-      <p class="sub">In the round of 16, the favourite usually goes through. By the final it's not far off a coin toss. The hollow dot is how often the model expected its favourite to go through; the solid dot is how often it really did. There have only been <span data-fill="finals"></span> finals, so treat each dot as a rough guide: the line through it shows how far off it could be.</p>
-      <div class="legend" id="rounds-legend"></div>
-      <div class="chart" id="rounds-chart" role="img" aria-label="Favourite win rate by round, expected and actual"></div>
-    </section>
-
     <section id="wild" class="card">
       <h2>Which season was the wildest?</h2>
       <p class="sub">An underdog is the side with the lower pre-match chance. For each season, the solid dot is how many underdogs actually went through and the hollow dot is how many the model expected. The number on the right is the gap. Click a season to see its ties.</p>
       <div class="legend" id="wild-legend"></div>
       <div class="chart" id="wild-chart" role="img" aria-label="Underdogs that went through each season, against how many the model expected"></div>
       <p class="small" id="wild-note"></p>
+      <h3 class="rounds-h">How close is each round?</h3>
+      <p class="swing" id="rounds-line"></p>
+      <div class="rounds-strip" id="rounds-strip"></div>
     </section>
 
     <section id="ties" class="card">
@@ -338,33 +326,23 @@
       </div>
     </section>
 
-    <section id="live" class="card">
-      <h2>Live: the strongest clubs right now</h2>
+    <section id="live" class="card" hidden>
+      <h2>Live: the model's league predictions</h2>
       <p class="sub" id="live-sub"></p>
-      <div class="split">
-        <div>
-          <table class="table" id="ratings-table">
-            <thead><tr><th>#</th><th>Club</th><th class="num">Would score</th><th class="num">Would concede</th><th class="num">Would win</th><th class="rbar-head"><span class="sr">Chance of winning, as a bar</span></th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div>
-          <div id="ledger-block">
-          <h3>The prediction ledger</h3>
-          <p class="small">The real test: the model predicts upcoming league matches, and every prediction is saved before kick-off and never changed afterwards. Once a match is played, the prediction is scored against the result and against the bookmakers.</p>
-          <div class="ledger" id="ledger"></div>
-          </div>
-          <div class="upcoming" id="watch" hidden>
-            <h3>Upsets watch</h3>
-            <p class="small">Upcoming games where the model rates a result well above the bookmakers do. If the model is right, these are the results to watch for; if the bookmakers are, the model is about to learn something.</p>
-            <div class="fixtures"></div>
-          </div>
-          <div class="upcoming" id="upcoming" hidden>
-            <h3>Coming up</h3>
-            <p class="small">The model's chances for each result: home win, draw, away win.</p>
-            <div class="fixtures"></div>
-          </div>
-        </div>
+      <div id="ledger-block">
+        <h3>The prediction ledger</h3>
+        <p class="small">The real test: the model predicts upcoming league matches, and every prediction is saved before kick-off and never changed afterwards. Once a match is played, the prediction is scored against the result and against the bookmakers.</p>
+        <div class="ledger" id="ledger"></div>
+      </div>
+      <div class="upcoming" id="watch" hidden>
+        <h3>Upsets watch</h3>
+        <p class="small">Upcoming games where the model rates a result well above the bookmakers do. If the model is right, these are the results to watch for; if the bookmakers are, the model is about to learn something.</p>
+        <div class="fixtures"></div>
+      </div>
+      <div class="upcoming" id="upcoming" hidden>
+        <h3>Coming up</h3>
+        <p class="small">The model's chances for each result: home win, draw, away win.</p>
+        <div class="fixtures"></div>
       </div>
     </section>
 
@@ -376,6 +354,6 @@
   <a class="to-top" id="to-top" href="#top" hidden>↑ Top</a>
   <div class="tip" id="tip" aria-hidden="true"></div>
   <script src="motion.js?v=12"></script>
-  <script src="app.js?v=54"></script>
+  <script src="app.js?v=55"></script>
 </body>
 </html>

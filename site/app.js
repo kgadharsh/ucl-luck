@@ -436,31 +436,6 @@ function showPath(run, quiet) {
 }
 
 // ---------- favourites by round ----------
-function drawRounds(data) {
-  const box = document.getElementById("rounds-chart");
-  const rows = data.rounds;
-  const { root, width, height } = canvas(box, 240);
-  const m = { l: 40, r: 12, t: 12, b: 30 };
-  const low = 0.3, high = 1;
-  const y = (v) => m.t + (1 - (v - low) / (high - low)) * (height - m.t - m.b);
-  const step = (width - m.l - m.r) / rows.length;
-  for (let v = low; v <= high + 1e-9; v += 0.1) {
-    svg("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v), stroke: css("--grid") }, root);
-    svg("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = pct(v);
-  }
-  legend("rounds-legend", [["Favourite actually went through (could be anywhere along the line)", css("--s1")], ["Model expected", css("--muted")]]);
-  rows.forEach((row, i) => {
-    const cx = m.l + step * (i + 0.5);
-    const lo = Math.max(low, row.won - row.error), hi = Math.min(high, row.won + row.error);
-    svg("line", { x1: cx + 7, x2: cx + 7, y1: y(lo), y2: y(hi), stroke: css("--s1"), "stroke-width": 2, class: "grow-c", style: `--d:${300 + i * 110}ms` }, root);
-    svg("circle", { cx: cx + 7, cy: y(row.won), r: 5, fill: css("--s1"), stroke: css("--surface"), "stroke-width": 2, class: "pop", style: `--d:${500 + i * 110}ms` }, root);
-    svg("circle", { cx: cx - 7, cy: y(row.expected), r: 5, fill: "none", stroke: css("--muted"), "stroke-width": 2, class: "pop", style: `--d:${200 + i * 110}ms` }, root);
-    svg("text", { x: cx, y: height - 8, "text-anchor": "middle" }, root).textContent = ROUND_SHORT[row.round];
-    const hit = svg("rect", { x: cx - step / 2, y: m.t, width: step, height: height - m.t - m.b, class: "hit" }, root);
-    hover(hit, `<b>${row.round}</b> (${row.ties} ties)<br>Model expected the favourite through: ${pct(row.expected)}<br>Actually went through: ${pct(row.won)}, give or take ${pct(row.error)}`);
-  });
-}
-
 // ---------- one tie is a lottery, a season isn't ----------
 // The chance of every number of wins for a side that wins each tie with chance p. Exact.
 function winsDistribution(n, p) {
@@ -692,6 +667,17 @@ function fillReplays(data) {
     if (option) { select.value = option.value; select.dispatchEvent(new Event("change")); }
     document.getElementById("butterfly").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   });
+}
+
+// How often the model's favourite went through, round by round: a strip, since the point is just that it falls.
+function fillRounds(data) {
+  const rows = data.rounds;
+  const first = rows.find((r) => r.round === "Round of 16") || rows[0], last = rows[rows.length - 1];
+  document.getElementById("rounds-strip").innerHTML = rows.map((r) =>
+    `<div class="rs"><span class="rs-name">${ROUND_SHORT[r.round]}</span><b>${pct(r.won)}</b><span class="small">of favourites went through (the model said ${pct(r.expected)}), from ${r.ties} ties</span></div>`).join("");
+  document.getElementById("rounds-line").innerHTML =
+    `In the ${ROUND_SHORT[first.round].toLowerCase()} the favourite goes through ${pct(first.won)} of the time` +
+    (last.won < 0.7 ? `; by the final it's not far off a coin toss (${pct(last.won)}, but only ${last.ties} finals, so a rough guide).` : ".");
 }
 
 function fillRealMadrid(data) {
@@ -1412,12 +1398,6 @@ function fillForecastHistory(data) {
     (always ? `<b>${clean(lead[0])}</b> have led at every forecast. `
       : `<b>${clean(favouriteAt(0))}</b> started as the favourites and <b>${clean(lead[0])}</b> are now. `) +
     `The biggest move in the whole field is <b>${clean(mover)}</b>, ${forecastChance("win", h.win[mover][0])} to ${forecastChance("win", h.win[mover][last])}.`;
-  document.getElementById("fc-hist-before").textContent = "Before matchday 1";
-  document.getElementById("fc-hist-now").textContent = `Now (${day(h.dates[last])})`;
-  document.querySelector("#fc-hist-table tbody").innerHTML = lead.map((club) =>
-    `<tr data-club="${club.replace(/"/g, "&quot;")}"><td>${clean(club)}</td>` +
-    `<td class="num">${forecastChance("win", h.win[club][0])}</td><td class="num"><b>${forecastChance("win", h.win[club][last])}</b></td>` +
-    `<td class="num">${signed(move(club) * 100, 1)}</td></tr>`).join("");
 }
 
 function fillForecast(data) {
@@ -1450,9 +1430,13 @@ function fillForecast(data) {
   let sortBy = "win";
   let expanded = false;
   const head = document.getElementById("fc-head");
+  // How far each club's chance of the trophy has moved since the forecast made before the first matchday, in points.
+  const h = fc.history, moved = h && h.dates.length >= 2;
+  const movedBy = (club) => (moved && h.win[club] ? h.win[club][h.dates.length - 1] - h.win[club][0] : null);
   head.innerHTML = `<th scope="col">Club</th><th scope="col" class="num fc-pts" title="Points so far in the league phase">Pts</th>` +
     FORECAST_STAGES.map(([stage, label, what]) =>
-      `<th scope="col" class="num fc-${stage}"><button class="fc-sort" type="button" data-stage="${stage}" title="Sort by the chance to ${what}">${label}</button></th>`).join("");
+      `<th scope="col" class="num fc-${stage}"><button class="fc-sort" type="button" data-stage="${stage}" title="Sort by the chance to ${what}">${label}</button></th>`).join("") +
+    (moved ? `<th scope="col" class="num fc-move" title="Change in the chance of winning the trophy since the forecast made before matchday 1 (${forecastDate(h.dates[0]).replace(/ \d{4}$/, "")}), in percentage points">Since MD1</th>` : "");
   const body = document.querySelector("#fc-table tbody");
   const more = document.getElementById("fc-more");
 
@@ -1463,7 +1447,8 @@ function fillForecast(data) {
       `<tr data-club="${c.club.replace(/"/g, "&quot;")}"><td class="fc-club">${clean(c.club)}${isNew.has(c.club) ? `<span class="fc-star" title="Rated from this season's matches alone">*</span>` : ""}</td>` +
       `<td class="num fc-pts">${c.points}</td>` +
       FORECAST_STAGES.map(([stage]) =>
-        `<td class="num fc-cell fc-${stage}" data-stage="${stage}" style="--p:${c[stage]}">${stage === "win" ? `<b>${forecastChance(stage, c[stage])}</b>` : forecastChance(stage, c[stage])}</td>`).join("") + "</tr>").join("");
+        `<td class="num fc-cell fc-${stage}" data-stage="${stage}" style="--p:${c[stage]}">${stage === "win" ? `<b>${forecastChance(stage, c[stage])}</b>` : forecastChance(stage, c[stage])}</td>`).join("") +
+      (moved ? `<td class="num fc-move">${movedBy(c.club) === null ? "" : signed(movedBy(c.club) * 100, 1)}</td>` : "") + "</tr>").join("");
     head.querySelectorAll("th").forEach((th) => {
       const button = th.querySelector(".fc-sort");
       if (!button) return;
@@ -1561,19 +1546,14 @@ function fillMatches(data) {
 function fillLive(data) {
   const live = data.live;
   const section = document.getElementById("live");
+  const link = document.querySelector('nav a[href="#live"]');
   if (!live) {
-    section.hidden = true;
-    document.querySelector('nav a[href="#live"]').hidden = true;
+    section.hidden = link.hidden = true;
     return;
   }
   document.getElementById("live-sub").textContent =
-    `How each club would do in one match against an average club from this season's big five leagues, on a neutral pitch: ` +
-    `the goals it would score and concede on average, and its chance of winning. ` +
-    `From the goals model${live.updated ? `, updated ${live.updated}` : ""}, using ${live.window_years ? `the last ${live.window_years} years of matches` : "recent matches"}` +
-    `${live.fitted_through ? ` up to ${live.fitted_through}` : ""}, with recent matches counting more.`;
-  document.querySelector("#ratings-table tbody").innerHTML = live.ratings.map((r, i) =>
-    `<tr><td class="num">${i + 1}</td><td>${clean(r.club)}</td><td class="num">${r.scores.toFixed(1)}</td><td class="num">${r.concedes.toFixed(1)}</td><td class="num"><b>${pct(r.win)}</b></td>` +
-    `<td class="rbar-cell"><span class="rbar" style="width:${r.win * 100}%"></span></td></tr>`).join("");
+    `The same goals model also predicts matches in the big five leagues${live.updated ? ` (updated ${live.updated})` : ""}. ` +
+    `Each prediction is saved before kick-off, then scored against the result and the bookmakers once the match is played.`;
   const cell = (value, label) => `<div class="stat"><span class="stat-value">${value}</span><span class="stat-label">${label}</span></div>`;
   // The scorecard only means something once a few matches have been scored; until then show nothing, not an empty box.
   document.getElementById("ledger-block").hidden = !(live.scored >= 10);
@@ -1588,6 +1568,7 @@ function fillLive(data) {
   const upcoming = [...(live.upcoming || [])].sort((a, b) => String(a.kickoff || a.date).localeCompare(String(b.kickoff || b.date))).slice(0, 10);
   const box = document.getElementById("upcoming");
   box.hidden = !upcoming.length;
+  section.hidden = link.hidden = !(live.scored >= 10) && !upcoming.length; // nothing to show yet: leave the section out
   if (!upcoming.length) return;
   const when = (m) => {
     const at = m.kickoff ? new Date(m.kickoff.replace(" UTC", "Z").replace(" ", "T")) : null;
@@ -1713,13 +1694,14 @@ function start(data) {
   setupGlossary();
   fillRealMadrid(data);
   fillReplays(data);
+  fillRounds(data);
   fillSkill(data);
   const redrawButterfly = setupButterfly(data);
   const redrawHeat = setupComeback(data);
   setupWire(data);
   const redrawMachine = setupMachine(data);
   const redrawTicker = setupTicker(data);
-  drawAll = () => { redrawMachine(); redrawTicker(); drawRuns(data); drawRounds(data); drawWild(data); drawClubs(data); drawRmSplit(data); drawRmLast(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
+  drawAll = () => { redrawMachine(); redrawTicker(); drawRuns(data); drawWild(data); drawClubs(data); drawRmSplit(data); drawRmLast(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
   drawAll();
   // Charts folded inside a closed <details> have no width to draw into, so draw them when it opens.
   document.getElementById("rm").addEventListener("toggle", (e) => { if (e.target.open) { drawRmSplit(data); drawRmLast(data); } });

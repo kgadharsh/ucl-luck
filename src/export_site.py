@@ -171,7 +171,6 @@ def live_section():
     ratings_path, ledger_path = RESULTS / "live" / "ratings.csv", RESULTS / "live" / "prediction_ledger.csv"
     if not ratings_path.exists():
         return None
-    ratings = pd.read_csv(ratings_path).head(20)
     ledger = pd.read_csv(ledger_path) if ledger_path.exists() else pd.DataFrame()
     scored = ledger.dropna(subset=["brier"]) if "brier" in ledger else ledger
     both = scored.dropna(subset=["book_brier"]) if "book_brier" in scored else scored
@@ -186,7 +185,6 @@ def live_section():
         "fitted_through": day(meta["fitted_through"]) if "fitted_through" in meta else None,
         "window_years": round(meta["window_days"] / 365) if "window_days" in meta else None,
         "big_five_average": meta.get("big_five_average"),
-        "ratings": ratings.round(3).to_dict("records"),
         "predictions": int(len(ledger)),
         "scored": int(len(scored)),
         "model_brier": float(both.brier.mean()) if len(both) else None,

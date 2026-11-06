@@ -104,7 +104,7 @@ def test_live_section_describes_its_fit(data):
     live = data.get("live")
     if live is None:
         pytest.skip("no live section")
-    for key in ["updated", "fitted_through", "window_years", "big_five_average", "ratings"]:
+    for key in ["updated", "fitted_through", "window_years", "big_five_average"]:
         assert live.get(key) is not None, key
 
 
