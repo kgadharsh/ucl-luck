@@ -20,7 +20,6 @@ from matches import load_matches
 from outcomes import outcome_codes
 from preview import write_preview
 from real_madrid import selection_corrected
-from replays import season_replays
 
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "results"
@@ -266,7 +265,6 @@ def main():
         "forecast": forecast_section(),
         "comebacks": first_legs(matches),
         "brackets": brackets,
-        "replays": season_replays(brackets),
     }
     data["real_madrid"] = real_madrid_section(data["headline"])
     # allow_nan=False: a NaN would be written as a bare NaN, which browsers refuse to parse,

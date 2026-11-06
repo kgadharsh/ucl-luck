@@ -242,45 +242,6 @@ def test_readme_forecast_backtest(readme):
     assert all(skill < result["overall"]["skill"] for skill in skills)  # the claim: it made the score slightly worse each time
 
 
-# ---------- season replays ----------
-
-def test_season_replays_are_exact_and_agree_with_the_brackets(data):
-    """Every replay is a whole bracket played out: title chances sum to one, and the real champion is in it."""
-    assert sorted(r["season"] for r in data["replays"]) == sorted(b["season"] for b in data["brackets"])
-    by_season = {b["season"]: b for b in data["brackets"]}
-    for row in data["replays"]:
-        bracket = by_season[row["season"]]
-        final = next(n for n in bracket["nodes"] if n["round"] == "Final")
-        assert row["champion"] == final["winner"]
-        assert 0 < row["champion_chance"] < 1 and 0 <= row["less_surprising"] <= 1
-        chances = [c["chance"] for c in row["contenders"]]
-        assert chances == sorted(chances, reverse=True) and sum(chances) <= 1.0001
-        assert row["contenders"][0]["chance"] >= row["champion_chance"] or row["contenders"][0]["club"] == row["champion"]
-    ranked = [r["less_surprising"] for r in data["replays"]]
-    assert ranked == sorted(ranked, reverse=True), "most surprising season first"
-
-
-def test_replays_of_a_tiny_bracket_match_a_hand_calculation():
-    """Four clubs, three ties: A v B and C v D, then the winners. Worked out by hand."""
-    import sys
-    sys.path.insert(0, str(ROOT / "src"))
-    from replays import replay_season
-    chance = [[0.5, 0.6, 0.7, 0.8], [0.4, 0.5, 0.6, 0.7], [0.3, 0.4, 0.5, 0.6], [0.2, 0.3, 0.4, 0.5]]
-    bracket = {"season": "x", "teams": ["A", "B", "C", "D"], "two_legs": chance, "single": chance, "nodes": [
-        {"id": 0, "round": "Round of 16", "winner": "A", "teams": ["A", "B"], "format": "two_legs"},
-        {"id": 1, "round": "Round of 16", "winner": "C", "teams": ["C", "D"], "format": "two_legs"},
-        {"id": 2, "round": "Final", "winner": "A", "from": [0, 1], "format": "single"}]}
-    r = replay_season(bracket)
-    # A wins: beat B (0.6), then beat C (0.7) or D (0.8), weighted by who reached the final.
-    expected_a = 0.6 * (0.6 * 0.7 + 0.4 * 0.8)
-    assert r["title"]["A"] == pytest.approx(expected_a) and sum(r["title"].values()) == pytest.approx(1)
-    # The real run: A beat B (0.6), C beat D (0.6), A beat C (0.7) = 0.252. Replays with a higher chance are less surprising.
-    actual = 0.6 * 0.6 * 0.7
-    outcomes = [(0.6 * 0.6 * 0.7, "A"), (0.6 * 0.6 * 0.3, "C"), (0.6 * 0.4 * 0.8, "A"), (0.6 * 0.4 * 0.2, "D"),
-                (0.4 * 0.6 * 0.6, "B"), (0.4 * 0.6 * 0.4, "C"), (0.4 * 0.4 * 0.7, "B"), (0.4 * 0.4 * 0.3, "D")]
-    assert r["less_surprising"] == pytest.approx(sum(p for p, _ in outcomes if p > actual))
-
-
 # ---------- how much of a tie is luck ----------
 
 def test_luck_share_is_worked_out_the_way_the_page_explains_it():
@@ -324,13 +285,6 @@ def test_readme_luck_share(data, readme):
     assert f"differ by {round((l['unexplained'] - l['luck']) * 100)} points" in readme
     assert f"about {round(l['luck'] * 100)}% of a tie is luck" in readme  # the short version at the top
     assert f"about {round(l['favourite_won'] * 10)} times in 10" in readme
-
-
-@pytest.mark.readme
-def test_readme_says_how_often_the_favourite_won_the_trophy(data, readme):
-    seasons = data["replays"]
-    favourites = sum(r["contenders"][0]["club"] == r["champion"] for r in seasons)
-    assert f"in only {favourites} of {len(seasons)} seasons" in readme
 
 
 def test_the_page_description_says_how_often_picking_the_favourite_is_right(data):
