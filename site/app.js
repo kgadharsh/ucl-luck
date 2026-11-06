@@ -1504,7 +1504,12 @@ function fillMatches(data) {
   if (!lv) return;
   const sims = fc.simulations.toLocaleString("en-GB");
   const base = Object.fromEntries(fc.clubs.map((c) => [c.club, c.top8]));
-  const when = (iso) => new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+  // Built from parts: browsers disagree on punctuation ("Tue 24 Nov" in one, "Tue, 24 Nov" in another).
+  const when = (iso) => {
+    const part = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" })
+      .formatToParts(new Date(`${iso}T12:00:00Z`)).map((p) => [p.type, p.value]));
+    return `${part.weekday} ${part.day} ${part.month}`;
+  };
   document.getElementById("mm-sub").textContent =
     `The top eight clubs in the league phase go straight to the round of 16; the next sixteen play off for the other places. The model plays the ${fc.left} matches still to come ${sims} times. For each one, this shows where a club's chance of finishing in the top eight ends up if it wins, draws or loses.`;
   document.getElementById("mm-note").textContent = "Recalculated every morning. A result that happens in fewer than 1 simulated season in 20 is left out when working out the swing.";
