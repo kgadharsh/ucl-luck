@@ -313,7 +313,7 @@
               <thead><tr><th>Model</th><th class="num">Brier</th><th class="num">Log loss</th></tr></thead>
               <tbody></tbody>
             </table>
-            <p class="small">Both are standard accuracy scores for probability forecasts; lower is better. Brier is the average squared gap between the chances given and what happened; log loss punishes confident mistakes harder.</p>
+            <p class="small">Both measure how far the chances given were from what happened, averaged over every match; lower is better. Brier counts each miss by its size; log loss punishes confident wrong calls harder, such as saying 90% for a team that then loses.</p>
           </details>
         </div>
       </div>
@@ -355,6 +355,6 @@
   <a class="to-top" id="to-top" href="#top" hidden>↑ Top</a>
   <div class="tip" id="tip" aria-hidden="true"></div>
   <script src="motion.js?v=12"></script>
-  <script src="app.js?v=48"></script>
+  <script src="app.js?v=49"></script>
 </body>
 </html>
