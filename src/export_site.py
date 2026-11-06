@@ -19,6 +19,7 @@ from knockouts import LAST_AWAY_GOALS_SEASON, ROUNDS, actual_winner, tie_scores
 from matches import load_matches
 from outcomes import outcome_codes
 from preview import write_preview
+from replays import season_replays
 
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "results"
@@ -219,6 +220,7 @@ def main():
     for row in tie_rows:  # a KeyError here means a tie has no recorded match: better loud than blank
         row.update(leg_scores[(row["season"], row["round"], row["team_a"], row["team_b"])])
 
+    brackets = build_brackets(matches, pd.read_csv(RESULTS / "dixon_coles_settings.csv").iloc[0])
     favourite = np.maximum(ties.p_a, 1 - ties.p_a)
     clubs = clubs_table(ties)
     real = next(c for c in clubs if c["club"] == "Real Madrid")
@@ -244,7 +246,8 @@ def main():
         "live": live_section(),
         "forecast": forecast_section(),
         "comebacks": first_legs(matches),
-        "brackets": build_brackets(matches, pd.read_csv(RESULTS / "dixon_coles_settings.csv").iloc[0]),
+        "brackets": brackets,
+        "replays": season_replays(brackets),
     }
     data["real_madrid"] = real_madrid_section(data["headline"])
     # allow_nan=False: a NaN would be written as a bare NaN, which browsers refuse to parse,

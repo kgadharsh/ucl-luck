@@ -665,6 +665,35 @@ function squadParagraphs(rm, { liga, groups, knockouts, separate }) {
     <p><b>What I still can't tell you is why.</b> It isn't rotation, a stronger eleven or (clearly) the manager, so what's left is something neither results nor line-ups can see (how Real manage a tie, experience in these games, or something about the club itself, to give three possibilities). Bookmaker odds for these matches would be the next test, since they'd show whether the market also rated Real above the model. ${climb}</p>`;
 }
 
+function fillReplays(data) {
+  const section = document.getElementById("replays");
+  const rows = data.replays || [];
+  section.hidden = !rows.length;
+  document.querySelector("nav a[href='#replays']").hidden = !rows.length;
+  if (!rows.length) return;
+  const scale = Math.ceil(Math.max(...rows.map((r) => r.contenders[0].chance)) * 20) / 20; // top of the bars
+  document.getElementById("replays-list").innerHTML = rows.map((r) => {
+    const fav = r.contenders[0];
+    return `<button class="rp-row" type="button" data-season="${r.season}" aria-label="${r.season}: ${clean(r.champion)} won in ${pct(r.champion_chance)} of replays. Open this season in the What-if bracket">` +
+      `<span class="rp-season">${r.season}</span><span class="rp-club">${clean(r.champion)}</span>` +
+      `<span class="rp-bar" role="img" aria-label="${clean(r.champion)} ${pct(r.champion_chance)}; favourite ${clean(fav.club)} ${pct(fav.chance)}"><span style="width:${(r.champion_chance / scale) * 100}%"></span><i style="left:${(fav.chance / scale) * 100}%"></i></span>` +
+      `<span class="rp-num">Won <b>${pct(r.champion_chance)}</b> of replays<br>Beats <b>${pct(r.less_surprising)}</b> for surprise</span></button>`;
+  }).join("");
+  const most = rows[0], least = rows[rows.length - 1];
+  const favouriteWon = rows.filter((r) => r.contenders[0].club === r.champion).length;
+  document.getElementById("replays-note").textContent =
+    `The most surprising season was ${most.season}: ${clean(most.champion)} won it in ${pct(most.champion_chance)} of replays. The least was ${least.season}, when ${clean(least.champion)} did in ${pct(least.champion_chance)}. ` +
+    `The club the model rated most likely to win going into the round of 16 won in only ${favouriteWon} of ${rows.length} seasons.`;
+  document.getElementById("replays-list").addEventListener("click", (event) => {
+    const row = event.target.closest(".rp-row");
+    if (!row) return;
+    const select = document.getElementById("bf-season");
+    const option = [...select.options].find((o) => o.textContent === row.dataset.season);
+    if (option) { select.value = option.value; select.dispatchEvent(new Event("change")); }
+    document.getElementById("butterfly").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+  });
+}
+
 function fillRealMadrid(data) {
   const rm = data.real_madrid;
   document.getElementById("rm").hidden = !rm;
@@ -1633,6 +1662,7 @@ function start(data) {
   fillForecastHistory(data);
   setupGlossary();
   fillRealMadrid(data);
+  fillReplays(data);
   fillSkill(data);
   const redrawButterfly = setupButterfly(data);
   const redrawHeat = setupComeback(data);
