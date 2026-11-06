@@ -935,6 +935,27 @@ def test_a_heading_sorts_the_forecast_by_that_stage(open_page, forecast):
         assert sort_state().count("descending") == 1 and sort_state()[2 + STAGES.index(stage)] == "descending"
 
 
+def test_clicking_a_sorted_heading_again_reverses_then_clears_it(open_page, forecast):
+    page = open_page(reduced_motion="reduce")
+    page.click("#fc-more")
+    names = lambda: [r["club"] for r in forecast_rows(page)]
+    state = lambda: page.evaluate("document.querySelector('#fc-head [data-stage=semi]').closest('th').getAttribute('aria-sort')")
+    semi = {c["club"]: c["semi"] for c in forecast["clubs"]}
+    values = lambda: [semi[r["club"]] for r in forecast_rows(page)]
+    default = names()
+    page.click("#fc-head [data-stage='semi']")
+    assert values() == sorted(values(), reverse=True) and state() == "descending"
+    page.click("#fc-head [data-stage='semi']")
+    assert values() == sorted(values()) and state() == "ascending"
+    page.click("#fc-head [data-stage='semi']")  # a third click clears the choice
+    assert names() == default and state() == "none"
+    page.click("#fc-head [data-stage='win']")  # the trophy column is already the sort, so one click reverses it
+    wins = {c["club"]: c["win"] for c in forecast["clubs"]}
+    assert [wins[n] for n in names()] == sorted(wins.values())
+    page.click("#fc-head [data-stage='win']")
+    assert names() == default
+
+
 def test_the_forecast_shows_every_club_on_request(open_page, forecast):
     page = open_page(reduced_motion="reduce")
     more = page.locator("#fc-more")
