@@ -650,6 +650,7 @@ def test_did_it_last_uses_plain_words_and_only_says_real_madrid_stands_alone_whe
 def test_real_madrid_dot_and_rows_explain_themselves(open_page, data):
     rm = data["real_madrid"]
     page = open_page(reduced_motion="reduce")
+    page.locator("#rm summary").click()  # the analysis is folded away until asked for
     page.locator("#rm-last").scroll_into_view_if_needed()
     page.wait_for_timeout(150)  # scrolling (correctly) hides tooltips
     tip = page.locator("#tip")
@@ -662,6 +663,33 @@ def test_real_madrid_dot_and_rows_explain_themselves(open_page, data):
     page.locator("#rm-split rect.hit").first.hover()
     n = rm["normal_time"]["won_normal"]
     assert f"Won {n['actual']} ties in normal time; the model expected {n['expected']:.1f}" in tip.text_content()
+
+
+def test_long_sections_are_folded_away_and_draw_at_full_width_when_opened(open_page):
+    """The Real Madrid analysis and the every-score heatmap start closed, with the short answer left in view."""
+    page = open_page(reduced_motion="reduce")
+    assert page.locator("#rm").get_attribute("open") is None and page.locator("#cb-more").get_attribute("open") is None
+    assert "mostly not luck" in page.text_content("#rm-lead")
+    assert page.locator("#rm-verdict").is_hidden() and page.locator("#cb-heat").is_hidden()
+    page.locator("#rm summary").click()
+    page.locator("#cb-more summary").click()
+    assert page.locator("#rm-verdict").is_visible() and page.locator("#cb-heat").is_visible()
+    # Drawn while closed they would be 280 wide; opening redraws them to fit their box.
+    for chart in ("#rm-split", "#rm-last", "#cb-heat"):
+        box = page.locator(chart).bounding_box()["width"]
+        drawn = float(page.locator(f"{chart} svg").get_attribute("width"))
+        assert abs(drawn - box) <= 2 or drawn >= 280 and box < 280, (chart, drawn, box)
+
+
+def test_the_prediction_ledger_waits_until_ten_matches_are_scored(open_page, data):
+    import json
+    def with_scored(n):
+        live = {**data["live"], "predictions": n, "scored": n, "model_brier": 0.2, "book_brier": 0.19}
+        body = json.dumps({**data, "live": live})
+        return open_page(reduced_motion="reduce", routes={"**/data.json": lambda route: route.fulfill(body=body, content_type="application/json")})
+    assert with_scored(9).locator("#ledger-block").is_hidden()
+    page = with_scored(10)
+    assert page.locator("#ledger-block").is_visible() and "predictions saved" in page.text_content("#ledger")
 
 
 def test_without_the_analysis_the_page_keeps_its_short_explanation(open_page, data):
