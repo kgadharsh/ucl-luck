@@ -656,35 +656,6 @@ function fillAnswer(data) {
     `With ${l.ties} ties it could be anywhere from ${whole(l.low)} to ${whole(l.high)}.`;
 }
 
-function fillReplays(data) {
-  const section = document.getElementById("replays");
-  const rows = data.replays || [];
-  section.hidden = !rows.length;
-  document.querySelector("nav a[href='#replays']").hidden = !rows.length;
-  if (!rows.length) return;
-  const scale = Math.ceil(Math.max(...rows.map((r) => r.contenders[0].chance)) * 20) / 20; // top of the bars
-  document.getElementById("replays-list").innerHTML = rows.map((r) => {
-    const fav = r.contenders[0];
-    return `<button class="rp-row" type="button" data-season="${r.season}" aria-label="${r.season}: ${clean(r.champion)} won in ${pct(r.champion_chance)} of replays. Open this season in the What-if bracket">` +
-      `<span class="rp-season">${r.season}</span><span class="rp-club">${clean(r.champion)}</span>` +
-      `<span class="rp-bar" role="img" aria-label="${clean(r.champion)} ${pct(r.champion_chance)}; favourite ${clean(fav.club)} ${pct(fav.chance)}"><span style="width:${(r.champion_chance / scale) * 100}%"></span><i style="left:${(fav.chance / scale) * 100}%"></i></span>` +
-      `<span class="rp-num">Won <b>${pct(r.champion_chance)}</b> of replays<br>Beats <b>${pct(r.less_surprising)}</b> for surprise</span></button>`;
-  }).join("");
-  const most = rows[0], least = rows[rows.length - 1];
-  const favouriteWon = rows.filter((r) => r.contenders[0].club === r.champion).length;
-  document.getElementById("replays-note").textContent =
-    `The most surprising season was ${most.season}: ${clean(most.champion)} won it in ${pct(most.champion_chance)} of replays. The least was ${least.season}, when ${clean(least.champion)} did in ${pct(least.champion_chance)}. ` +
-    `The club the model rated most likely to win going into the round of 16 won in only ${favouriteWon} of ${rows.length} seasons.`;
-  document.getElementById("replays-list").addEventListener("click", (event) => {
-    const row = event.target.closest(".rp-row");
-    if (!row) return;
-    const select = document.getElementById("bf-season");
-    const option = [...select.options].find((o) => o.textContent === row.dataset.season);
-    if (option) { select.value = option.value; select.dispatchEvent(new Event("change")); }
-    document.getElementById("butterfly").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
-  });
-}
-
 // How often the model's favourite went through, round by round: a strip, since the point is just that it falls.
 function fillRounds(data) {
   const rows = data.rounds;
@@ -1713,7 +1684,6 @@ function start(data) {
   setupGlossary();
   fillRealMadrid(data);
   fillAnswer(data);
-  fillReplays(data);
   fillRounds(data);
   fillSkill(data);
   const redrawButterfly = setupButterfly(data);

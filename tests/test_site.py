@@ -665,29 +665,6 @@ def test_real_madrid_dot_and_rows_explain_themselves(open_page, data):
     assert f"Won {n['actual']} ties in normal time; the model expected {n['expected']:.1f}" in tip.text_content()
 
 
-def test_replays_rank_every_season_and_open_the_whats_if_bracket(open_page, data):
-    page = open_page(reduced_motion="reduce")
-    rows = page.locator("#replays .rp-row")
-    assert rows.count() == len(data["replays"]) == len(data["brackets"])
-    top = data["replays"][0]
-    first = rows.first.text_content()
-    assert top["season"] in first and f"Won {top['champion_chance']:.0%} of replays" in first and f"Beats {top['less_surprising']:.0%} for surprise" in first
-    favourites_won = sum(r["contenders"][0]["club"] == r["champion"] for r in data["replays"])
-    assert f"won in only {favourites_won} of {len(data['replays'])} seasons" in page.text_content("#replays-note")
-    # Clicking a season opens it in the What-if bracket.
-    last = data["replays"][-1]["season"]
-    page.locator(f"#replays .rp-row[data-season='{last}']").click()
-    assert page.locator("#bf-season").evaluate("s => s.selectedOptions[0].textContent") == last
-    assert last in page.text_content("#bf-bracket") or page.locator("#bf-bracket .bf-pick").count() > 0
-
-
-def test_without_replay_data_the_section_and_its_link_disappear(open_page, data):
-    import json
-    without = json.dumps({k: v for k, v in data.items() if k != "replays"})
-    page = open_page(reduced_motion="reduce", routes={"**/data.json": lambda route: route.fulfill(body=without, content_type="application/json")})
-    assert page.locator("#replays").is_hidden() and page.locator("nav a[href='#replays']").is_hidden()
-
-
 def test_long_sections_are_folded_away_and_draw_at_full_width_when_opened(open_page):
     """The Real Madrid analysis and the every-score heatmap start closed, with the short answer left in view."""
     page = open_page(reduced_motion="reduce")

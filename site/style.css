@@ -300,18 +300,6 @@ h3 { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .05e
 .mm-track { display: block; position: relative; height: 12px; background: var(--bar-rest); }
 .mm-track span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--s1); }
 .mm-bar b { text-align: right; }
-.replays { border-top: 2px solid var(--rule); }
-.rp-row { display: grid; grid-template-columns: 76px minmax(110px, 1.1fr) minmax(120px, 2fr) minmax(150px, 1.2fr); gap: 6px 16px; align-items: center; width: 100%; padding: 10px 4px; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--ink); font: 15px var(--font); text-align: left; cursor: pointer; }
-.rp-row:hover { background: var(--grid); }
-.rp-row:focus-visible { outline: 2px solid var(--s2); outline-offset: -2px; }
-.rp-season { font: 13px var(--mono); color: var(--ink-2); }
-.rp-club { font-weight: 600; }
-.rp-bar { position: relative; height: 14px; background: var(--bar-rest); }
-.rp-bar span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--s1); }
-.rp-bar i { position: absolute; top: -3px; bottom: -3px; width: 8px; margin-left: -4px; box-sizing: border-box; border: 2px solid var(--ink-2); border-radius: 50%; background: var(--surface); }
-.rp-num { font: 13px var(--mono); color: var(--ink-2); }
-.rp-num b { color: var(--ink); }
-@media (max-width: 760px) { .rp-row { grid-template-columns: 70px 1fr; } .rp-bar, .rp-num { grid-column: 1 / -1; } }
 .path { margin-top: 22px; min-height: 230px; font-size: 15px; color: var(--ink-2); }
 .funnel-head { margin: 0 0 12px; max-width: 70ch; }
 .funnel-head b { color: var(--ink); font-weight: 600; }
