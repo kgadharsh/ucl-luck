@@ -50,19 +50,22 @@ def site_url():
 def open_page(browser, site_url):
     """open_page(path="", width=1280, **context options) -> a page with the data drawn.
 
-    Every page fails its test on any JavaScript error or console error."""
-    contexts, errors = [], []
+    Every page fails its test on any JavaScript error or console error, while the test is running. Once the test
+    is over and the browser is being closed, a request still in flight is aborted and the page logs that
+    (it reports the failed data.json fetch with console.error): that says nothing about the page, so errors
+    that arrive after this point are not counted. This showed up as a one-off Firefox error in CI."""
+    contexts, errors, closing = [], [], []
 
     def opener(path="", width=1280, height=900, wait=True, allow_errors=False, routes=None, init_script=None, **options):
         context = browser.new_context(viewport={"width": width, "height": height}, **options)
         contexts.append(context)
         page = context.new_page()
         if not allow_errors:
-            page.on("pageerror", lambda error: errors.append(f"page error: {error}"))
+            page.on("pageerror", lambda error: None if closing else errors.append(f"page error: {error}"))
             # A web font still downloading when a test ends is aborted as the browser closes, and Firefox logs
             # that as an error. It says nothing about the page, so it isn't one of the errors a test fails on.
             page.on("console", lambda msg: errors.append(f"console {msg.type}: {msg.text}")
-                    if msg.type == "error" and "downloadable font" not in msg.text else None)
+                    if msg.type == "error" and "downloadable font" not in msg.text and not closing else None)
         for pattern, handler in (routes or {}).items():
             page.route(pattern, handler)
         if init_script:  # runs in the page before any of its own scripts
@@ -73,6 +76,7 @@ def open_page(browser, site_url):
         return page
 
     yield opener
+    closing.append(True)  # from here on, an aborted request is not a page error
     for context in contexts:
         context.close()
     assert not errors, "\n".join(errors)
