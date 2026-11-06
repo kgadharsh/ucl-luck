@@ -19544,5 +19544,343 @@
     }
    ]
   }
+ ],
+ "replays": [
+  {
+   "season": "2018-19",
+   "champion": "Liverpool",
+   "champion_chance": 0.0943,
+   "less_surprising": 0.8894,
+   "contenders": [
+    {
+     "club": "Man City",
+     "chance": 0.1978
+    },
+    {
+     "club": "Barcelona",
+     "chance": 0.1733
+    },
+    {
+     "club": "Paris SG",
+     "chance": 0.1524
+    },
+    {
+     "club": "Juventus",
+     "chance": 0.098
+    }
+   ]
+  },
+  {
+   "season": "2021-22",
+   "champion": "Real Madrid",
+   "champion_chance": 0.0425,
+   "less_surprising": 0.8603,
+   "contenders": [
+    {
+     "club": "Man City",
+     "chance": 0.3233
+    },
+    {
+     "club": "Bayern Munich",
+     "chance": 0.235
+    },
+    {
+     "club": "Liverpool",
+     "chance": 0.119
+    },
+    {
+     "club": "Paris SG",
+     "chance": 0.0658
+    }
+   ]
+  },
+  {
+   "season": "2017-18",
+   "champion": "Real Madrid",
+   "champion_chance": 0.0394,
+   "less_surprising": 0.8174,
+   "contenders": [
+    {
+     "club": "Barcelona",
+     "chance": 0.2769
+    },
+    {
+     "club": "Bayern Munich",
+     "chance": 0.1552
+    },
+    {
+     "club": "Man City",
+     "chance": 0.1262
+    },
+    {
+     "club": "Paris SG",
+     "chance": 0.1159
+    }
+   ]
+  },
+  {
+   "season": "2020-21",
+   "champion": "Chelsea",
+   "champion_chance": 0.0251,
+   "less_surprising": 0.6059,
+   "contenders": [
+    {
+     "club": "Man City",
+     "chance": 0.2845
+    },
+    {
+     "club": "Bayern Munich",
+     "chance": 0.2036
+    },
+    {
+     "club": "Liverpool",
+     "chance": 0.0918
+    },
+    {
+     "club": "Paris SG",
+     "chance": 0.069
+    }
+   ]
+  },
+  {
+   "season": "2019-20",
+   "champion": "Bayern Munich",
+   "champion_chance": 0.1165,
+   "less_surprising": 0.6055,
+   "contenders": [
+    {
+     "club": "Liverpool",
+     "chance": 0.1939
+    },
+    {
+     "club": "Paris SG",
+     "chance": 0.1471
+    },
+    {
+     "club": "Man City",
+     "chance": 0.1447
+    },
+    {
+     "club": "Bayern Munich",
+     "chance": 0.1165
+    }
+   ]
+  },
+  {
+   "season": "2015-16",
+   "champion": "Real Madrid",
+   "champion_chance": 0.1915,
+   "less_surprising": 0.349,
+   "contenders": [
+    {
+     "club": "Bayern Munich",
+     "chance": 0.2154
+    },
+    {
+     "club": "Real Madrid",
+     "chance": 0.1915
+    },
+    {
+     "club": "Barcelona",
+     "chance": 0.1913
+    },
+    {
+     "club": "Paris SG",
+     "chance": 0.1439
+    }
+   ]
+  },
+  {
+   "season": "2023-24",
+   "champion": "Real Madrid",
+   "champion_chance": 0.1016,
+   "less_surprising": 0.2844,
+   "contenders": [
+    {
+     "club": "Man City",
+     "chance": 0.2717
+    },
+    {
+     "club": "Inter",
+     "chance": 0.1298
+    },
+    {
+     "club": "Bayern Munich",
+     "chance": 0.1215
+    },
+    {
+     "club": "Real Madrid",
+     "chance": 0.1016
+    }
+   ]
+  },
+  {
+   "season": "2016-17",
+   "champion": "Real Madrid",
+   "champion_chance": 0.1265,
+   "less_surprising": 0.2758,
+   "contenders": [
+    {
+     "club": "Barcelona",
+     "chance": 0.2299
+    },
+    {
+     "club": "Bayern Munich",
+     "chance": 0.1855
+    },
+    {
+     "club": "Juventus",
+     "chance": 0.1275
+    },
+    {
+     "club": "Real Madrid",
+     "chance": 0.1265
+    }
+   ]
+  },
+  {
+   "season": "2025-26",
+   "champion": "Paris SG",
+   "champion_chance": 0.0825,
+   "less_surprising": 0.2582,
+   "contenders": [
+    {
+     "club": "Arsenal",
+     "chance": 0.3685
+    },
+    {
+     "club": "Bayern Munich",
+     "chance": 0.1165
+    },
+    {
+     "club": "Liverpool",
+     "chance": 0.1038
+    },
+    {
+     "club": "Man City",
+     "chance": 0.0937
+    }
+   ]
+  },
+  {
+   "season": "2013-14",
+   "champion": "Real Madrid",
+   "champion_chance": 0.125,
+   "less_surprising": 0.2379,
+   "contenders": [
+    {
+     "club": "Bayern Munich",
+     "chance": 0.3633
+    },
+    {
+     "club": "Barcelona",
+     "chance": 0.1282
+    },
+    {
+     "club": "Real Madrid",
+     "chance": 0.125
+    },
+    {
+     "club": "Paris SG",
+     "chance": 0.0849
+    }
+   ]
+  },
+  {
+   "season": "2022-23",
+   "champion": "Man City",
+   "champion_chance": 0.2456,
+   "less_surprising": 0.093,
+   "contenders": [
+    {
+     "club": "Man City",
+     "chance": 0.2456
+    },
+    {
+     "club": "Bayern Munich",
+     "chance": 0.1665
+    },
+    {
+     "club": "Napoli",
+     "chance": 0.1449
+    },
+    {
+     "club": "Liverpool",
+     "chance": 0.0796
+    }
+   ]
+  },
+  {
+   "season": "2024-25",
+   "champion": "Paris SG",
+   "champion_chance": 0.0879,
+   "less_surprising": 0.0777,
+   "contenders": [
+    {
+     "club": "Arsenal",
+     "chance": 0.186
+    },
+    {
+     "club": "Inter",
+     "chance": 0.1829
+    },
+    {
+     "club": "Liverpool",
+     "chance": 0.1347
+    },
+    {
+     "club": "Barcelona",
+     "chance": 0.1063
+    }
+   ]
+  },
+  {
+   "season": "2014-15",
+   "champion": "Barcelona",
+   "champion_chance": 0.1424,
+   "less_surprising": 0.0776,
+   "contenders": [
+    {
+     "club": "Bayern Munich",
+     "chance": 0.2999
+    },
+    {
+     "club": "Real Madrid",
+     "chance": 0.19
+    },
+    {
+     "club": "Barcelona",
+     "chance": 0.1424
+    },
+    {
+     "club": "Juventus",
+     "chance": 0.1049
+    }
+   ]
+  },
+  {
+   "season": "2012-13",
+   "champion": "Bayern Munich",
+   "champion_chance": 0.2189,
+   "less_surprising": 0.0723,
+   "contenders": [
+    {
+     "club": "Real Madrid",
+     "chance": 0.2434
+    },
+    {
+     "club": "Bayern Munich",
+     "chance": 0.2189
+    },
+    {
+     "club": "Barcelona",
+     "chance": 0.2097
+    },
+    {
+     "club": "Juventus",
+     "chance": 0.1032
+    }
+   ]
+  }
  ]
 }
