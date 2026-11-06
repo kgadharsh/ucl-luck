@@ -349,12 +349,12 @@ def test_comeback_says_why_past_ties_differ_from_the_model_whichever_leg_is_at_h
     """The past-ties bar pools every strength, so it can sit far from the model's number. Say why, both ways round."""
     page = open_page(reduced_motion="reduce")  # opens on a 0-2 first leg away
     away = page.text_content("#cb-text")
-    assert "side hosting the second leg was usually the stronger" in away and "“Stronger”" in away
+    assert "hosting the second leg were usually the stronger" in away and "“Stronger”" in away
     page.click(".cb-controls .seg [data-venue='home']")
     page.select_option("#cb-us", "1")
     page.select_option("#cb-them", "0")
     home = page.text_content("#cb-text")
-    assert "side that hosted the first leg was usually the weaker" in home and "“Weaker”" in home
+    assert "that hosted the first leg were usually the weaker" in home and "“Weaker”" in home
     words = page.text_content("#comeback").lower()
     assert "real ties" not in words and "95%" not in words  # "Real" reads as Real Madrid on this page
 

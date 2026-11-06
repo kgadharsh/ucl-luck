@@ -448,7 +448,7 @@ function drawRounds(data) {
     svg("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v), stroke: css("--grid") }, root);
     svg("text", { x: m.l - 6, y: y(v) + 4, "text-anchor": "end" }, root).textContent = pct(v);
   }
-  legend("rounds-legend", [["Favourite actually went through (likely range)", css("--s1")], ["Model expected", css("--muted")]]);
+  legend("rounds-legend", [["Favourite actually went through (could be anywhere along the line)", css("--s1")], ["Model expected", css("--muted")]]);
   rows.forEach((row, i) => {
     const cx = m.l + step * (i + 0.5);
     const lo = Math.max(low, row.won - row.error), hi = Math.min(high, row.won + row.error);
@@ -545,7 +545,7 @@ function drawWild(data) {
     `${wild.season} was the wildest: ${wild.actual} underdogs went through against ${wild.expected.toFixed(1)} expected. ${calm.season} was the calmest: ${calm.actual} against ${calm.expected.toFixed(1)}. `
     + (odd.length
       ? `${odd.join(" and ")} ${odd.length === 1 ? "is" : "are"} further from the model than luck usually allows.`
-      : `With only ${few === many ? few : `${few} to ${many}`} ties a season, swings like this are normal: none of them is far enough from what the model expected to call it anything but luck.`);
+      : `With only ${few === many ? few : `${few} to ${many}`} ties a season, swings like this are normal: none of them is big enough to be anything but luck.`);
 }
 
 // ---------- clubs: expected vs actual ----------
@@ -652,7 +652,7 @@ function drawRmLast(data) {
 // The last paragraphs of the verdict. With the line-up check (src/real_madrid_squad.py) they say what
 // it found; without it, why the model can't tell the explanations apart.
 function squadParagraphs(rm, { liga, groups, knockouts, separate }) {
-  const climb = `The gap does grow with the stakes, from ${signed(liga.gap, 2)} points a match in La Liga to ${signed(groups.gap, 2)} in the Champions League groups and ${signed(knockouts.gap, 2)} in the knockouts. ${separate ? "That climb is bigger than luck would explain." : "But those three each have wide error bars that overlap, so I wouldn't lean on that."}`;
+  const climb = `The gap does grow with the stakes, from ${signed(liga.gap, 2)} points a match in La Liga to ${signed(groups.gap, 2)} in the Champions League groups and ${signed(knockouts.gap, 2)} in the knockouts. ${separate ? "That climb is bigger than luck would explain." : "But the three gaps are too close to tell apart, so I wouldn't lean on that."}`;
   const sq = rm.squad;
   if (!sq) {
     return `
@@ -661,7 +661,7 @@ function squadParagraphs(rm, { liga, groups, knockouts, separate }) {
   const rot = sq.rotation, ko = sq.strength.real.knockouts, mg = sq.managers;
   const explained = ko.explained_by_fielded + ko.explained_by_quality;
   return `
-    <p><b>It isn't the line-ups either.</b> Transfermarkt's starting elevens and market values test the obvious explanations. <i>Rotation:</i> Real do field a fuller eleven in the knockouts than in La Liga (${pct(rot.real.knockouts)} of their best eleven's value against ${pct(rot.real.league)}), but every big club does: the other ${rot.others.clubs} average ${signed(rot.others.gap, 3)} against Real's ${signed(rot.real.gap, 3)}, and Real are ${ordinal(rot.real_rank)} of ${rot.clubs}. <i>Strength:</i> between the eleven Real fielded and the gap in squad quality with their opponents, only ${signed(explained, 2)} of the ${signed(ko.actual, 2)} goals a match they beat the model by in knockouts is accounted for. <i>The manager:</i> Real beat the model under Ancelotti (${signed(mg.ancelotti_at_real.points, 2)} points a match) and under Zidane (${signed(mg.zidane_at_real.points, 2)}), but Ancelotti's ${mg.ancelotti_elsewhere.matches} matches elsewhere (${signed(mg.ancelotti_elsewhere.points, 2)}) are too few to tell a coach from a club.</p>
+    <p><b>It isn't the line-ups either.</b> Transfermarkt's starting elevens and market values test the obvious explanations. <i>Rotation:</i> Real do field a fuller eleven in the knockouts than in La Liga (${pct(rot.real.knockouts)} of their best eleven's value against ${pct(rot.real.league)}), but every big club does: the other ${rot.others.clubs} average ${signed(rot.others.gap, 3)} against Real's ${signed(rot.real.gap, 3)}, and Real are ${ordinal(rot.real_rank)} of ${rot.clubs}. <i>Strength:</i> between the eleven Real fielded and the gap in squad quality with their opponents, only ${signed(explained, 2)} of the ${signed(ko.actual, 2)} extra goals a match they scored in knockouts is explained by that. <i>The manager:</i> Real beat the model under Ancelotti (${signed(mg.ancelotti_at_real.points, 2)} points a match) and under Zidane (${signed(mg.zidane_at_real.points, 2)}), but Ancelotti's ${mg.ancelotti_elsewhere.matches} matches elsewhere (${signed(mg.ancelotti_elsewhere.points, 2)}) are too few to tell a coach from a club.</p>
     <p><b>What I still can't tell you is why.</b> It isn't rotation, a stronger eleven or (clearly) the manager, so what's left is something neither results nor line-ups can see (how Real manage a tie, experience in these games, or something about the club itself, to give three possibilities). Bookmaker odds for these matches would be the next test, since they'd show whether the market also rated Real above the model. ${climb}</p>`;
 }
 
@@ -678,7 +678,7 @@ function fillRealMadrid(data) {
   const alone = Boolean(real) && real.first > WIDE && real.second > WIDE && !others.some((c) => c.first > WIDE && c.second > WIDE);
   document.getElementById("rm-last-note").textContent =
     "Real Madrid beat the model in both halves, by about the same amount." +
-    (alone ? ` It is the only one of the ${rm.clubs.length} clubs with at least four ties in each half to beat it by a wide margin in both.` : "");
+    (alone ? ` It is the only one of the ${rm.clubs.length} clubs with at least four ties in each half to clearly beat it in both.` : "");
 
   const [h1, h2] = rm.halves, f = rm.forecast, n = rm.normal_time;
   const stage = Object.fromEntries(rm.stages.map((s) => [s.label, s]));
@@ -767,10 +767,10 @@ function drawCalibration(data) {
     const n = s.points.reduce((t, p) => t + p.n, 0);
     return { name: s.name, miss: s.points.reduce((t, p) => t + p.n * Math.abs(p.actual - p.predicted), 0) / n };
   }).sort((a, b) => a.miss - b.miss);
-  document.getElementById("cal-note").innerHTML = `On average, the home side's real win rate was off from the prediction by ` +
-    misses.map((s) => `<b>${(s.miss * 100).toFixed(1)} points</b> for ${s.name === "Bookmakers" ? "the bookmakers" : (MODEL_NAMES[s.name] || s.name).toLowerCase()}`)
+  document.getElementById("cal-note").innerHTML = `On average, the home side won this many percentage points more or less often than predicted: ` +
+    misses.map((s) => `<b>${(s.miss * 100).toFixed(1)}</b> for ${s.name === "Bookmakers" ? "the bookmakers" : (MODEL_NAMES[s.name] || s.name).toLowerCase()}`)
       .join(", ").replace(/, ([^,]*)$/, " and $1") +
-    `. Gaps that small mean all three are honest. Near 0% and 100% there are few matches, so the lines showing the likely range get long.` +
+    `. Gaps that small mean all three are honest. Near 0% and 100% there are few matches, so the lines there are less certain.` +
     (gapView ? ` This view is the same points with the honest line laid flat at 0, so that small gaps show.` : "");
 }
 
@@ -1284,13 +1284,13 @@ function setupComeback(data) {
     // The past-ties bar pools teams of every strength, so it does not move with "Your team is". In real
     // ties the seeded, stronger side hosts the second leg, which makes one setting the fairer comparison.
     const fairer = state.venue === "away"
-      ? "Past ties cover teams of every strength, but the side hosting the second leg was usually the stronger, seeded one, so “Stronger” is the fairer comparison. "
-      : "Past ties cover teams of every strength, but the side that hosted the first leg was usually the weaker, unseeded one, so “Weaker” is the fairer comparison. ";
+      ? "Teams hosting the second leg were usually the stronger, seeded side, so try “Stronger” for a fairer comparison. "
+      : "Teams that hosted the first leg were usually the weaker, unseeded side, so try “Weaker” for a fairer comparison. ";
     const [lo, hi] = wilson(real.through, real.n);
     document.getElementById("cb-text").innerHTML =
       `You ${result} <b>${state.us}-${state.them} ${where}</b> in the first leg, so the second leg is ${state.venue === "home" ? "away" : "at home"}. ` +
       (real.n ? fairer : "") +
-      (real.n >= 10 ? `The grey line on the past-ties bar shows where the true rate probably lies: with ${real.n} ties, between ${pct(lo)} and ${pct(hi)}.`
+      (real.n >= 10 ? `Only ${real.n} ties have started this way, so treat ${real.through} of ${real.n} as a rough guide. The real chance could be anywhere from ${pct(lo)} to ${pct(hi)} (the grey line).`
         : real.n ? `Only ${real.n} past tie${real.n === 1 ? "" : "s"} started this way, so trust the model more than the history here.` : "");
     drawHeat();
   }
