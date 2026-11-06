@@ -434,6 +434,17 @@ def test_the_lottery_section_gives_the_exact_odds_for_a_typical_favourite(open_p
     assert f"{shown_chance(p ** 4)} for four and {shown_chance(p ** 5)} for five" in text and "every" in text
 
 
+
+def test_the_lottery_numbers_come_with_their_working(open_page, data):
+    p = data["headline"]["favourite_expected"]
+    page = open_page(reduced_motion="reduce")
+    page.click("#sk-how summary")
+    how = page.text_content("#sk-how-list")
+    _, ten_level, ten_behind = exact_standings(10, p)
+    assert f"The average is {p:.0%}" in how and f"the rest of the time: {1 - p:.0%}" in how
+    assert f"4 wins or fewer: {ten_behind * 100:.1f}%" in how and f"another {ten_level * 100:.0f}% of the time" in how
+    assert f"14 wins or fewer: {exact_standings(30, p)[2] * 100:.1f}%" in how and "no simulation" in how
+
 def test_wild_seasons_match_the_ties_and_link_to_them(open_page, data):
     seasons = {}
     for t in data["ties"]:
@@ -705,6 +716,16 @@ def test_the_live_section_appears_only_when_it_has_something_to_show(open_page, 
     page = with_live(scored=10, predictions=10, model_brier=0.2, book_brier=0.19, upcoming=[])
     assert page.locator("#live").is_visible() and page.locator("nav a[href='#live']").is_visible()
 
+
+
+def test_kick_off_times_say_which_time_zone_they_are_in(open_page, data):
+    import json
+    match = {**data["live"]["upcoming"][0], "kickoff": "2026-11-06 19:30 UTC"}
+    body = json.dumps({**data, "live": {**data["live"], "upcoming": [match]}})
+    page = open_page(reduced_motion="reduce", timezone_id="Asia/Kolkata", locale="en-GB",
+                     routes={"**/data.json": lambda route: route.fulfill(body=body, content_type="application/json")})
+    assert page.text_content("#upcoming .tz-note") == "Kick-off times are in your time zone (India Standard Time)."
+    assert "01:00" in page.text_content("#upcoming .tie-meta")  # 19:30 UTC is 1 am the next day in India
 
 def test_the_page_opens_with_how_much_of_a_tie_is_luck(open_page, data):
     import json
