@@ -206,11 +206,11 @@
           </div>
           <p class="swing" id="cb-text" aria-live="polite"></p>
         </div>
-        <div>
-          <h3>Model's chance after every first-leg score</h3>
+        <details class="nerds" id="cb-more">
+          <summary>See the chance after every first-leg score</summary>
           <p class="small" id="cb-heat-sub"></p>
           <div class="chart" id="cb-heat" role="img" aria-label="Heatmap of the chance of going through after each first-leg score"></div>
-        </div>
+        </details>
       </div>
     </section>
 
@@ -266,7 +266,8 @@
         <p><b>Real Madrid went through <span data-fill="real-won"></span> ties when the model expected <span data-fill="real-expected"></span>.</b> If the model were right, that would happen about once in <span data-fill="real-odds"></span> tries. The model rates Real accurately in La Liga, but in Champions League knockout matches they take about a third of a point a match more than expected.</p>
         <p id="rm-lead">So part of Real Madrid's "luck" isn't luck. Either they lift their level for these matches, or something that matters here isn't visible in league results.</p>
       </div>
-      <div class="rm" id="rm" hidden>
+      <details class="rm nerds" id="rm" hidden>
+        <summary>Read the full analysis: two checks, then what I make of them</summary>
         <h3>Is it just a lucky streak? Two checks</h3>
         <div class="split">
           <div>
@@ -284,7 +285,7 @@
           </div>
         </div>
         <div class="note" id="rm-verdict"></div>
-      </div>
+      </details>
     </section>
 
     <section id="honest" class="card">
@@ -330,9 +331,11 @@
           </table>
         </div>
         <div>
+          <div id="ledger-block">
           <h3>The prediction ledger</h3>
           <p class="small">The real test: the model predicts upcoming league matches, and every prediction is saved before kick-off and never changed afterwards. Once a match is played, the prediction is scored against the result and against the bookmakers.</p>
           <div class="ledger" id="ledger"></div>
+          </div>
           <div class="upcoming" id="watch" hidden>
             <h3>Upsets watch</h3>
             <p class="small">Upcoming games where the model rates a result well above the bookmakers do. If the model is right, these are the results to watch for; if the bookmakers are, the model is about to learn something.</p>
@@ -355,6 +358,6 @@
   <a class="to-top" id="to-top" href="#top" hidden>↑ Top</a>
   <div class="tip" id="tip" aria-hidden="true"></div>
   <script src="motion.js?v=12"></script>
-  <script src="app.js?v=50"></script>
+  <script src="app.js?v=51"></script>
 </body>
 </html>

@@ -669,7 +669,7 @@ function fillRealMadrid(data) {
   const rm = data.real_madrid;
   document.getElementById("rm").hidden = !rm;
   if (!rm) return;
-  document.getElementById("rm-lead").textContent = "So is it luck, or something the model can't see? Two checks follow, then what I make of them.";
+  document.getElementById("rm-lead").textContent = "The short answer: mostly not luck, though a bit of it is. The model only sees league results and Champions League scores, and it keeps underrating Real Madrid in Europe.";
   const others = rm.clubs.filter((c) => c.club !== rm.club);
   const real = rm.clubs.find((c) => c.club === rm.club);
   // A wide margin is 1.5 on the analysis's z-score. One other club reaches it in one half (the second),
@@ -686,7 +686,6 @@ function fillRealMadrid(data) {
   const [barca, atleti] = [rm.spanish["Barcelona"], rm.spanish["Ath Madrid"]];
   const separate = knockouts.gap - knockouts.error > liga.gap + liga.error;
   document.getElementById("rm-verdict").innerHTML = `
-    <p><b>The short answer: mostly not luck, though a bit of it is.</b> The model only sees league results and Champions League scores, and it keeps underrating Real Madrid in Europe.</p>
     <p><b>It doesn't look like a lucky streak.</b> Split the ${rm.seasons} seasons in half and Real Madrid beat the model by about the same amount in both: ${h1.won} of ${h1.ties} ties won when ${h1.expected.toFixed(1)} were expected, then ${h2.won} of ${h2.ties} when ${h2.expected.toFixed(1)} were. They were ahead of it in ${rm.seasons_above} of ${rm.seasons} seasons. A boost worked out from the first seven seasons alone would have forecast the next seven clearly better (average miss per tie ${f.without.toFixed(2)} down to ${f.with.toFixed(2)}, where lower is better).${alone ? " No other club did the same in both halves." : ""}</p>
     <p><b>It isn't a Spanish thing.</b> Barcelona won ${barca.won} of ${barca.ties} ties when ${barca.expected.toFixed(1)} were expected, and Atlético Madrid ${atleti.won} of ${atleti.ties} when ${atleti.expected.toFixed(1)} were. Real Madrid's own La Liga results are close to the model's too: ${liga.points.toFixed(2)} points a match against ${liga.expected.toFixed(2)} expected.</p>
     <p><b>Part of it is probably luck.</b> ${n.extra_time.actual} of Real's ties went to extra time or penalties, which are close to coin flips, and they won all ${n.won_extra.actual} (about ${n.won_extra.expected.toFixed(1)} expected). That run is the likeliest piece of pure luck. But they also lost only ${n.lost_normal.actual} ties in normal time when the model expected ${n.lost_normal.expected.toFixed(0)}, and that part isn't a coin flip.</p>
@@ -1498,6 +1497,8 @@ function fillLive(data) {
     `<tr><td class="num">${i + 1}</td><td>${clean(r.club)}</td><td class="num">${r.scores.toFixed(1)}</td><td class="num">${r.concedes.toFixed(1)}</td><td class="num"><b>${pct(r.win)}</b></td>` +
     `<td class="rbar-cell"><span class="rbar" style="width:${r.win * 100}%"></span></td></tr>`).join("");
   const cell = (value, label) => `<div class="stat"><span class="stat-value">${value}</span><span class="stat-label">${label}</span></div>`;
+  // The scorecard only means something once a few matches have been scored; until then show nothing, not an empty box.
+  document.getElementById("ledger-block").hidden = !(live.scored >= 10);
   document.getElementById("ledger").innerHTML = !live.predictions
     ? `<p class="small ledger-wait">No predictions yet this week. League fixtures are usually published a few days ahead, ` +
       `and the model's predictions for them appear here the next morning${live.updated ? ` (last checked ${live.updated})` : ""}.</p>`
@@ -1640,6 +1641,9 @@ function start(data) {
   const redrawTicker = setupTicker(data);
   drawAll = () => { redrawMachine(); redrawTicker(); drawRuns(data); drawRounds(data); drawWild(data); drawClubs(data); drawRmSplit(data); drawRmLast(data); drawCalibration(data); redrawButterfly(); redrawHeat(); };
   drawAll();
+  // Charts folded inside a closed <details> have no width to draw into, so draw them when it opens.
+  document.getElementById("rm").addEventListener("toggle", (e) => { if (e.target.open) { drawRmSplit(data); drawRmLast(data); } });
+  document.getElementById("cb-more").addEventListener("toggle", (e) => { if (e.target.open) redrawHeat(); });
   const luck = document.querySelector("h1 em");
   document.fonts.ready.then(() => setTimeout(() => scramble(luck), 500));
   luck.addEventListener("pointerenter", () => scramble(luck));
