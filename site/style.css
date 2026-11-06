@@ -283,6 +283,13 @@ h3 { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .05e
 
 .load-error { border-left: 3px solid var(--s2); padding: 8px 0 8px 16px; margin: 32px 0; font-size: 16px; }
 .run-pick { margin: 18px 0 0; }
+.rounds-h { margin: 28px 0 6px; }
+.fc-move { color: var(--ink-2); }
+@media (max-width: 560px) { .fc-move { display: none; } } /* the sentence under the table still names the biggest move */
+.rounds-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+.rs { border-top: 2px solid var(--rule); padding-top: 8px; }
+.rs-name { display: block; font: 12px var(--mono); text-transform: uppercase; letter-spacing: .04em; color: var(--ink-2); }
+.rs b { display: block; font: 800 40px/1.1 var(--display); font-stretch: 62%; font-variant-numeric: tabular-nums; margin: 4px 0; }
 .mm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; }
 .mm-card { border: 1px solid var(--border); padding: 14px; }
 .mm-title { font-weight: 600; font-size: 17px; margin: 0; }
@@ -455,10 +462,6 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
 .table td { padding: 7px 8px; border-bottom: 1px solid var(--border); }
 .table .num { text-align: right; font: 13px var(--mono); font-variant-numeric: tabular-nums; }
 .table td.num b { font-weight: 600; }
-.rbar-head, .rbar-cell { width: 28%; }
-.rbar-cell { padding-left: 4px !important; }
-.rbar { display: block; height: 8px; background: var(--s1); }
-.table tbody tr:first-child .rbar { background: var(--s2); }
 .table tr.best td { font-weight: 600; }
 /* ---------- the season forecast ---------- */
 .fc-scroll { overflow-x: auto; }
@@ -515,7 +518,6 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
 .foot p { max-width: 90ch; margin: 0; }
 
 @media (max-width: 380px) {
-  #ratings-table :is(th, td):first-child { display: none; } /* the order already gives the rank */
   .table { font-size: 14px; }
   .table .num { font-size: 12px; }
   .table th { letter-spacing: 0; }
@@ -532,7 +534,6 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
   .funnel .f-label { grid-column: 1 / -1; }
   .wire-tag { padding: 0 10px; }
   .split { grid-template-columns: 1fr; }
-  .rbar-head, .rbar-cell { display: none; }
   .table th, .table td { padding-left: 4px; padding-right: 4px; }
   .bf-grid { grid-template-columns: 1fr; }
   .cb-grid { grid-template-columns: 1fr; }

@@ -71,14 +71,13 @@ def test_page_draws_every_section(open_page, data):
       strip: document.querySelectorAll('.strip-bar').length,
       champions: document.querySelectorAll('#runs-chart .bar').length,
       tieRows: document.querySelectorAll('#ties-list .tie').length,
-      ratings: document.querySelectorAll('#ratings-table tbody tr').length,
       calibration: document.querySelectorAll('#cal-chart circle:not(.hit)').length,
       bracket: document.querySelectorAll('#bf-bracket .bf-pick').length,
       heat: document.querySelectorAll('#cb-heat rect.cell').length,
     })""")
     assert counts["strip"] == len(data["ties"])
     assert counts["champions"] == len(data["champions"])
-    assert counts["tieRows"] == 30 and counts["ratings"] == 20 and counts["heat"] == 25
+    assert counts["tieRows"] == 30 and counts["heat"] == 25
     assert counts["calibration"] > 0 and counts["bracket"] > 0
 
 
@@ -86,7 +85,7 @@ def test_numbers_are_filled_from_the_data(open_page, data):
     page = open_page()
     h = data["headline"]
     assert page.locator(".hero .stat-value .sr").first.text_content() == f"{round(h['underdog'] * 100)}%"
-    assert page.locator('[data-fill="finals"]').first.text_content() == str(len(data["champions"]))
+    assert page.locator('[data-fill="ties"]').first.text_content() == str(len(data["ties"]))
     assert page.locator('[data-fill="real-odds"]').first.text_content() == odds_of_doing_as_well(data["ties"], "Real Madrid")
 
 
@@ -244,9 +243,9 @@ def test_tooltip_hides_however_the_pointer_leaves(open_page):
 def test_a_tap_shows_a_tooltip_on_touch_screens(open_page, browser_name):
     only_in(browser_name, "chromium", "webkit")  # Playwright's Firefox can't emulate touch
     page = open_page(width=375, has_touch=True, is_mobile=browser_name == "chromium", reduced_motion="reduce")
-    page.locator("#rounds-chart").scroll_into_view_if_needed()
+    page.locator("#clubs-chart").scroll_into_view_if_needed()
     page.wait_for_timeout(150)
-    page.locator("#rounds-chart rect.hit").first.tap()
+    page.locator("#clubs-chart rect.hit").first.tap()
     assert "on" in page.locator("#tip").get_attribute("class")
 
 
@@ -289,7 +288,8 @@ def test_nav_highlights_the_section_you_are_reading(open_page):
       const maxScroll = () => document.documentElement.scrollHeight - innerHeight;
       const expected = () => {
         const passed = [...document.querySelectorAll('main > section.card[id]')].filter((s) => !s.hidden && s.getBoundingClientRect().top <= innerHeight * 0.4);
-        return scrollY >= maxScroll() - 2 ? 'live' : passed.length ? passed[passed.length - 1].id : null;
+        const last = [...document.querySelectorAll('nav a')].map((a) => document.querySelector(a.hash)).filter((s) => s && !s.hidden).pop();
+        return scrollY >= maxScroll() - 2 ? last.id : passed.length ? passed[passed.length - 1].id : null;
       };
       const current = () => document.querySelector('nav a[aria-current]')?.hash.slice(1) ?? null;
       let bad = 0;
@@ -704,6 +704,31 @@ def test_long_sections_are_folded_away_and_draw_at_full_width_when_opened(open_p
         assert abs(drawn - box) <= 2 or drawn >= 280 and box < 280, (chart, drawn, box)
 
 
+def test_the_rounds_are_a_strip_of_numbers_under_the_wildest_season_chart(open_page, data):
+    page = open_page(reduced_motion="reduce")
+    assert page.locator("#rounds").count() == 0 and page.locator("nav a[href='#rounds']").count() == 0  # no separate section any more
+    tiles = page.locator("#rounds-strip .rs")
+    assert tiles.count() == len(data["rounds"])
+    for tile, row in zip(tiles.all(), data["rounds"]):
+        text = tile.text_content()
+        whole = lambda x: f"{int(x * 100 + 0.5)}%"  # round half up, as the page does
+        assert whole(row["won"]) in text and f"the model said {whole(row['expected'])}" in text and f"from {row['ties']} ties" in text
+    last = data["rounds"][-1]
+    assert ("not far off a coin toss" in page.text_content("#rounds-line")) == (last["won"] < 0.7)
+
+
+def test_the_live_section_appears_only_when_it_has_something_to_show(open_page, data):
+    import json
+    def with_live(**changes):
+        body = json.dumps({**data, "live": {**data["live"], **changes}})
+        return open_page(reduced_motion="reduce", routes={"**/data.json": lambda route: route.fulfill(body=body, content_type="application/json")})
+    page = with_live(scored=9, predictions=9, upcoming=[])
+    assert page.locator("#live").is_hidden() and page.locator("nav a[href='#live']").is_hidden()
+    assert page.locator("#ratings-table").count() == 0  # the strongest-clubs table is gone
+    page = with_live(scored=10, predictions=10, model_brier=0.2, book_brier=0.19, upcoming=[])
+    assert page.locator("#live").is_visible() and page.locator("nav a[href='#live']").is_visible()
+
+
 def test_the_prediction_ledger_waits_until_ten_matches_are_scored(open_page, data):
     import json
     def with_scored(n):
@@ -921,11 +946,12 @@ def signed_points(v):
 
 
 def title_odds_rows(page):
-    return page.evaluate("""() => [...document.querySelectorAll('#fc-hist-table tbody tr')].map((tr) =>
-      ({club: tr.dataset.club, cells: [...tr.children].map((td) => td.textContent)}))""")
+    """The forecast table's rows, best first, with the change in title odds since the first forecast."""
+    return page.evaluate("""() => [...document.querySelectorAll('#fc-table tbody tr')].map((tr) =>
+      ({club: tr.dataset.club, name: tr.children[0].textContent, move: tr.querySelector('.fc-move')?.textContent ?? null}))""")
 
 
-def test_the_title_odds_table_sets_the_first_forecast_beside_the_latest(open_page, data, forecast):
+def test_the_forecast_table_shows_how_title_odds_have_moved_since_the_first_forecast(open_page, data, forecast):
     history = forecast.get("history")
     if not history or len(history["dates"]) < 2:
         pytest.skip("not enough days of forecasts yet")
@@ -934,15 +960,16 @@ def test_the_title_odds_table_sets_the_first_forecast_beside_the_latest(open_pag
     win = history["win"]
     lead = sorted(win, key=lambda c: -win[c][-1])[:6]
     rows = title_odds_rows(page)
-    assert [r["club"] for r in rows] == lead  # the six likeliest winners today, best first
+    assert [r["club"] for r in rows][:6] == lead  # the six likeliest winners today, best first
     for r in rows:
         first, now = win[r["club"]][0], win[r["club"]][-1]
-        assert r["cells"][1:] == [forecast_chance("win", first), forecast_chance("win", now), signed_points((now - first) * 100)]
+        assert r["move"] == signed_points((now - first) * 100)
+    assert page.locator("#fc-table th.fc-move").text_content() == "Since MD1"
     note = page.text_content("#fc-history-note")
     move = lambda c: win[c][-1] - win[c][0]
     assert ("Not much has changed" in note) == (abs(move(max(win, key=lambda c: abs(move(c))))) < 0.05)
     led_throughout = all(max(win, key=lambda c: win[c][i]) == lead[0] for i in range(len(history["dates"])))
-    assert led_throughout == (f"{rows[0]['cells'][0]} have led at every forecast" in note)
+    assert led_throughout == (f"{rows[0]['name']} have led at every forecast" in note)
 
 
 def test_the_title_odds_say_so_when_the_favourite_or_the_odds_have_changed(open_page, data, forecast):
@@ -960,7 +987,7 @@ def test_the_title_odds_say_so_when_the_favourite_or_the_odds_have_changed(open_
 def test_the_title_odds_chart_waits_for_a_second_forecast(open_page, data, forecast):
     thin = {"dates": ["2026-11-05"], "win": {c["club"]: [c["win"]] for c in forecast["clubs"]}}
     page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, history=thin)))
-    assert page.locator("#fc-history").is_hidden()
+    assert page.locator("#fc-history").is_hidden() and page.locator("#fc-table .fc-move").count() == 0
 
 
 def test_clubs_with_no_history_are_marked_and_explained(open_page, data, forecast):
