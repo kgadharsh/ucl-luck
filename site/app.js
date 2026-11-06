@@ -1508,6 +1508,50 @@ function fillForecast(data) {
   ].map((html) => `<li>${html}</li>`).join("");
 }
 
+// ---------- the matches that matter ----------
+// From src/forecast.py: for each match still to play, a club's chance of finishing in the top eight (and so
+// going straight to the round of 16) if it wins, draws or loses, read off the simulated seasons.
+function fillMatches(data) {
+  const fc = data.forecast, lv = fc && fc.leverage;
+  const section = document.getElementById("matters");
+  const link = document.querySelector('nav a[href="#matters"]');
+  section.hidden = link.hidden = !lv;
+  if (!lv) return;
+  const sims = fc.simulations.toLocaleString("en-GB");
+  const base = Object.fromEntries(fc.clubs.map((c) => [c.club, c.top8]));
+  const when = (iso) => new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+  document.getElementById("mm-sub").textContent =
+    `The top eight clubs in the league phase go straight to the round of 16; the next sixteen play off for the other places. The model plays the ${fc.left} matches still to come ${sims} times. For each one, this shows where a club's chance of finishing in the top eight ends up if it wins, draws or loses.`;
+  document.getElementById("mm-note").textContent = "Recalculated every morning. A result that happens in fewer than 1 simulated season in 20 is left out when working out the swing.";
+  const pick = document.getElementById("mm-pick");
+  const names = fc.clubs.map((c) => c.club).sort((a, b) => clean(a).localeCompare(clean(b), "en"));
+  pick.innerHTML = `<option value="">The ones that matter most, up next</option>` + names.map((club, i) => `<option value="${i}">${clean(club)}</option>`).join("");
+
+  const card = (club, entry) => {
+    const m = lv.matches[entry.match];
+    const bars = ["Win", "Draw", "Lose"].map((label, i) =>
+      `<div class="mm-bar"><span>${label}</span><span class="mm-track" role="img" aria-label="${label}: ${chance(entry.top8[i])}"><span style="width:${entry.top8[i] * 100}%"></span></span><b>${chance(entry.top8[i])}</b></div>`).join("");
+    return `<div class="mm-card"><p class="mm-title">${clean(m.home)} v ${clean(m.away)}</p><p class="small">${when(m.date)}</p>` +
+      `<p>Chance of finishing in the top eight for <b>${clean(club)}</b> if they…</p>${bars}` +
+      `<p class="small">Now: ${chance(base[club])}. A win against a loss here is worth <b>${Math.round(entry.swing * 100)} points</b>.</p></div>`;
+  };
+  const show = () => {
+    const grid = document.getElementById("mm-grid"), lead = document.getElementById("mm-lead");
+    if (pick.value === "") {
+      grid.innerHTML = lv.soon.map((e) => card(e.club, e)).join("");
+      lead.textContent = lv.soon.length ? "The biggest swings among the next matches to be played." : "";
+      return;
+    }
+    const club = names[Number(pick.value)], entries = lv.clubs[club] || [];
+    grid.innerHTML = entries.map((e) => card(club, e)).join("");
+    lead.innerHTML = entries.length
+      ? `<b>${clean(club)}</b> have ${entries.length} league-phase match${entries.length === 1 ? "" : "es"} left. The one that matters most is <b>${clean(lv.matches[entries[0].match].home)} v ${clean(lv.matches[entries[0].match].away)}</b> (${when(lv.matches[entries[0].match].date)}).`
+      : `<b>${clean(club)}</b> have no league-phase matches left.`;
+  };
+  pick.addEventListener("change", show);
+  show();
+}
+
 // ---------- live ----------
 function fillLive(data) {
   const live = data.live;
@@ -1659,6 +1703,7 @@ function start(data) {
   setupTies(data);
   fillLive(data);
   fillForecast(data);
+  fillMatches(data);
   fillForecastHistory(data);
   setupGlossary();
   fillRealMadrid(data);

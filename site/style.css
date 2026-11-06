@@ -283,6 +283,14 @@ h3 { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .05e
 
 .load-error { border-left: 3px solid var(--s2); padding: 8px 0 8px 16px; margin: 32px 0; font-size: 16px; }
 .run-pick { margin: 18px 0 0; }
+.mm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; }
+.mm-card { border: 1px solid var(--border); padding: 14px; }
+.mm-title { font-weight: 600; font-size: 17px; margin: 0; }
+.mm-card p { margin: 0 0 8px; }
+.mm-bar { display: grid; grid-template-columns: 44px 1fr 44px; gap: 8px; align-items: center; margin: 6px 0; font: 13px var(--mono); }
+.mm-track { display: block; position: relative; height: 12px; background: var(--bar-rest); }
+.mm-track span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--s1); }
+.mm-bar b { text-align: right; }
 .replays { border-top: 2px solid var(--rule); }
 .rp-row { display: grid; grid-template-columns: 76px minmax(110px, 1.1fr) minmax(120px, 2fr) minmax(150px, 1.2fr); gap: 6px 16px; align-items: center; width: 100%; padding: 10px 4px; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--ink); font: 15px var(--font); text-align: left; cursor: pointer; }
 .rp-row:hover { background: var(--grid); }

@@ -760,6 +760,58 @@ def serve(body):
     return {"**/data.json": lambda route: route.fulfill(body=body, content_type="application/json")}
 
 
+def hand_leverage(data):
+    """Two matches and three clubs' swings, made by hand from the forecast's own clubs."""
+    a, b, c = (club["club"] for club in data["forecast"]["clubs"][:3])
+    matches = [{"date": "2026-11-24", "home": a, "away": b, "shares": [0.45, 0.25, 0.3]},
+               {"date": "2026-11-25", "home": c, "away": a, "shares": [0.5, 0.25, 0.25]}]
+    mine = [{"match": 0, "top8": [0.9, 0.6, 0.3], "swing": 0.6}, {"match": 1, "top8": [0.8, 0.7, 0.65], "swing": 0.15}]
+    return {"matches": matches, "clubs": {a: mine, b: [{"match": 0, "top8": [0.5, 0.3, 0.1], "swing": 0.4}], c: []},
+            "soon": [{"club": a, **mine[0]}, {"club": b, "match": 0, "top8": [0.5, 0.3, 0.1], "swing": 0.4}]}
+
+
+def test_the_matches_that_matter_show_each_clubs_chance_for_a_win_a_draw_and_a_loss(open_page, data):
+    lv = hand_leverage(data)
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, leverage=lv)))
+    assert page.locator("#matters").is_visible() and page.locator("nav a[href='#matters']").is_visible()
+    cards = page.locator("#matters .mm-card")
+    assert cards.count() == 2
+    a = lv["soon"][0]["club"]
+    first = cards.first
+    assert "Tue 24 Nov" in first.text_content() and a.split(" (")[0] in first.locator(".mm-title").text_content()
+    assert [b.text_content() for b in first.locator(".mm-bar b").all()] == ["90%", "60%", "30%"]
+    assert [b.get_attribute("aria-label") for b in first.locator(".mm-track").all()] == ["Win: 90%", "Draw: 60%", "Lose: 30%"]
+    assert "60 points" in first.text_content()
+    assert [round(float(w.replace("%", "")), 1) for w in first.locator(".mm-track span").evaluate_all("els => els.map((e) => e.style.width)")] == [90.0, 60.0, 30.0]
+    base = next(club["top8"] for club in data["forecast"]["clubs"] if club["club"] == a)
+    assert f"Now: {shown_chance(base)}" in first.text_content()
+
+
+def test_picking_a_club_shows_every_match_it_has_left_most_important_first(open_page, data):
+    lv = hand_leverage(data)
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, leverage=lv)))
+    a = lv["soon"][0]["club"]
+    page.select_option("#mm-pick", label=a.split(" (")[0])
+    cards = page.locator("#matters .mm-card")
+    assert cards.count() == 2
+    assert "Tue 24 Nov" in cards.nth(0).text_content() and "Wed 25 Nov" in cards.nth(1).text_content()
+    assert "have 2 league-phase matches left" in page.text_content("#mm-lead")
+    # A club with nothing left to play says so.
+    nothing = next(club["club"] for club in data["forecast"]["clubs"][:3] if not lv["clubs"][club["club"]])
+    page.select_option("#mm-pick", label=nothing.split(" (")[0])
+    assert page.locator("#matters .mm-card").count() == 0 and "no league-phase matches left" in page.text_content("#mm-lead")
+    page.select_option("#mm-pick", index=0)  # back to the biggest swings up next
+    assert page.locator("#matters .mm-card").count() == 2
+
+
+def test_without_match_swings_the_section_and_its_link_are_left_out(open_page, data):
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, leverage=None)))
+    assert page.locator("#matters").is_hidden() and page.locator("nav a[href='#matters']").is_hidden()
+    assert page.locator("#forecast").is_visible()  # the forecast itself is untouched
+    page = open_page(reduced_motion="reduce", routes=serve(without_forecast(data)))
+    assert page.locator("#matters").is_hidden()
+
+
 def forecast_chance(stage, p):
     """How the table writes a chance: a decimal for a small chance of winning, never 0% or 100% for what isn't."""
     if stage == "win" and 0 < p < 0.1:

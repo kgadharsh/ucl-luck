@@ -173,18 +173,21 @@ def tie_chances(model, teams, rho, newcomer, real=()):
 
 # ---------- playing the season ----------
 
-def league_phase(table, fixtures, cdfs, n, rng):
+def league_phase(table, fixtures, cdfs, n, rng, outcomes=None):
     """Play the rest of the league phase n times. Returns order[r, s]: the team in position r + 1
-    in simulated season s."""
+    in simulated season s. If `outcomes` is given (an int8 array, one row per match), each match's
+    result in each simulated season is written into it: 0 home win, 1 draw, 2 away win."""
     teams = len(table["points"])
     points, goals_for, goals_against, away_for, wins, away_wins = (
         np.tile(table[key].astype(np.int32)[:, None], (1, n))
         for key in ("points", "goals_for", "goals_against", "away_goals_for", "wins", "away_wins"))
     width = MAX_GOALS + 1
-    for (home, away), cdf in zip(fixtures, cdfs):
+    for m, ((home, away), cdf) in enumerate(zip(fixtures, cdfs)):
         scoreline = np.minimum(np.searchsorted(cdf, rng.random(n)), width * width - 1)
         home_goals, away_goals = scoreline // width, scoreline % width
         home_won, away_won, level = home_goals > away_goals, away_goals > home_goals, home_goals == away_goals
+        if outcomes is not None:
+            outcomes[m] = np.where(home_won, 0, np.where(level, 1, 2))
         points[home] += 3 * home_won + level
         points[away] += 3 * away_won + level
         goals_for[home] += home_goals
@@ -261,10 +264,17 @@ def nudged(model, noise, rng):
     return other
 
 
-def simulate(table, fixtures, cdfs, through, final, n=SIMULATIONS, seed=SEED, plan=None):
-    """How often each team reaches each stage: {stage: array with one share per team}."""
+def simulate(table, fixtures, cdfs, through, final, n=SIMULATIONS, seed=SEED, plan=None, record=None):
+    """How often each team reaches each stage: {stage: array with one share per team}. Pass a dict as
+    `record` to also keep, for every simulated season, each match's result and who finished in the top
+    eight (the answers are the same either way: recording does not use any random numbers)."""
     rng = np.random.default_rng(seed)
-    order = league_phase(table, fixtures, cdfs, n, rng)
+    outcomes = np.zeros((len(fixtures), n), dtype=np.int8) if record is not None else None
+    order = league_phase(table, fixtures, cdfs, n, rng, outcomes)
+    if record is not None:
+        top8 = np.zeros((len(table["points"]), n), dtype=bool)
+        top8[order[:8], np.arange(n)] = True
+        record.update(outcomes=outcomes, top8=top8)
     if plan:  # the league phase is over and the draws are made, so the table is what it is
         order = np.tile(order[:, :1], (1, n))
         for key, rows in (("playoffs", range(8, 16)), ("last16", range(8))):
@@ -273,6 +283,47 @@ def simulate(table, fixtures, cdfs, through, final, n=SIMULATIONS, seed=SEED, pl
     reached = knockouts(order, through, final, rng, plan)
     teams = len(table["points"])
     return {stage: np.bincount(teams_at.ravel(), minlength=teams) / n for stage, teams_at in reached.items()}
+
+
+# ---------- which matches matter ----------
+
+LEVERAGE_MIN_SHARE = 0.05  # a result that happens in fewer simulated seasons than this is left out of a swing
+LEVERAGE_SOON_DAYS = 7  # "up next": matches within this many days of the next match to be played
+LEVERAGE_SHOWN = 6
+
+
+def match_leverage(record, fixtures, teams, dates):
+    """How much each match still to play moves each of its two clubs' chance of finishing in the top
+    eight (straight into the round of 16). For every match and club: the chance of finishing there if the
+    club wins, draws or loses it, read off the simulated seasons in which that is what happened.
+
+    Returns {"matches": [...], "clubs": {club: [entry, ...]}, "soon": [...]}. An entry is
+    {"match": index into matches, "top8": [if win, if draw, if lose], "swing": best minus worst}, and a
+    club's entries start with the match that matters most to it. A result that is very unlikely is left
+    out of the swing, since the few simulated seasons behind it are noisy."""
+    outcomes, top8 = record["outcomes"], record["top8"]
+    matches, clubs = [], {team: [] for team in teams}
+    for m, (home, away) in enumerate(fixtures):
+        masks = [outcomes[m] == o for o in range(3)]  # home win, draw, away win
+        shares = [float(mask.mean()) for mask in masks]
+        reach = [np.nan_to_num(top8[:, mask].mean(axis=1)) if mask.any() else np.zeros(len(teams)) for mask in masks]
+        matches.append({"date": dates[m], "home": teams[home], "away": teams[away], "shares": [round(x, 4) for x in shares]})
+        for club, order in ((home, (0, 1, 2)), (away, (2, 1, 0))):  # the order is win, draw, loss for that club
+            chances = [float(reach[o][club]) for o in order]
+            likely = [c for c, o in zip(chances, order) if shares[o] >= LEVERAGE_MIN_SHARE]
+            swing = max(likely) - min(likely) if len(likely) > 1 else 0.0
+            clubs[teams[club]].append({"match": m, "top8": [round(c, 4) for c in chances], "swing": round(swing, 4)})
+    for entries in clubs.values():
+        entries.sort(key=lambda e: (-e["swing"], matches[e["match"]]["date"]))
+    cutoff = f"{pd.Timestamp(min(dates)) + pd.Timedelta(days=LEVERAGE_SOON_DAYS):%Y-%m-%d}"
+    pool = sorted(({"club": club, **e} for club, entries in clubs.items() for e in entries if matches[e["match"]]["date"] <= cutoff),
+                  key=lambda e: (-e["swing"], e["club"]))
+    soon, seen = [], set()
+    for entry in pool:  # the biggest swing among the next matches, one club per match
+        if entry["match"] not in seen:
+            seen.add(entry["match"])
+            soon.append(entry)
+    return {"matches": matches, "clubs": clubs, "soon": soon[:LEVERAGE_SHOWN]}
 
 
 # ---------- the knockouts as they stand ----------
@@ -388,7 +439,8 @@ def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None, le
             real = {"ties": [(h, o, real_tie_chance(version, {**t, "host": teams[h], "other": teams[o]}, rho, newcomer)) for h, o, t in state["ties"]],
                     "final": state["final"]}
         through, final = tie_chances(version, teams, rho, newcomer, real)
-        found = simulate(table, fixtures, cdfs, through, final, share, seed + world, plan)
+        record = {} if not noise and len(fixtures) and not plan else None  # which matches matter: only from a plain run
+        found = simulate(table, fixtures, cdfs, through, final, share, seed + world, plan, record)
         for stage in STAGES:
             reach[stage] += found[stage] * share / n
 
@@ -402,6 +454,10 @@ def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None, le
             "goal_difference": int(table["goals_for"][i] - table["goals_against"][i]),
             **{stage: round(float(reach[stage][i]), 6) for stage in STAGES}})
     clubs.sort(key=lambda c: (-c["win"], -c["final"], -c["semi"], c["club"]))
+    extra = {}
+    if record:
+        dates = [f"{d:%Y-%m-%d}" for d in left.date]
+        extra["leverage"] = match_leverage(record, fixtures, teams, dates)
     return {
         "season": season, "as_of": f"{as_of:%Y-%m-%d}", "simulations": n, "seed": seed,
         "matches": int(len(league)), "played": int(len(played)), "left": int(len(left)),
@@ -409,7 +465,7 @@ def forecast(as_of=None, n=SIMULATIONS, seed=SEED, season=None, history=None, le
         "phase": phase_of(len(left), knock),
         "new_clubs": new_clubs,
         "source": f"https://en.wikipedia.org/wiki/{season_title(season)}",
-        "clubs": clubs}
+        "clubs": clubs, **extra}
 
 
 def add_to_history(result, path=None):
