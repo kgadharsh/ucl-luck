@@ -1503,7 +1503,7 @@ function fillLive(data) {
       `and the model's predictions for them appear here the next morning${live.updated ? ` (last checked ${live.updated})` : ""}.</p>`
     : cell(live.predictions, "predictions saved") +
       cell(live.scored, "matches played and scored") +
-      (live.model_brier != null ? cell(live.model_brier.toFixed(3), "the model's error score so far (lower is better)") + cell(live.book_brier.toFixed(3), "the bookmakers' error score so far")
+      (live.model_brier != null ? cell(live.model_brier.toFixed(3), "the model's average miss so far (lower is better)") + cell(live.book_brier.toFixed(3), "the bookmakers' average miss so far")
         : `<p class="small" style="grid-column:1/-1">None of these matches has been played yet. Each is scored once it has.</p>`);
   // The predictions waiting for kick-off, soonest first, in the reader's own time zone.
   const upcoming = [...(live.upcoming || [])].sort((a, b) => String(a.kickoff || a.date).localeCompare(String(b.kickoff || b.date))).slice(0, 10);
