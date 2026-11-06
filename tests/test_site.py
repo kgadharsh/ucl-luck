@@ -624,7 +624,7 @@ def test_real_madrid_checks_are_drawn_from_the_analysis(open_page, data):
     assert f"{h1['won']} of {h1['ties']} ties won when {h1['expected']:.1f} were expected, then {h2['won']} of {h2['ties']} when {h2['expected']:.1f} were" in verdict
     assert f"ahead of it in {rm['seasons_above']} of {rm['seasons']} seasons" in verdict
     assert f"they won all {n['won_extra']['actual']}" in verdict and f"lost only {n['lost_normal']['actual']} ties in normal time" in verdict
-    assert f"error per tie {rm['forecast']['without']:.2f} down to {rm['forecast']['with']:.2f}" in verdict
+    assert f"average miss per tie {rm['forecast']['without']:.2f} down to {rm['forecast']['with']:.2f}" in verdict
 
 
 def test_did_it_last_uses_plain_words_and_only_says_real_madrid_stands_alone_when_it_does(open_page, data):

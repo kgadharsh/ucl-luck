@@ -687,7 +687,7 @@ function fillRealMadrid(data) {
   const separate = knockouts.gap - knockouts.error > liga.gap + liga.error;
   document.getElementById("rm-verdict").innerHTML = `
     <p><b>The short answer: mostly not luck, though a bit of it is.</b> The model only sees league results and Champions League scores, and it keeps underrating Real Madrid in Europe.</p>
-    <p><b>It doesn't look like a lucky streak.</b> Split the ${rm.seasons} seasons in half and Real Madrid beat the model by about the same amount in both: ${h1.won} of ${h1.ties} ties won when ${h1.expected.toFixed(1)} were expected, then ${h2.won} of ${h2.ties} when ${h2.expected.toFixed(1)} were. They were ahead of it in ${rm.seasons_above} of ${rm.seasons} seasons. A boost worked out from the first seven seasons alone would have forecast the next seven clearly better (error per tie ${f.without.toFixed(2)} down to ${f.with.toFixed(2)}).${alone ? " No other club did the same in both halves." : ""}</p>
+    <p><b>It doesn't look like a lucky streak.</b> Split the ${rm.seasons} seasons in half and Real Madrid beat the model by about the same amount in both: ${h1.won} of ${h1.ties} ties won when ${h1.expected.toFixed(1)} were expected, then ${h2.won} of ${h2.ties} when ${h2.expected.toFixed(1)} were. They were ahead of it in ${rm.seasons_above} of ${rm.seasons} seasons. A boost worked out from the first seven seasons alone would have forecast the next seven clearly better (average miss per tie ${f.without.toFixed(2)} down to ${f.with.toFixed(2)}, where lower is better).${alone ? " No other club did the same in both halves." : ""}</p>
     <p><b>It isn't a Spanish thing.</b> Barcelona won ${barca.won} of ${barca.ties} ties when ${barca.expected.toFixed(1)} were expected, and Atlético Madrid ${atleti.won} of ${atleti.ties} when ${atleti.expected.toFixed(1)} were. Real Madrid's own La Liga results are close to the model's too: ${liga.points.toFixed(2)} points a match against ${liga.expected.toFixed(2)} expected.</p>
     <p><b>Part of it is probably luck.</b> ${n.extra_time.actual} of Real's ties went to extra time or penalties, which are close to coin flips, and they won all ${n.won_extra.actual} (about ${n.won_extra.expected.toFixed(1)} expected). That run is the likeliest piece of pure luck. But they also lost only ${n.lost_normal.actual} ties in normal time when the model expected ${n.lost_normal.expected.toFixed(0)}, and that part isn't a coin flip.</p>
 ${squadParagraphs(rm, { liga, groups, knockouts, separate })}`;
@@ -1078,7 +1078,7 @@ function setupButterfly(data) {
     const box = document.getElementById("bf-chart");
     const rowH = 24;
     const { root, width, height } = canvas(box, teams.length * rowH + 28);
-    const m = { l: 112, r: 52, t: 4, b: 24 };
+    const m = { l: 112, r: 60, t: 4, b: 24 };
     const x = (v) => m.l + v * (width - m.l - m.r);
     for (let v = 0; v <= 1.0001; v += 0.25) {
       svg("line", { x1: x(v), x2: x(v), y1: m.t, y2: height - m.b, stroke: css("--grid") }, root);
@@ -1097,7 +1097,7 @@ function setupButterfly(data) {
       const w = Math.max(x(after) - x(0), after > 0 ? 2 : 0);
       if (w > 0) svg("rect", { x: x(0), y: cy - 7, width: w, height: 14, fill: color, class: "grow-x", style: `--d:${i * 30}ms` }, root);
       svg("line", { x1: x(before), x2: x(before), y1: cy - 9, y2: cy + 9, stroke: css("--ink-2"), "stroke-width": 2 }, root);
-      const label = Math.abs(delta) >= 0.005 ? `${delta > 0 ? "+" : "−"}${Math.round(Math.abs(delta) * 100)}` : pct(after);
+      const label = Math.abs(delta) >= 0.005 ? `${delta > 0 ? "+" : "−"}${Math.round(Math.abs(delta) * 100)} ${Math.round(Math.abs(delta) * 100) === 1 ? "pt" : "pts"}` : pct(after);
       svg("text", { x: width - 4, y: cy + 4, "text-anchor": "end", class: Math.abs(delta) >= 0.005 ? "label-strong" : "" }, root).textContent = label;
       const hit = svg("rect", { x: 0, y: cy - rowH / 2, width, height: rowH, class: "hit" }, root);
       hover(hit, `<b>${clean(team)}</b><br>Before your picks: ${pct(before, 1)}<br>Now: ${pct(after, 1)}`);
@@ -1106,7 +1106,7 @@ function setupButterfly(data) {
       .sort((a, b) => Math.abs(now[b] - baseline[b]) - Math.abs(now[a] - baseline[a]));
     const swing = document.getElementById("bf-swing");
     if (!moved.length) {
-      swing.innerHTML = "Pick a winner in any tie to see the knock-on effects. The tick marks each club's chance before your picks.";
+      swing.innerHTML = "Pick a winner in any tie to see the knock-on effects. The tick marks each club's chance before your picks; the number on the right is how many percentage points (pts) that chance moved.";
     } else {
       const t = moved[0];
       const others = moved.length - 1;
