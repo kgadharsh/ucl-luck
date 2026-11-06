@@ -437,6 +437,78 @@ def test_a_forecast_can_be_made_before_a_single_match_is_played(made_up_season):
     assert sum(c["win"] for c in result["clubs"]) == pytest.approx(1, abs=1e-4)
 
 
+# ---------- which matches matter ----------
+
+def test_recording_the_results_does_not_change_the_forecast():
+    """Keeping every simulated match result must not use a random number, so nothing else moves."""
+    fixtures = ring_fixtures()
+    args = (blank_table(), fixtures, equal_cdfs(len(fixtures)), np.full((CLUBS, CLUBS), 0.5), np.full((CLUBS, CLUBS), 0.5))
+    plain = fc.simulate(*args, n=800, seed=4)
+    record = {}
+    kept = fc.simulate(*args, n=800, seed=4, record=record)
+    for stage in plain:
+        assert np.array_equal(plain[stage], kept[stage]), stage
+    assert record["outcomes"].shape == (len(fixtures), 800) and set(np.unique(record["outcomes"])) <= {0, 1, 2}
+    assert record["top8"].shape == (CLUBS, 800) and (record["top8"].sum(axis=0) == 8).all()  # eight clubs a season
+
+
+def test_a_matchs_leverage_is_read_off_the_seasons_where_it_ended_that_way():
+    """Three clubs, one match (club 0 at home to club 1), ten simulated seasons worked out by hand."""
+    outcomes = np.array([[0, 0, 0, 0, 1, 1, 1, 2, 2, 2]], dtype=np.int8)  # four home wins, three draws, three away wins
+    top8 = np.zeros((3, 10), dtype=bool)
+    top8[0, [0, 1, 2, 3, 4]] = True       # club 0 is in the top eight after all four wins and one draw
+    top8[1, [4, 5, 7, 8, 9]] = True       # club 1: in the top eight after all three of its wins and two of its three draws
+    top8[2, :] = True                     # club 2 is not in the match and always makes it
+    record = {"outcomes": outcomes, "top8": top8}
+    lv = fc.match_leverage(record, np.array([[0, 1]]), ["A", "B", "C"], ["2026-11-24"])
+    assert lv["matches"] == [{"date": "2026-11-24", "home": "A", "away": "B", "shares": [0.4, 0.3, 0.3]}]
+    (home,), (away,) = lv["clubs"]["A"], lv["clubs"]["B"]
+    assert home == {"match": 0, "top8": [1.0, 0.3333, 0.0], "swing": 1.0}     # if they win, draw, lose
+    # Club 1 wins in seasons 7, 8, 9 (in the top eight in 7, 8, 9: all three), draws in 4, 5, 6 (4 and 5), loses in 0..3 (none).
+    assert away == {"match": 0, "top8": [1.0, 0.6667, 0.0], "swing": 1.0}
+    assert lv["clubs"]["C"] == []
+    assert [e["club"] for e in lv["soon"]] == ["A"]  # one club per match: the first of two equal swings
+
+
+def test_an_unlikely_result_is_left_out_of_the_swing():
+    outcomes = np.array([[0] * 49 + [2] * 1 + [1] * 50], dtype=np.int8)  # the away win is 1 in 100: noise, not a swing
+    top8 = np.zeros((2, 100), dtype=bool)
+    top8[0, 49] = True          # the one season behind the away win has club 0 in the top eight
+    top8[0, :49] = True
+    lv = fc.match_leverage({"outcomes": outcomes, "top8": top8}, np.array([[0, 1]]), ["A", "B"], ["2026-11-24"])
+    entry = lv["clubs"]["A"][0]
+    assert entry["top8"] == [1.0, 0.0, 1.0] and entry["swing"] == 1.0  # win against draw: the lone loss is ignored
+
+
+def test_every_match_still_to_play_has_a_swing_for_both_clubs(made_up_season):
+    result = fc.forecast("2026-11-05", n=3000, history=made_up_history())
+    lv = result["leverage"]
+    assert len(lv["matches"]) == result["left"] == 72
+    assert set(lv["clubs"]) == {c["club"] for c in result["clubs"]}
+    for club, entries in lv["clubs"].items():
+        assert len(entries) == 4  # four matches left for every club in the made-up season
+        assert [e["swing"] for e in entries] == sorted((e["swing"] for e in entries), reverse=True)
+        for e in entries:
+            assert len(e["top8"]) == 3 and all(0 <= x <= 1 for x in e["top8"]) and 0 <= e["swing"] <= 1
+            assert club in (lv["matches"][e["match"]]["home"], lv["matches"][e["match"]]["away"])
+    # Winning helps: across all clubs and matches a win leaves a club better placed than a loss.
+    gaps = [e["top8"][0] - e["top8"][2] for entries in lv["clubs"].values() for e in entries]
+    assert np.mean(gaps) > 0.1
+    soon = lv["soon"]
+    assert 0 < len(soon) <= fc.LEVERAGE_SHOWN and len({e["match"] for e in soon}) == len(soon)
+    first = min(m["date"] for m in lv["matches"])
+    assert all(lv["matches"][e["match"]]["date"] <= f"{pd.Timestamp(first) + pd.Timedelta(days=fc.LEVERAGE_SOON_DAYS):%Y-%m-%d}" for e in soon)
+    assert [e["swing"] for e in soon] == sorted((e["swing"] for e in soon), reverse=True)
+    json.dumps(lv, allow_nan=False)
+
+
+def test_leverage_is_left_out_when_the_ratings_are_nudged_or_nothing_is_left_to_play(made_up_season):
+    nudged = fc.forecast("2026-11-05", n=400, history=made_up_history(), noise=0.1, worlds=2)
+    assert "leverage" not in nudged
+    made_up_season["league"] = ring(played=144)
+    assert "leverage" not in fc.forecast("2026-10-01", n=200, history=made_up_history(), knockouts=None)
+
+
 def test_uncertain_ratings_split_the_simulations_over_nudged_worlds_and_flatten_the_favourites(made_up_season):
     history = made_up_history()
     plain = fc.forecast("2026-11-05", n=4000, history=history)
@@ -541,6 +613,16 @@ def test_the_saved_forecast_adds_up(saved):
     wins = [c["win"] for c in saved["clubs"]]
     assert wins == sorted(wins, reverse=True)
     assert set(saved["new_clubs"]) <= {c["club"] for c in saved["clubs"]}
+
+
+def test_the_saved_forecasts_match_swings_are_consistent(saved):
+    lv = saved.get("leverage")
+    if lv is None:
+        pytest.skip("this saved forecast was made before matches that matter were added, or is past the league phase")
+    assert len(lv["matches"]) == saved["left"]
+    for entries in lv["clubs"].values():
+        assert all(0 <= x <= 1 for e in entries for x in e["top8"])
+        assert [e["swing"] for e in entries] == sorted((e["swing"] for e in entries), reverse=True)
 
 
 def test_the_page_carries_the_saved_forecast_unless_it_is_stale(data, saved, tmp_path, monkeypatch):
