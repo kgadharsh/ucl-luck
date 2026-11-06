@@ -468,6 +468,17 @@ function fillSkill(data) {
   document.getElementById("sk-text").innerHTML =
     `But a trophy means winning <b>every</b> tie, four or five in a row. At ${pct(p)} each, that is ${chance(p ** 4)} for four and ${chance(p ** 5)} for five. ` +
     "That is why even the strongest club usually doesn't win it.";
+  // The working, step by step, with the same numbers.
+  const at = (n) => standings(winsDistribution(n, p));
+  const [ten, thirty] = [at(10), at(30)];
+  document.getElementById("sk-how-list").innerHTML = [
+    `<b>The starting chance.</b> Before every knockout tie since ${data.headline.first_season}, the model gave the favourite a chance of going through. The average is ${pct(p)}, so that is the "typical favourite".`,
+    `<b>One tie.</b> It goes out the rest of the time: ${pct(1 - p)}.`,
+    `<b>Many ties.</b> Treat every tie like a toss of a coin weighted ${pct(p)} its way, each one separate from the last. Count every way the run of wins and losses can go, work out how likely each one is, and add up the ones with more losses than wins. That is the exact answer, with no simulation.`,
+    `<b>After 10 ties</b> that means 4 wins or fewer: ${(ten.behind * 100).toFixed(1)}%. Five wins and five losses counts as level, not behind; that happens another ${(ten.level * 100).toFixed(0)}% of the time.`,
+    `<b>After 30 ties</b> it means 14 wins or fewer: ${(thirty.behind * 100).toFixed(1)}%.`,
+    `<b>Winning it all.</b> Every tie has to go its way, so the chances multiply: ${pct(p)} four times is ${chance(p ** 4)}, five times is ${chance(p ** 5)}. In practice some favourites are much stronger than others, so this is a rough guide, not a forecast.`,
+  ].map((line) => `<li>${line}</li>`).join("");
 }
 
 // ---------- the wildest seasons ----------
@@ -1565,6 +1576,8 @@ function fillLive(data) {
     return at && !isNaN(at) ? at.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
       : new Date(`${String(m.date).slice(0, 10)}T12:00:00Z`).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
   };
+  const zone = new Intl.DateTimeFormat(undefined, { timeZoneName: "long" }).formatToParts(new Date()).find((p) => p.type === "timeZoneName");
+  document.querySelectorAll("#live .tz-note").forEach((note) => { note.textContent = `Kick-off times are in your time zone${zone ? ` (${zone.value})` : ""}.`; });
   const meta = (m) => `<div class="tie-meta">${LEAGUE_NAMES[m.competition] || m.competition} · ${when(m)}</div>`;
   const hasOdds = (m) => [m.odds_home, m.odds_draw, m.odds_away].every((v) => typeof v === "number");
 

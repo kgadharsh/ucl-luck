@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
-  <link rel="stylesheet" href="style.css?v=42">
+  <link rel="stylesheet" href="style.css?v=43">
   <script>
     // Before anything paints or draws: mark that JS is on, and apply a saved light/dark choice,
     // so charts are never drawn in the system theme's colours and the page doesn't flash.
@@ -149,6 +149,10 @@
       <p class="sub" id="sk-sub"></p>
       <div class="sk-stats" id="sk-stats"></div>
       <p class="swing" id="sk-text"></p>
+      <details class="nerds" id="sk-how">
+        <summary>How this is worked out</summary>
+        <ul class="fc-how" id="sk-how-list"></ul>
+      </details>
     </section>
 
     <section id="butterfly" class="card">
@@ -262,7 +266,7 @@
       <div class="legend" id="clubs-legend"></div>
       <div class="chart" id="clubs-chart" role="img" aria-label="Expected and actual ties won per club"></div>
       <div class="note">
-        <p><b>Real Madrid went through <span data-fill="real-won"></span> ties when the model expected <span data-fill="real-expected"></span>.</b> If the model were right, that would happen about once in <span data-fill="real-odds"></span> tries. <span id="real-sel">That is for Real Madrid on its own. I noticed Real before testing them, so the fairer question is how often the most unusual of all <span data-fill="real-sel-clubs"></span> clubs with at least <span data-fill="real-sel-min"></span> ties would look this extreme if every tie followed the model. It would still happen only about once in <span data-fill="real-sel-odds"></span> tries.</span> The model rates Real accurately in La Liga, but in Champions League knockout matches they take about a third of a point a match more than expected.</p>
+        <p><b>Real Madrid went through <span data-fill="real-won"></span> ties when the model expected <span data-fill="real-expected"></span>.</b> If the model were right, that would happen about once in <span data-fill="real-odds"></span> tries. <span id="real-sel">That is for Real Madrid on its own. I noticed Real Madrid before testing them, so the fairer question is how often the most unusual of all <span data-fill="real-sel-clubs"></span> clubs with at least <span data-fill="real-sel-min"></span> ties would look this extreme if every tie followed the model. It would still happen only about once in <span data-fill="real-sel-odds"></span> tries.</span> The model rates Real Madrid accurately in La Liga, but in Champions League knockout matches they take about a third of a point a match more than expected.</p>
         <p id="rm-lead">So part of Real Madrid's "luck" isn't luck. Either they lift their level for these matches, or something that matters here isn't visible in league results.</p>
       </div>
       <details class="rm nerds" id="rm" hidden>
@@ -329,12 +333,12 @@
       </div>
       <div class="upcoming" id="watch" hidden>
         <h3>Upsets watch</h3>
-        <p class="small">Upcoming games where the model rates a result well above the bookmakers do. If the model is right, these are the results to watch for; if the bookmakers are, the model is about to learn something.</p>
+        <p class="small">Upcoming games where the model rates a result well above the bookmakers do. If the model is right, these are the results to watch for; if the bookmakers are, the model is about to learn something. <span class="tz-note"></span></p>
         <div class="fixtures"></div>
       </div>
       <div class="upcoming" id="upcoming" hidden>
         <h3>Coming up</h3>
-        <p class="small">The model's chances for each result: home win, draw, away win.</p>
+        <p class="small">The model's chances for each result: home win, draw, away win. <span class="tz-note"></span></p>
         <div class="fixtures"></div>
       </div>
     </section>
@@ -347,6 +351,6 @@
   <a class="to-top" id="to-top" href="#top" hidden>↑ Top</a>
   <div class="tip" id="tip" aria-hidden="true"></div>
   <script src="motion.js?v=12"></script>
-  <script src="app.js?v=59"></script>
+  <script src="app.js?v=60"></script>
 </body>
 </html>
