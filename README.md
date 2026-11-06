@@ -4,7 +4,9 @@ Every year someone goes out of the Champions League and everyone argues about wh
 
 **The dashboard is live at [kgadharsh.github.io/ucl-luck](https://kgadharsh.github.io/ucl-luck/).**
 
-The short version: a knockout tie is roughly a 70/30 bet, and even most champions needed a fair bit of luck to get through four or five of them in a row. Real Madrid are the exception, and I don't think it's luck (more on that at the bottom).
+![The dashboard's front page: average underdog chance and each champion's chance of its whole run](site/preview.png)
+
+The short version: a knockout tie is roughly a 70/30 bet. Picking the favourite is right about 7 times in 10, so by the simplest yardstick about 60% of a tie is luck (the definition and a stricter version are in the results below). Real Madrid are the exception, and I don't think it's luck: even allowing for picking them out after the fact, their record would happen about once in 530 tries (more on that at the bottom).
 
 ## How I went about it
 

@@ -322,6 +322,8 @@ def test_readme_luck_share(data, readme):
     assert f"the 95% range on that is {round(l['low'] * 100)}% to {round(l['high'] * 100)}%" in readme
     assert f"tie Brier score is {l['brier']:.3f}" in readme and f"which puts it at {round(l['unexplained'] * 100)}%" in readme
     assert f"differ by {round((l['unexplained'] - l['luck']) * 100)} points" in readme
+    assert f"about {round(l['luck'] * 100)}% of a tie is luck" in readme  # the short version at the top
+    assert f"about {round(l['favourite_won'] * 10)} times in 10" in readme
 
 
 @pytest.mark.readme
