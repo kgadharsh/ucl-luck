@@ -1,8 +1,8 @@
 # Live scorecard
 
-Last updated 2026-11-05 13:23 UTC. Predictions are made before kick-off and never changed afterwards.
+Last updated 2026-11-06 13:06 UTC. Predictions are made before kick-off and never changed afterwards.
 
-- Predictions in the ledger: 0
+- Predictions in the ledger: 48
 - Matches played and scored: 0
 
 ## Strongest clubs now
