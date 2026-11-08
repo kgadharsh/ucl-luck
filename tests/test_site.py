@@ -441,9 +441,9 @@ def test_the_lottery_numbers_come_with_their_working(open_page, data):
     page.click("#sk-how summary")
     how = page.text_content("#sk-how-list")
     _, ten_level, ten_behind = exact_standings(10, p)
-    assert f"The average is {p:.0%}" in how and f"the rest of the time: {1 - p:.0%}" in how
-    assert f"4 wins or fewer: {ten_behind * 100:.1f}%" in how and f"another {ten_level * 100:.0f}% of the time" in how
-    assert f"14 wins or fewer: {exact_standings(30, p)[2] * 100:.1f}%" in how and "no simulation" in how
+    assert f"it is {p:.0%}" in how and f"goes out {1 - p:.0%} of the time" in how
+    assert f"4 wins or fewer. That happens {ten_behind * 100:.1f}%" in how and f"another {ten_level * 100:.0f}% of the time" in how
+    assert f"14 wins or fewer, which happens {exact_standings(30, p)[2] * 100:.1f}%" in how and "no guessing or simulation" in how
 
 def test_wild_seasons_match_the_ties_and_link_to_them(open_page, data):
     seasons = {}
@@ -1186,3 +1186,15 @@ def test_printout_shows_every_section_in_final_form(open_page, browser_name, dat
     assert f"{round(data['headline']['underdog'] * 100)}%" in text
     assert str(len(data["ties"]) - underdog_count(data)) in text  # the finished machine's scoreboard
     assert all(len(p.strip()) > 40 for p in pages), "a blank page"
+
+
+def test_a_share_link_is_short_and_old_long_links_still_open(open_page):
+    page = open_page("?season=2025-26#butterfly")
+    page.click("#bf-real")
+    picks = page.evaluate("new URLSearchParams(location.search).get('picks')")
+    assert 0 < len(picks) <= 15 and "." not in picks
+    mine = page.evaluate("[...document.querySelectorAll('.bf-pick.picked')].map(b => b.dataset.node + b.dataset.team).sort().join()")
+    again = open_page(f"?season=2025-26&picks={picks}#butterfly")
+    assert again.evaluate("[...document.querySelectorAll('.bf-pick.picked')].map(b => b.dataset.node + b.dataset.team).sort().join()") == mine
+    old = open_page("?season=2025-26&picks=0.7#butterfly")
+    assert old.locator(".bf-pick.picked").count() == 1
