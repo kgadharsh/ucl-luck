@@ -947,11 +947,12 @@ function setupButterfly(data) {
   select.innerHTML = brackets.map((b, i) => `<option value="${i}">${b.season}</option>`).join("");
   let bracket, locks, baseline, parent, index, ready = false;
 
-  // The season and picks live in the address (?season=2021-22&picks=3.5-9.2#butterfly: node id
-  // and team number), so a set of picks can be sent to someone and opens exactly as it was.
+  // The season and picks live in the address (?season=2021-22&picks=0030a#butterfly), so a set of picks can
+  // be sent to someone and opens exactly as it was. One character per tie in order: 0 for no pick, else the
+  // winner's team number plus one in base 36, with trailing zeros dropped. (The older 3.5-9.2 form still opens.)
   function writeUrl() {
     const params = new URLSearchParams(location.search);
-    const picks = bracket.nodes.filter((n) => locks[n.id]).map((n) => `${n.id}.${index[locks[n.id]]}`).join("-");
+    const picks = bracket.nodes.map((n) => (locks[n.id] ? (index[locks[n.id]] + 1).toString(36) : "0")).join("").replace(/0+$/, "");
     if (picks || select.value !== "0") params.set("season", bracket.season); else params.delete("season");
     if (picks) params.set("picks", picks); else params.delete("picks");
     const query = params.toString();
@@ -966,7 +967,10 @@ function setupButterfly(data) {
     load(i);
     // Applied in round order, and only where the club can really be in that tie, so a
     // mangled or hand-edited link gives the valid part of the picks rather than nonsense.
-    const wanted = Object.fromEntries((params.get("picks") || "").split("-").map((p) => p.split(".").map(Number)));
+    const raw = params.get("picks") || "";
+    const wanted = raw.includes(".")
+      ? Object.fromEntries(raw.split("-").map((p) => p.split(".").map(Number)))
+      : Object.fromEntries([...raw].map((c, k) => [bracket.nodes[k]?.id, parseInt(c, 36) - 1]));
     for (const node of bracket.nodes) {
       const team = bracket.teams[wanted[node.id]];
       const both = sides(node);
