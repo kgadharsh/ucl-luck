@@ -472,12 +472,12 @@ function fillSkill(data) {
   const at = (n) => standings(winsDistribution(n, p));
   const [ten, thirty] = [at(10), at(30)];
   document.getElementById("sk-how-list").innerHTML = [
-    `<b>The starting chance.</b> Before every knockout tie since ${data.headline.first_season}, the model gave the favourite a chance of going through. The average is ${pct(p)}, so that is the "typical favourite".`,
-    `<b>One tie.</b> It goes out the rest of the time: ${pct(1 - p)}.`,
-    `<b>Many ties.</b> Treat every tie like a toss of a coin weighted ${pct(p)} its way, each one separate from the last. Count every way the run of wins and losses can go, work out how likely each one is, and add up the ones with more losses than wins. That is the exact answer, with no simulation.`,
-    `<b>After 10 ties</b> that means 4 wins or fewer: ${(ten.behind * 100).toFixed(1)}%. Five wins and five losses counts as level, not behind; that happens another ${(ten.level * 100).toFixed(0)}% of the time.`,
-    `<b>After 30 ties</b> it means 14 wins or fewer: ${(thirty.behind * 100).toFixed(1)}%.`,
-    `<b>Winning it all.</b> Every tie has to go its way, so the chances multiply: ${pct(p)} four times is ${chance(p ** 4)}, five times is ${chance(p ** 5)}. In practice some favourites are much stronger than others, so this is a rough guide, not a forecast.`,
+    `<b>The starting point.</b> Before every knockout tie since ${data.headline.first_season}, the model gave the favourite a chance of going through. Averaged over all of them it is ${pct(p)}. We use that for a "typical favourite" that plays tie after tie.`,
+    `<b>One tie.</b> The favourite goes through ${pct(p)} of the time and goes out ${pct(1 - p)} of the time. That is about 1 in ${Math.round(1 / (1 - p))} ties that it loses.`,
+    `<b>Many ties.</b> Imagine every tie as a coin that lands on "favourite wins" ${pct(p)} of the time, and each tie has no effect on the next. After 10 ties there are lots of possible win/loss patterns (10 wins, 9 wins and a loss, and so on). We work out how likely each pattern is and add together the ones with more losses than wins. That gives the exact answer, no guessing or simulation needed.`,
+    `<b>After 10 ties</b>, "behind" means 4 wins or fewer. That happens ${(ten.behind * 100).toFixed(1)}% of the time. Exactly 5 wins and 5 losses counts as level, not behind, and happens another ${(ten.level * 100).toFixed(0)}% of the time.`,
+    `<b>After 30 ties</b>, "behind" means 14 wins or fewer, which happens ${(thirty.behind * 100).toFixed(1)}% of the time. A bad run gets rarer as the ties pile up because the wins and losses average out.`,
+    `<b>Winning it all.</b> A trophy needs a win in every tie, so the chances multiply: ${pct(p)} \u00d7 ${pct(p)} \u00d7 ${pct(p)} \u00d7 ${pct(p)} = ${chance(p ** 4)} for four ties, and ${chance(p ** 5)} for five. Real favourites vary a lot (some are far stronger than average), so treat this as a rough guide, not a forecast for any one club.`,
   ].map((line) => `<li>${line}</li>`).join("");
 }
 
@@ -1090,7 +1090,7 @@ function setupButterfly(data) {
     const box = document.getElementById("bf-chart");
     const rowH = 24;
     const { root, width, height } = canvas(box, teams.length * rowH + 28);
-    const m = { l: 112, r: 60, t: 4, b: 24 };
+    const m = { l: 112, r: 104, t: 4, b: 24 };
     const x = (v) => m.l + v * (width - m.l - m.r);
     for (let v = 0; v <= 1.0001; v += 0.25) {
       svg("line", { x1: x(v), x2: x(v), y1: m.t, y2: height - m.b, stroke: css("--grid") }, root);
@@ -1109,7 +1109,7 @@ function setupButterfly(data) {
       const w = Math.max(x(after) - x(0), after > 0 ? 2 : 0);
       if (w > 0) svg("rect", { x: x(0), y: cy - 7, width: w, height: 14, fill: color, class: "grow-x", style: `--d:${i * 30}ms` }, root);
       svg("line", { x1: x(before), x2: x(before), y1: cy - 9, y2: cy + 9, stroke: css("--ink-2"), "stroke-width": 2 }, root);
-      const label = Math.abs(delta) >= 0.005 ? `${delta > 0 ? "+" : "−"}${Math.round(Math.abs(delta) * 100)} ${Math.round(Math.abs(delta) * 100) === 1 ? "pt" : "pts"}` : pct(after);
+      const label = Math.abs(delta) >= 0.005 ? `${delta > 0 ? "+" : "−"}${Math.round(Math.abs(delta) * 100)} ${Math.round(Math.abs(delta) * 100) === 1 ? "pt" : "pts"} = ${pct(after)}` : pct(after);
       svg("text", { x: width - 4, y: cy + 4, "text-anchor": "end", class: Math.abs(delta) >= 0.005 ? "label-strong" : "" }, root).textContent = label;
       const hit = svg("rect", { x: 0, y: cy - rowH / 2, width, height: rowH, class: "hit" }, root);
       hover(hit, `<b>${clean(team)}</b><br>Before your picks: ${pct(before, 1)}<br>Now: ${pct(after, 1)}`);
@@ -1526,10 +1526,11 @@ function fillForecast(data) {
     note.textContent = `* ${names} ${strangers.length > 1 ? "have" : "has"} no earlier matches in the data, so ${strangers.length > 1 ? "are" : "is"} rated from this season's matches alone. Their numbers are the least certain.`;
   }
   document.getElementById("fc-how-list").innerHTML = [
-    `<b>Strength.</b> The same goals model that rates every club on this page, fitted to results up to ${day}, including this season's league-phase matches. Clubs don't improve or decline during the season in the simulations, and the model knows nothing about injuries, transfers, line-ups or the betting market.`,
-    `<b>League phase.</b> ${fc.left ? `Each of the ${fc.left} matches still to play` : "Every match"} gets a scoreline drawn at random from the model's chances. The table is sorted the way UEFA sorts it: points, goal difference, goals scored, away goals scored, wins, away wins. What UEFA looks at after that is left to chance.`,
-    `<b>Knockouts.</b> ${fc.phase && fc.phase !== "league" ? "Once a draw is made the ties are the real ones, and every leg already played counts: after a first leg, the second is played out knowing its score. " : ""}The top eight go straight to the last 16, and 9th to 24th play off for the other eight places. The bracket, and the second leg at home for the better-placed side, follow the 2025-26 rules, with random draws and no country protection, as then. Each tie uses the exact chance of going through two legs (extra time, then penalties); the final is one match on neutral ground.`,
-    `<b>How exact is it?</b> Each number comes from ${sims} simulated seasons, so it is good to a few tenths of a point. The bigger uncertainty is the model: it treats every club's strength as known, which makes favourites look a little surer than they are, and bookmakers' title odds also use team news and the betting market, so they will differ. This is a forecast from results alone, not betting advice.`,
+    `<b>The idea.</b> We play the rest of the season on a computer ${sims} times, with a bit of chance each time. The percentages are simply how often each club got that far. If a club lifts the trophy in 600 of ${sims} runs, that is ${pct(600 / fc.simulations)}.`,
+    `<b>How strong is each club?</b> The same goals model used everywhere on this page rates every club from results up to ${day}, including this season's league-phase matches. It expects more goals from stronger sides. It doesn't change a club's rating during the season, and it knows nothing about injuries, transfers, line-ups or betting odds.`,
+    `<b>League phase.</b> ${fc.left ? `Each of the ${fc.left} matches still to play` : "Every match"} gets a scoreline drawn at random, weighted by those ratings (a stronger side scores more often, but upsets happen). The table is then sorted the way UEFA sorts it: points, goal difference, goals scored, away goals scored, wins, away wins. If clubs are still level after that, the computer picks at random.`,
+    `<b>Knockouts.</b> ${fc.phase && fc.phase !== "league" ? "Once a draw is made the ties are the real ones, and every leg already played counts: after a first leg, the second is played out knowing its score. " : ""}The top eight go straight to the last 16, and 9th to 24th play off for the other eight places. The bracket follows the 2025-26 rules, with random draws and no country protection, as then; the better-placed side plays the second leg at home. Each tie uses the model's chance of going through over two legs, including extra time and penalties. The final is one match on neutral ground.`,
+    `<b>How much to trust it.</b> Running ${sims} seasons makes each number accurate to within a few tenths of a point. The bigger caveat is the model: it treats every club's strength as known for certain, so favourites look a little surer than they really are. Bookmakers also use team news and betting-market information, so their odds will differ. This is a forecast from results alone, not betting advice.`,
     `<b>Source.</b> This season's fixtures and results are read each morning from <a href="${fc.source}" rel="noopener">Wikipedia</a> (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>).`,
   ].map((html) => `<li>${html}</li>`).join("");
 }

@@ -441,9 +441,9 @@ def test_the_lottery_numbers_come_with_their_working(open_page, data):
     page.click("#sk-how summary")
     how = page.text_content("#sk-how-list")
     _, ten_level, ten_behind = exact_standings(10, p)
-    assert f"The average is {p:.0%}" in how and f"the rest of the time: {1 - p:.0%}" in how
-    assert f"4 wins or fewer: {ten_behind * 100:.1f}%" in how and f"another {ten_level * 100:.0f}% of the time" in how
-    assert f"14 wins or fewer: {exact_standings(30, p)[2] * 100:.1f}%" in how and "no simulation" in how
+    assert f"it is {p:.0%}" in how and f"goes out {1 - p:.0%} of the time" in how
+    assert f"4 wins or fewer. That happens {ten_behind * 100:.1f}%" in how and f"another {ten_level * 100:.0f}% of the time" in how
+    assert f"14 wins or fewer, which happens {exact_standings(30, p)[2] * 100:.1f}%" in how and "no guessing or simulation" in how
 
 def test_wild_seasons_match_the_ties_and_link_to_them(open_page, data):
     seasons = {}
