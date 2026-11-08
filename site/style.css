@@ -140,6 +140,7 @@ body::after {
   border-bottom: 3px double var(--rule);
 }
 .top-row { display: flex; align-items: center; gap: 20px; height: 44px; }
+.brand .hint { color: var(--red-text); }
 .brand { font: 800 19px/1 var(--display); font-stretch: 70%; text-transform: uppercase; letter-spacing: .01em; white-space: nowrap; }
 nav { display: flex; gap: 18px; overflow-x: auto; flex: 1; scrollbar-width: none; counter-reset: nav; padding: 6px 4px; margin: 0 -4px; }
 nav::-webkit-scrollbar { display: none; }

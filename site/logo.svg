@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Knockout Luck: the letters L, U and C of luck, with K set apart">
+  <rect width="64" height="64" rx="10" fill="#16140f"/>
+  <g font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-size="26" text-anchor="middle">
+    <text x="19" y="29" fill="#ec5a35">L</text>
+    <text x="45" y="29" fill="#ec5a35">U</text>
+    <text x="19" y="56" fill="#ec5a35">C</text>
+    <text x="45" y="56" fill="#8c8263">K</text>
+  </g>
+</svg>

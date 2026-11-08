@@ -1133,21 +1133,61 @@ function setupButterfly(data) {
     locks = Object.fromEntries(bracket.nodes.map((n) => [n.id, n.winner]));
     render();
   });
+  // The message that goes with the link: what the picks did, in a line a friend wants to answer.
+  function shareText() {
+    const season = bracket.season;
+    const final = bracket.nodes.find((n) => n.round === "Final");
+    const now = titleChances();
+    const picked = bracket.nodes.filter((n) => locks[n.id]);
+    if (!picked.length) {
+      return `Rerun the ${season} Champions League and change one result. Watch what it does to everyone's title chances.`;
+    }
+    // How likely this exact string of results was, one result after another.
+    let odds = 1, upsets = 0;
+    for (const n of picked) {
+      const both = sides(n);
+      if (!both) continue;
+      const winner = locks[n.id], loser = both[0] === winner ? both[1] : both[0];
+      const p = beats(n, winner, loser);
+      odds *= p;
+      if (p < 0.5) upsets += 1;
+    }
+    const lines = [];
+    const champ = locks[final.id];
+    if (champ) {
+      lines.push(`I rewrote the ${season} Champions League and ${clean(champ)} won it.`);
+      if (final.winner && final.winner !== champ) lines.push(`In real life it was ${clean(final.winner)}.`);
+    } else {
+      lines.push(`I changed ${picked.length === 1 ? "one result" : `${picked.length} results`} in the ${season} Champions League.`);
+    }
+    if (odds <= 0.25) {
+      const n = 1 / odds;
+      const size = n >= 1e6 ? `${Math.round(n / 1e6).toLocaleString("en-GB")} million` : Math.round(n).toLocaleString("en-GB");
+      lines.push(`The chance of that happening: about 1 in ${size}.`);
+    } else if (upsets) lines.push(`That took ${upsets} upset${upsets === 1 ? "" : "s"}.`);
+    // The favourite whose title hopes took the biggest hit (the champion's own jump says nothing).
+    const victim = bracket.teams.filter((t) => t !== champ && baseline[t] - now[t] >= 0.03)
+      .sort((a, b) => (baseline[b] - now[b]) - (baseline[a] - now[a]))[0];
+    if (victim) lines.push(`${clean(victim)}'s title chance: ${pct(baseline[victim])} down to ${pct(now[victim])}.`);
+    lines.push("Can you do something crazier?");
+    return lines.join(" ");
+  }
+
   document.getElementById("bf-share").addEventListener("click", async () => {
     const status = document.getElementById("bf-share-status");
     const url = `${location.origin}${location.pathname}${location.search}#butterfly`;
-    const moved = Object.keys(locks).length;
+    const text = shareText();
     const title = `What if? ${bracket.season} Champions League`;
     try {
       if (navigator.share && matchMedia("(pointer: coarse)").matches) {
-        await navigator.share({ title, text: moved ? "Look what my picks do to everyone's chances" : title, url });
+        await navigator.share({ title, text, url });
         return;
       }
-      await navigator.clipboard.writeText(url);
-      status.textContent = "Link copied";
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      status.textContent = "Copied, ready to paste";
     } catch (e) {
       if (e && e.name === "AbortError") return; // closed the share sheet
-      status.textContent = "Copy this link: " + url;
+      status.textContent = "Copy this: " + text + " " + url;
     }
     clearTimeout(status.timer);
     status.timer = setTimeout(() => { status.textContent = ""; }, 4000);
