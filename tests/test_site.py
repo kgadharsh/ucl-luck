@@ -253,8 +253,8 @@ def test_keyboard_reaches_the_nav_quickly(open_page):
     page = open_page(reduced_motion="reduce")
     order = page.evaluate("""[...document.querySelectorAll('a[href], button, select, input')]
       .filter((el) => el.tabIndex >= 0 && !el.hidden && el.offsetParent !== null)
-      .slice(0, 4).map((el) => el.id || el.textContent.trim().slice(0, 12))""")
-    assert order[:2] == ["theme", "wire-pause"] and order[2] == "Champions"
+      .slice(0, 5).map((el) => el.id || el.textContent.trim().slice(0, 12))""")
+    assert order == ["Instagram", "LinkedIn", "theme", "wire-pause", "Champions"]
 
 
 def test_a_bracket_pick_keeps_keyboard_focus(open_page):

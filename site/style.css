@@ -96,6 +96,7 @@ body::after {
 .mast { border-bottom: 1px solid var(--rule); }
 .mast-row { display: flex; align-items: baseline; gap: 16px; padding: 10px 16px; font: 12px/1.4 var(--mono); color: var(--ink-2); }
 .mast-row .grow { flex: 1; }
+.mast-author { white-space: nowrap; }
 .theme {
   font: 12px var(--mono); color: var(--ink); background: none; cursor: pointer;
   border: 1px solid var(--rule); padding: 3px 8px; text-transform: uppercase; letter-spacing: .04em;
@@ -140,6 +141,7 @@ body::after {
   border-bottom: 3px double var(--rule);
 }
 .top-row { display: flex; align-items: center; gap: 20px; height: 44px; }
+.brand .hint { color: var(--red-text); }
 .brand { font: 800 19px/1 var(--display); font-stretch: 70%; text-transform: uppercase; letter-spacing: .01em; white-space: nowrap; }
 nav { display: flex; gap: 18px; overflow-x: auto; flex: 1; scrollbar-width: none; counter-reset: nav; padding: 6px 4px; margin: 0 -4px; }
 nav::-webkit-scrollbar { display: none; }
@@ -317,10 +319,12 @@ h3 { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .05e
 /* ---------- controls ---------- */
 .filters { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: end; margin-bottom: 12px; }
 .filters label { display: flex; flex-direction: column; gap: 4px; font: 11px var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.filters label { max-width: 100%; }
 .filters label.grow { flex: 1; min-width: 160px; }
 .filters label.check { flex-direction: row; align-items: center; gap: 6px; padding-bottom: 9px; color: var(--ink-2); }
 input[type="checkbox"] { accent-color: var(--s2); }
 select, input[type="search"] {
+  max-width: 100%;
   font: 14px var(--mono); color: var(--ink); background: transparent;
   border: 0; border-bottom: 2px solid var(--rule); border-radius: 0; padding: 6px 2px; min-height: 36px;
 }
@@ -517,6 +521,7 @@ select:focus-visible, input:focus-visible, button:focus-visible, a:focus-visible
 @media (max-width: 760px) {
   body { font-size: 16px; }
   .mast-meta { display: none; }
+  .mast-author .by { display: none; }
   .lede { font-size: 18px; }
   .stat { padding: 12px 0; gap: 14px; }
   .stat-value { font-size: 52px; }
