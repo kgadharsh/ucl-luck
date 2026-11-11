@@ -1,6 +1,6 @@
 # Live scorecard
 
-Last updated 2026-11-10 13:39 UTC. Predictions are made before kick-off and never changed afterwards.
+Last updated 2026-11-11 12:51 UTC. Predictions are made before kick-off and never changed afterwards.
 
 - Predictions in the ledger: 48
 - Matches played and scored: 48
@@ -29,6 +29,6 @@ Against an average big-five club this season, on a neutral pitch.
 | 15 | Aston Villa | 1.5 | 1.1 | 47% |
 | 16 | Brentford | 1.5 | 1.1 | 46% |
 | 17 | Newcastle | 1.6 | 1.2 | 46% |
-| 18 | Como | 1.4 | 0.9 | 46% |
-| 19 | Marseille | 1.6 | 1.2 | 46% |
+| 18 | Marseille | 1.6 | 1.2 | 46% |
+| 19 | Como | 1.4 | 0.9 | 46% |
 | 20 | Man United | 1.6 | 1.2 | 46% |
