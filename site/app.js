@@ -17,6 +17,9 @@ const CLUB_NAMES = {
   "Leicester": "Leicester City", "Newcastle": "Newcastle United",
 };
 const clean = (name) => { const plain = name.replace(/ \([A-Z]{3}\)$/, ""); return CLUB_NAMES[plain] || plain; };
+const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (char) => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+})[char]);
 // Does a club match what a fan typed? Either way of saying it works: "Man City" or "Manchester City".
 const called = (name, query) => clean(name).toLowerCase().includes(query) || name.replace(/ \([A-Z]{3}\)$/, "").toLowerCase().includes(query);
 const ROUND_SHORT = { "Playoffs": "Play-offs", "Round of 16": "Last 16", "Quarterfinals": "Quarter-finals", "Semifinals": "Semi-finals", "Final": "Final" };
@@ -1437,9 +1440,9 @@ function fillForecastHistory(data) {
   const calm = Math.abs(move(mover)) < 0.05; // under five points anywhere in the field
   document.getElementById("fc-history-note").innerHTML =
     `${calm ? "Not much has changed" : "The odds have moved"} since the forecast made before the first matchday (${day(h.dates[0])}). ` +
-    (always ? `<b>${clean(lead[0])}</b> have led at every forecast. `
-      : `<b>${clean(favouriteAt(0))}</b> started as the favourites and <b>${clean(lead[0])}</b> are now. `) +
-    `The biggest move in the whole field is <b>${clean(mover)}</b>, ${forecastChance("win", h.win[mover][0])} to ${forecastChance("win", h.win[mover][last])}.`;
+    (always ? `<b>${escapeHtml(clean(lead[0]))}</b> have led at every forecast. `
+      : `<b>${escapeHtml(clean(favouriteAt(0)))}</b> started as the favourites and <b>${escapeHtml(clean(lead[0]))}</b> are now. `) +
+    `The biggest move in the whole field is <b>${escapeHtml(clean(mover))}</b>, ${forecastChance("win", h.win[mover][0])} to ${forecastChance("win", h.win[mover][last])}.`;
 }
 
 function fillForecast(data) {
@@ -1462,7 +1465,7 @@ function fillForecast(data) {
   const phase = PHASES[fc.phase];
   const suffix = `${sims} times (a ${term("simulation", "simulation")}) and counts how often each club gets how far. It runs again every morning.`;
   document.getElementById("fc-sub").innerHTML = fc.phase === "done"
-    ? `As of ${day}, the final has been played: ${clean(fc.clubs.reduce((a, b) => (b.win > a.win ? b : a)).club)} won the trophy. This forecast comes down in a few days.`
+    ? `As of ${day}, the final has been played: ${escapeHtml(clean(fc.clubs.reduce((a, b) => (b.win > a.win ? b : a)).club))} won the trophy. This forecast comes down in a few days.`
     : ((!fc.phase || fc.phase === "league") && fc.left
       ? `As of ${day}, ${fc.played} of the ${fc.matches} matches of the ${term("league-phase", "league phase")} have been played. The model plays the other ${fc.left}, then the whole knockout phase, `
       : `As of ${day}, ${phase ? phase[0] : `the ${term("league-phase", "league phase")} is over`}. The model plays out ${phase ? phase[1] : "the whole knockout phase, "}`) + suffix;
@@ -1486,7 +1489,7 @@ function fillForecast(data) {
     const ordered = [...fc.clubs].sort((a, b) => dir * (a[sortBy] - b[sortBy]) || dir * (a.win - b.win) || a.club.localeCompare(b.club));
     const shown = expanded ? ordered : ordered.slice(0, FORECAST_ROWS);
     body.innerHTML = shown.map((c) =>
-      `<tr data-club="${c.club.replace(/"/g, "&quot;")}"><td class="fc-club">${clean(c.club)}${isNew.has(c.club) ? `<span class="fc-star" title="Rated from this season's matches alone">*</span>` : ""}</td>` +
+      `<tr data-club="${escapeHtml(c.club)}"><td class="fc-club">${escapeHtml(clean(c.club))}${isNew.has(c.club) ? `<span class="fc-star" title="Rated from this season's matches alone">*</span>` : ""}</td>` +
       `<td class="num fc-pts">${c.points}</td>` +
       FORECAST_STAGES.map(([stage]) =>
         `<td class="num fc-cell fc-${stage}" data-stage="${stage}" style="--p:${c[stage]}">${stage === "win" ? `<b>${forecastChance(stage, c[stage])}</b>` : forecastChance(stage, c[stage])}</td>`).join("") +
@@ -1499,7 +1502,7 @@ function fillForecast(data) {
       const c = byClub.get(cell.closest("tr").dataset.club);
       const [stage, , what] = FORECAST_STAGES.find(([key]) => key === cell.dataset.stage);
       const p = c[stage];
-      return `<b>${clean(c.club)}</b><br>${p > 0 && p < 0.5 ? `${(p * 100).toFixed(1)}% to ${what} (about ${oneIn(p)})` : `${(p * 100).toFixed(1)}% to ${what}`}<br>${c.points} points after ${c.played} matches`;
+      return `<b>${escapeHtml(clean(c.club))}</b><br>${p > 0 && p < 0.5 ? `${(p * 100).toFixed(1)}% to ${what} (about ${oneIn(p)})` : `${(p * 100).toFixed(1)}% to ${what}`}<br>${c.points} points after ${c.played} matches`;
     }));
     more.textContent = expanded ? `Show the top ${FORECAST_ROWS}` : `Show all ${fc.clubs.length} clubs`;
     more.hidden = fc.clubs.length <= FORECAST_ROWS;
@@ -1519,8 +1522,8 @@ function fillForecast(data) {
 
   const best = [...fc.clubs].sort((a, b) => b.win - a.win);
   const topFive = best.slice(0, 5).reduce((sum, c) => sum + c.win, 0);
-  document.getElementById("fc-text").innerHTML = fc.phase === "done" ? `<b>${clean(best[0].club)}</b> won the trophy.` :
-    `The favourite is <b>${clean(best[0].club)}</b>, which wins in ${pct(best[0].win)} of the simulated seasons, about ${Math.round(1 / best[0].win) === 1 ? "every one" : `1\u00a0in\u00a0${Math.round(1 / best[0].win)}`}. ` +
+  document.getElementById("fc-text").innerHTML = fc.phase === "done" ? `<b>${escapeHtml(clean(best[0].club))}</b> won the trophy.` :
+    `The favourite is <b>${escapeHtml(clean(best[0].club))}</b>, which wins in ${pct(best[0].win)} of the simulated seasons, about ${Math.round(1 / best[0].win) === 1 ? "every one" : `1\u00a0in\u00a0${Math.round(1 / best[0].win)}`}. ` +
     `Even the five best clubs together win ${pct(topFive)}, so in about ${Math.round(1 / (1 - topFive)) <= 1 ? "no" : `1\u00a0in\u00a0${Math.round(1 / (1 - topFive))}`} seasons the trophy goes to a club outside them.`;
   const strangers = (fc.new_clubs || []).map(clean);
   const note = document.getElementById("fc-new");
@@ -1561,14 +1564,14 @@ function fillMatches(data) {
   document.getElementById("mm-note").textContent = "Recalculated every morning. A result that happens in fewer than 1 simulated season in 20 is left out when working out the swing.";
   const pick = document.getElementById("mm-pick");
   const names = fc.clubs.map((c) => c.club).sort((a, b) => clean(a).localeCompare(clean(b), "en"));
-  pick.innerHTML = `<option value="">The ones that matter most, up next</option>` + names.map((club, i) => `<option value="${i}">${clean(club)}</option>`).join("");
+  pick.innerHTML = `<option value="">The ones that matter most, up next</option>` + names.map((club, i) => `<option value="${i}">${escapeHtml(clean(club))}</option>`).join("");
 
   const card = (club, entry) => {
     const m = lv.matches[entry.match];
     const bars = ["Win", "Draw", "Lose"].map((label, i) =>
       `<div class="mm-bar"><span>${label}</span><span class="mm-track" role="img" aria-label="${label}: ${chance(entry.top8[i])}"><span style="width:${entry.top8[i] * 100}%"></span></span><b>${chance(entry.top8[i])}</b></div>`).join("");
-    return `<div class="mm-card"><p class="mm-title">${clean(m.home)} v ${clean(m.away)}</p><p class="small">${when(m.date)}</p>` +
-      `<p>Chance of finishing in the top eight for <b>${clean(club)}</b> if they…</p>${bars}` +
+    return `<div class="mm-card"><p class="mm-title">${escapeHtml(clean(m.home))} v ${escapeHtml(clean(m.away))}</p><p class="small">${when(m.date)}</p>` +
+      `<p>Chance of finishing in the top eight for <b>${escapeHtml(clean(club))}</b> if they…</p>${bars}` +
       `<p class="small">Now: ${chance(base[club])}. A win against a loss here is worth <b>${Math.round(entry.swing * 100)} points</b>.</p></div>`;
   };
   const show = () => {
@@ -1581,8 +1584,8 @@ function fillMatches(data) {
     const club = names[Number(pick.value)], entries = lv.clubs[club] || [];
     grid.innerHTML = entries.map((e) => card(club, e)).join("");
     lead.innerHTML = entries.length
-      ? `<b>${clean(club)}</b> have ${entries.length} league-phase match${entries.length === 1 ? "" : "es"} left. The one that matters most is <b>${clean(lv.matches[entries[0].match].home)} v ${clean(lv.matches[entries[0].match].away)}</b> (${when(lv.matches[entries[0].match].date)}).`
-      : `<b>${clean(club)}</b> have no league-phase matches left.`;
+      ? `<b>${escapeHtml(clean(club))}</b> have ${entries.length} league-phase match${entries.length === 1 ? "" : "es"} left. The one that matters most is <b>${escapeHtml(clean(lv.matches[entries[0].match].home))} v ${escapeHtml(clean(lv.matches[entries[0].match].away))}</b> (${when(lv.matches[entries[0].match].date)}).`
+      : `<b>${escapeHtml(clean(club))}</b> have no league-phase matches left.`;
   };
   pick.addEventListener("change", show);
   show();

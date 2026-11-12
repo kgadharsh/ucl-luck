@@ -889,6 +889,17 @@ def forecast(data):
     return data["forecast"]
 
 
+@pytest.mark.parametrize("payload", ['"><img src=x onerror="window.__forecastXss=1">', '<svg/onload="window.__forecastXss=1">'])
+def test_forecast_club_names_are_rendered_as_text(open_page, data, forecast, payload):
+    clubs = [{**forecast["clubs"][0], "club": payload, "win": 1.0}, *forecast["clubs"][1:]]
+    page = open_page(reduced_motion="reduce", routes=serve(with_forecast(data, clubs=clubs)))
+    row = page.locator("#fc-table tbody tr").first
+    assert row.get_attribute("data-club") == payload
+    assert row.locator(".fc-club").text_content() == payload
+    assert page.locator("#fc-table img, #fc-table svg").count() == 0
+    assert page.evaluate("window.__forecastXss") is None
+
+
 def test_the_forecast_table_shows_the_saved_chances_best_first(open_page, forecast):
     page = open_page(reduced_motion="reduce")
     assert page.locator("#forecast").is_visible() and page.locator("nav a[href='#forecast']").is_visible()
