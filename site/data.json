@@ -1,5 +1,5 @@
 {
- "built": "19 Nov 2026",
+ "built": "20 Nov 2026",
  "headline": {
   "ties": 226,
   "first_season": "2012-13",
@@ -5283,19 +5283,410 @@
  ],
  "matches": 30379,
  "live": {
-  "updated": "19 Nov 2026",
+  "updated": "20 Nov 2026",
   "fitted_through": "08 Nov 2026",
   "window_years": 3,
   "big_five_average": 0.112,
-  "predictions": 48,
+  "predictions": 96,
   "scored": 48,
   "model_brier": 0.5181270833333333,
   "book_brier": 0.494575,
-  "upcoming": []
+  "upcoming": [
+   {
+    "competition": "D1",
+    "date": "2026-11-20",
+    "kickoff": "2026-11-20 19:30 UTC",
+    "home": "Bayern Munich",
+    "away": "FC Koln",
+    "p_home": 0.89,
+    "p_draw": 0.074,
+    "p_away": 0.036,
+    "odds_home": 0.882,
+    "odds_draw": 0.075,
+    "odds_away": 0.044
+   },
+   {
+    "competition": "F1",
+    "date": "2026-11-20",
+    "kickoff": "2026-11-20 19:45 UTC",
+    "home": "Troyes",
+    "away": "Le Havre",
+    "p_home": 0.367,
+    "p_draw": 0.311,
+    "p_away": 0.322,
+    "odds_home": 0.43,
+    "odds_draw": 0.277,
+    "odds_away": 0.293
+   },
+   {
+    "competition": "SP1",
+    "date": "2026-11-20",
+    "kickoff": "2026-11-20 20:00 UTC",
+    "home": "Ath Bilbao",
+    "away": "Espanol",
+    "p_home": 0.485,
+    "p_draw": 0.287,
+    "p_away": 0.229,
+    "odds_home": 0.635,
+    "odds_draw": 0.214,
+    "odds_away": 0.151
+   },
+   {
+    "competition": "D1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 14:30 UTC",
+    "home": "Ein Frankfurt",
+    "away": "Hoffenheim",
+    "p_home": 0.465,
+    "p_draw": 0.215,
+    "p_away": 0.32,
+    "odds_home": 0.402,
+    "odds_draw": 0.244,
+    "odds_away": 0.354
+   },
+   {
+    "competition": "D1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 14:30 UTC",
+    "home": "Elversberg",
+    "away": "Freiburg",
+    "p_home": 0.456,
+    "p_draw": 0.22,
+    "p_away": 0.324,
+    "odds_home": 0.274,
+    "odds_draw": 0.25,
+    "odds_away": 0.475
+   },
+   {
+    "competition": "D1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 14:30 UTC",
+    "home": "Leverkusen",
+    "away": "Paderborn",
+    "p_home": 0.639,
+    "p_draw": 0.228,
+    "p_away": 0.133,
+    "odds_home": 0.74,
+    "odds_draw": 0.152,
+    "odds_away": 0.108
+   },
+   {
+    "competition": "D1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 14:30 UTC",
+    "home": "M'gladbach",
+    "away": "Dortmund",
+    "p_home": 0.192,
+    "p_draw": 0.219,
+    "p_away": 0.589,
+    "odds_home": 0.186,
+    "odds_draw": 0.213,
+    "odds_away": 0.601
+   },
+   {
+    "competition": "D1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 17:30 UTC",
+    "home": "Schalke 04",
+    "away": "Stuttgart",
+    "p_home": 0.186,
+    "p_draw": 0.29,
+    "p_away": 0.523,
+    "odds_home": 0.24,
+    "odds_draw": 0.236,
+    "odds_away": 0.524
+   },
+   {
+    "competition": "D1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 14:30 UTC",
+    "home": "Union Berlin",
+    "away": "RB Leipzig",
+    "p_home": 0.215,
+    "p_draw": 0.234,
+    "p_away": 0.551,
+    "odds_home": 0.168,
+    "odds_draw": 0.203,
+    "odds_away": 0.629
+   },
+   {
+    "competition": "E0",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 15:00 UTC",
+    "home": "Aston Villa",
+    "away": "Sunderland",
+    "p_home": 0.548,
+    "p_draw": 0.252,
+    "p_away": 0.2,
+    "odds_home": 0.534,
+    "odds_draw": 0.249,
+    "odds_away": 0.217
+   },
+   {
+    "competition": "E0",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 15:00 UTC",
+    "home": "Bournemouth",
+    "away": "Nott'm Forest",
+    "p_home": 0.48,
+    "p_draw": 0.262,
+    "p_away": 0.257,
+    "odds_home": 0.486,
+    "odds_draw": 0.265,
+    "odds_away": 0.248
+   },
+   {
+    "competition": "E0",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 15:00 UTC",
+    "home": "Chelsea",
+    "away": "Leeds",
+    "p_home": 0.48,
+    "p_draw": 0.259,
+    "p_away": 0.261,
+    "odds_home": 0.502,
+    "odds_draw": 0.256,
+    "odds_away": 0.241
+   },
+   {
+    "competition": "E0",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 15:00 UTC",
+    "home": "Coventry",
+    "away": "Crystal Palace",
+    "p_home": 0.381,
+    "p_draw": 0.261,
+    "p_away": 0.358,
+    "odds_home": 0.388,
+    "odds_draw": 0.268,
+    "odds_away": 0.344
+   },
+   {
+    "competition": "E0",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 12:30 UTC",
+    "home": "Man City",
+    "away": "Fulham",
+    "p_home": 0.627,
+    "p_draw": 0.218,
+    "p_away": 0.155,
+    "odds_home": 0.686,
+    "odds_draw": 0.183,
+    "odds_away": 0.131
+   },
+   {
+    "competition": "E0",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 17:30 UTC",
+    "home": "Newcastle",
+    "away": "Arsenal",
+    "p_home": 0.192,
+    "p_draw": 0.254,
+    "p_away": 0.554,
+    "odds_home": 0.172,
+    "odds_draw": 0.228,
+    "odds_away": 0.599
+   },
+   {
+    "competition": "E0",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 15:00 UTC",
+    "home": "Tottenham",
+    "away": "Ipswich",
+    "p_home": 0.621,
+    "p_draw": 0.202,
+    "p_away": 0.177,
+    "odds_home": 0.617,
+    "odds_draw": 0.212,
+    "odds_away": 0.171
+   },
+   {
+    "competition": "F1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 19:45 UTC",
+    "home": "Lens",
+    "away": "Toulouse",
+    "p_home": 0.527,
+    "p_draw": 0.249,
+    "p_away": 0.224,
+    "odds_home": 0.506,
+    "odds_draw": 0.245,
+    "odds_away": 0.249
+   },
+   {
+    "competition": "F1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 19:45 UTC",
+    "home": "Lille",
+    "away": "Lyon",
+    "p_home": 0.445,
+    "p_draw": 0.283,
+    "p_away": 0.272,
+    "odds_home": 0.416,
+    "odds_draw": 0.287,
+    "odds_away": 0.298
+   },
+   {
+    "competition": "F1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 19:45 UTC",
+    "home": "Monaco",
+    "away": "Auxerre",
+    "p_home": 0.598,
+    "p_draw": 0.22,
+    "p_away": 0.182,
+    "odds_home": 0.672,
+    "odds_draw": 0.191,
+    "odds_away": 0.137
+   },
+   {
+    "competition": "F1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 16:15 UTC",
+    "home": "Nice",
+    "away": "Paris SG",
+    "p_home": 0.155,
+    "p_draw": 0.203,
+    "p_away": 0.642,
+    "odds_home": 0.158,
+    "odds_draw": 0.192,
+    "odds_away": 0.65
+   },
+   {
+    "competition": "F1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 19:45 UTC",
+    "home": "Strasbourg",
+    "away": "Brest",
+    "p_home": 0.51,
+    "p_draw": 0.226,
+    "p_away": 0.263,
+    "odds_home": 0.429,
+    "odds_draw": 0.258,
+    "odds_away": 0.313
+   },
+   {
+    "competition": "I1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 14:00 UTC",
+    "home": "Como",
+    "away": "Cagliari",
+    "p_home": 0.652,
+    "p_draw": 0.223,
+    "p_away": 0.125,
+    "odds_home": 0.728,
+    "odds_draw": 0.169,
+    "odds_away": 0.103
+   },
+   {
+    "competition": "I1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 14:00 UTC",
+    "home": "Lazio",
+    "away": "Lecce",
+    "p_home": 0.66,
+    "p_draw": 0.225,
+    "p_away": 0.115,
+    "odds_home": 0.69,
+    "odds_draw": 0.189,
+    "odds_away": 0.12
+   },
+   {
+    "competition": "I1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 19:45 UTC",
+    "home": "Napoli",
+    "away": "Torino",
+    "p_home": 0.6,
+    "p_draw": 0.236,
+    "p_away": 0.164,
+    "odds_home": 0.638,
+    "odds_draw": 0.211,
+    "odds_away": 0.151
+   },
+   {
+    "competition": "I1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 17:00 UTC",
+    "home": "Parma",
+    "away": "Roma",
+    "p_home": 0.157,
+    "p_draw": 0.258,
+    "p_away": 0.585,
+    "odds_home": 0.101,
+    "odds_draw": 0.167,
+    "odds_away": 0.732
+   },
+   {
+    "competition": "SP1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 13:00 UTC",
+    "home": "Alaves",
+    "away": "La Coruna",
+    "p_home": 0.37,
+    "p_draw": 0.298,
+    "p_away": 0.332,
+    "odds_home": 0.432,
+    "odds_draw": 0.288,
+    "odds_away": 0.28
+   },
+   {
+    "competition": "SP1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 20:00 UTC",
+    "home": "Real Madrid",
+    "away": "Celta",
+    "p_home": 0.694,
+    "p_draw": 0.189,
+    "p_away": 0.116,
+    "odds_home": 0.811,
+    "odds_draw": 0.122,
+    "odds_away": 0.066
+   },
+   {
+    "competition": "SP1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 17:30 UTC",
+    "home": "Sevilla",
+    "away": "Betis",
+    "p_home": 0.317,
+    "p_draw": 0.26,
+    "p_away": 0.423,
+    "odds_home": 0.321,
+    "odds_draw": 0.278,
+    "odds_away": 0.401
+   },
+   {
+    "competition": "SP1",
+    "date": "2026-11-21",
+    "kickoff": "2026-11-21 15:15 UTC",
+    "home": "Vallecano",
+    "away": "Valencia",
+    "p_home": 0.436,
+    "p_draw": 0.298,
+    "p_away": 0.266,
+    "odds_home": 0.49,
+    "odds_draw": 0.272,
+    "odds_away": 0.238
+   },
+   {
+    "competition": "D1",
+    "date": "2026-11-22",
+    "kickoff": "2026-11-22 14:30 UTC",
+    "home": "Augsburg",
+    "away": "Mainz",
+    "p_home": 0.394,
+    "p_draw": 0.252,
+    "p_away": 0.355,
+    "odds_home": 0.354,
+    "odds_draw": 0.247,
+    "odds_away": 0.399
+   }
+  ]
  },
  "forecast": {
   "season": "2026-27",
-  "as_of": "2026-11-19",
+  "as_of": "2026-11-20",
   "simulations": 100000,
   "seed": 2026,
   "matches": 144,
@@ -5315,13 +5706,13 @@
     "played": 4,
     "points": 10,
     "goal_difference": 5,
-    "top8": 0.91685,
+    "top8": 0.91676,
     "top24": 1.0,
-    "last16": 0.99106,
-    "quarter": 0.81882,
-    "semi": 0.60406,
-    "final": 0.42471,
-    "win": 0.26718
+    "last16": 0.99113,
+    "quarter": 0.81879,
+    "semi": 0.60364,
+    "final": 0.42424,
+    "win": 0.26686
    },
    {
     "club": "Paris SG",
@@ -5329,13 +5720,13 @@
     "played": 4,
     "points": 12,
     "goal_difference": 15,
-    "top8": 0.96467,
+    "top8": 0.96463,
     "top24": 1.0,
-    "last16": 0.99528,
-    "quarter": 0.77788,
-    "semi": 0.50741,
-    "final": 0.29351,
-    "win": 0.15369
+    "last16": 0.9952,
+    "quarter": 0.77801,
+    "semi": 0.5076,
+    "final": 0.29348,
+    "win": 0.15378
    },
    {
     "club": "Bayern Munich",
@@ -5343,13 +5734,13 @@
     "played": 4,
     "points": 8,
     "goal_difference": 7,
-    "top8": 0.76599,
+    "top8": 0.76592,
     "top24": 0.99981,
-    "last16": 0.96894,
-    "quarter": 0.73638,
-    "semi": 0.45994,
-    "final": 0.26858,
-    "win": 0.14237
+    "last16": 0.96889,
+    "quarter": 0.73632,
+    "semi": 0.45985,
+    "final": 0.26873,
+    "win": 0.14236
    },
    {
     "club": "Barcelona",
@@ -5357,13 +5748,13 @@
     "played": 4,
     "points": 9,
     "goal_difference": 8,
-    "top8": 0.77058,
+    "top8": 0.77072,
     "top24": 0.99989,
-    "last16": 0.9676,
-    "quarter": 0.71002,
-    "semi": 0.42248,
-    "final": 0.22875,
-    "win": 0.11449
+    "last16": 0.96753,
+    "quarter": 0.71009,
+    "semi": 0.42272,
+    "final": 0.22901,
+    "win": 0.11458
    },
    {
     "club": "Real Madrid",
@@ -5371,13 +5762,13 @@
     "played": 4,
     "points": 12,
     "goal_difference": 6,
-    "top8": 0.95924,
+    "top8": 0.95925,
     "top24": 1.0,
-    "last16": 0.99245,
-    "quarter": 0.70768,
-    "semi": 0.39917,
-    "final": 0.19398,
-    "win": 0.09016
+    "last16": 0.99246,
+    "quarter": 0.70763,
+    "semi": 0.39882,
+    "final": 0.19397,
+    "win": 0.09015
    },
    {
     "club": "Man City",
@@ -5385,13 +5776,13 @@
     "played": 4,
     "points": 9,
     "goal_difference": 5,
-    "top8": 0.56251,
-    "top24": 0.99818,
-    "last16": 0.90798,
-    "quarter": 0.5701,
-    "semi": 0.29287,
-    "final": 0.13967,
-    "win": 0.06333
+    "top8": 0.56233,
+    "top24": 0.99816,
+    "last16": 0.90762,
+    "quarter": 0.5699,
+    "semi": 0.29279,
+    "final": 0.13974,
+    "win": 0.06346
    },
    {
     "club": "Liverpool",
@@ -5399,13 +5790,13 @@
     "played": 4,
     "points": 9,
     "goal_difference": 4,
-    "top8": 0.57302,
-    "top24": 0.99808,
-    "last16": 0.88843,
+    "top8": 0.57307,
+    "top24": 0.99809,
+    "last16": 0.88854,
     "quarter": 0.50898,
-    "semi": 0.22916,
-    "final": 0.09428,
-    "win": 0.03832
+    "semi": 0.22959,
+    "final": 0.09455,
+    "win": 0.0384
    },
    {
     "club": "Inter",
@@ -5413,13 +5804,13 @@
     "played": 4,
     "points": 6,
     "goal_difference": 2,
-    "top8": 0.26844,
-    "top24": 0.98775,
-    "last16": 0.80455,
-    "quarter": 0.41952,
-    "semi": 0.19704,
-    "final": 0.08563,
-    "win": 0.03704
+    "top8": 0.26849,
+    "top24": 0.98776,
+    "last16": 0.80504,
+    "quarter": 0.41991,
+    "semi": 0.19732,
+    "final": 0.08564,
+    "win": 0.03697
    },
    {
     "club": "Como",
@@ -5427,13 +5818,13 @@
     "played": 4,
     "points": 9,
     "goal_difference": 13,
-    "top8": 0.48015,
-    "top24": 0.999,
-    "last16": 0.84221,
-    "quarter": 0.42782,
-    "semi": 0.17089,
-    "final": 0.06392,
-    "win": 0.02474
+    "top8": 0.48017,
+    "top24": 0.99899,
+    "last16": 0.8422,
+    "quarter": 0.4278,
+    "semi": 0.17075,
+    "final": 0.06385,
+    "win": 0.02475
    },
    {
     "club": "Aston Villa",
@@ -5441,13 +5832,13 @@
     "played": 4,
     "points": 9,
     "goal_difference": 6,
-    "top8": 0.50768,
-    "top24": 0.9983,
-    "last16": 0.82466,
-    "quarter": 0.37808,
-    "semi": 0.13091,
-    "final": 0.04114,
-    "win": 0.01434
+    "top8": 0.50754,
+    "top24": 0.99832,
+    "last16": 0.8246,
+    "quarter": 0.37801,
+    "semi": 0.1309,
+    "final": 0.04106,
+    "win": 0.01432
    },
    {
     "club": "Dortmund",
@@ -5455,13 +5846,13 @@
     "played": 4,
     "points": 9,
     "goal_difference": 2,
-    "top8": 0.28865,
-    "top24": 0.99426,
-    "last16": 0.74369,
-    "quarter": 0.3116,
-    "semi": 0.1119,
-    "final": 0.03626,
-    "win": 0.01308
+    "top8": 0.28877,
+    "top24": 0.99428,
+    "last16": 0.74386,
+    "quarter": 0.31178,
+    "semi": 0.11193,
+    "final": 0.03632,
+    "win": 0.01318
    },
    {
     "club": "Ath Madrid",
@@ -5469,13 +5860,13 @@
     "played": 4,
     "points": 4,
     "goal_difference": -1,
-    "top8": 0.06398,
-    "top24": 0.87914,
-    "last16": 0.57993,
-    "quarter": 0.22116,
-    "semi": 0.08734,
-    "final": 0.0315,
-    "win": 0.0115
+    "top8": 0.06401,
+    "top24": 0.87909,
+    "last16": 0.58016,
+    "quarter": 0.22115,
+    "semi": 0.08725,
+    "final": 0.03153,
+    "win": 0.01154
    },
    {
     "club": "Roma",
@@ -5483,13 +5874,13 @@
     "played": 4,
     "points": 4,
     "goal_difference": 2,
-    "top8": 0.02348,
-    "top24": 0.76907,
-    "last16": 0.48252,
-    "quarter": 0.1801,
-    "semi": 0.07265,
-    "final": 0.02596,
-    "win": 0.00963
+    "top8": 0.02351,
+    "top24": 0.76887,
+    "last16": 0.48202,
+    "quarter": 0.17985,
+    "semi": 0.0726,
+    "final": 0.0259,
+    "win": 0.00956
    },
    {
     "club": "Sporting CP",
@@ -5497,13 +5888,13 @@
     "played": 4,
     "points": 9,
     "goal_difference": 4,
-    "top8": 0.17677,
-    "top24": 0.97749,
-    "last16": 0.6364,
-    "quarter": 0.22238,
-    "semi": 0.07264,
-    "final": 0.0209,
-    "win": 0.00659
+    "top8": 0.17671,
+    "top24": 0.97741,
+    "last16": 0.63638,
+    "quarter": 0.22213,
+    "semi": 0.07266,
+    "final": 0.02089,
+    "win": 0.00655
    },
    {
     "club": "Man United",
@@ -5511,13 +5902,13 @@
     "played": 4,
     "points": 6,
     "goal_difference": 0,
-    "top8": 0.04293,
-    "top24": 0.80234,
-    "last16": 0.44359,
-    "quarter": 0.13184,
-    "semi": 0.03972,
+    "top8": 0.04291,
+    "top24": 0.80227,
+    "last16": 0.44398,
+    "quarter": 0.13193,
+    "semi": 0.03977,
     "final": 0.01048,
-    "win": 0.00307
+    "win": 0.00309
    },
    {
     "club": "Club Brugge KV (BEL)",
@@ -5525,13 +5916,13 @@
     "played": 4,
     "points": 9,
     "goal_difference": 4,
-    "top8": 0.3059,
-    "top24": 0.98562,
-    "last16": 0.67275,
-    "quarter": 0.21348,
-    "semi": 0.05237,
-    "final": 0.01104,
-    "win": 0.00284
+    "top8": 0.30595,
+    "top24": 0.98565,
+    "last16": 0.6726,
+    "quarter": 0.2134,
+    "semi": 0.05222,
+    "final": 0.01103,
+    "win": 0.00287
    },
    {
     "club": "Betis",
@@ -5539,12 +5930,12 @@
     "played": 4,
     "points": 9,
     "goal_difference": 2,
-    "top8": 0.1745,
-    "top24": 0.99097,
-    "last16": 0.5887,
-    "quarter": 0.16252,
-    "semi": 0.04089,
-    "final": 0.00899,
+    "top8": 0.17453,
+    "top24": 0.99091,
+    "last16": 0.58836,
+    "quarter": 0.16256,
+    "semi": 0.04083,
+    "final": 0.00897,
     "win": 0.00254
    },
    {
@@ -5553,13 +5944,13 @@
     "played": 4,
     "points": 7,
     "goal_difference": 3,
-    "top8": 0.08873,
-    "top24": 0.89038,
-    "last16": 0.46128,
-    "quarter": 0.11382,
-    "semi": 0.02719,
-    "final": 0.00578,
-    "win": 0.00151
+    "top8": 0.08878,
+    "top24": 0.89043,
+    "last16": 0.46142,
+    "quarter": 0.11394,
+    "semi": 0.02722,
+    "final": 0.00576,
+    "win": 0.00152
    },
    {
     "club": "Napoli",
@@ -5568,12 +5959,12 @@
     "points": 3,
     "goal_difference": -5,
     "top8": 0.00212,
-    "top24": 0.52555,
-    "last16": 0.22455,
-    "quarter": 0.05602,
-    "semi": 0.01498,
+    "top24": 0.52584,
+    "last16": 0.22451,
+    "quarter": 0.05606,
+    "semi": 0.01507,
     "final": 0.00361,
-    "win": 0.00093
+    "win": 0.00092
    },
    {
     "club": "RB Leipzig",
@@ -5581,13 +5972,13 @@
     "played": 4,
     "points": 3,
     "goal_difference": -6,
-    "top8": 0.00142,
-    "top24": 0.54068,
-    "last16": 0.23358,
+    "top8": 0.00144,
+    "top24": 0.54081,
+    "last16": 0.23397,
     "quarter": 0.05384,
-    "semi": 0.01409,
+    "semi": 0.01413,
     "final": 0.003,
-    "win": 0.00069
+    "win": 0.0007
    },
    {
     "club": "Villarreal",
@@ -5595,13 +5986,13 @@
     "played": 4,
     "points": 3,
     "goal_difference": -6,
-    "top8": 0.00542,
-    "top24": 0.72835,
-    "last16": 0.30121,
-    "quarter": 0.0602,
-    "semi": 0.01388,
-    "final": 0.00257,
-    "win": 0.0006
+    "top8": 0.00543,
+    "top24": 0.72848,
+    "last16": 0.30146,
+    "quarter": 0.06026,
+    "semi": 0.01384,
+    "final": 0.0025,
+    "win": 0.00057
    },
    {
     "club": "Lille",
@@ -5610,11 +6001,11 @@
     "points": 1,
     "goal_difference": -6,
     "top8": 0.0,
-    "top24": 0.17355,
-    "last16": 0.0736,
-    "quarter": 0.0208,
-    "semi": 0.00594,
-    "final": 0.00155,
+    "top24": 0.17353,
+    "last16": 0.07359,
+    "quarter": 0.02075,
+    "semi": 0.00601,
+    "final": 0.00159,
     "win": 0.00051
    },
    {
@@ -5624,12 +6015,12 @@
     "points": 4,
     "goal_difference": -5,
     "top8": 0.0055,
-    "top24": 0.48498,
-    "last16": 0.17075,
-    "quarter": 0.03096,
-    "semi": 0.00619,
-    "final": 0.00093,
-    "win": 0.00027
+    "top24": 0.48484,
+    "last16": 0.17081,
+    "quarter": 0.03101,
+    "semi": 0.00617,
+    "final": 0.00089,
+    "win": 0.00024
    },
    {
     "club": "PSV",
@@ -5637,12 +6028,12 @@
     "played": 4,
     "points": 4,
     "goal_difference": -1,
-    "top8": 0.00295,
-    "top24": 0.41625,
-    "last16": 0.15225,
-    "quarter": 0.02935,
-    "semi": 0.00588,
-    "final": 0.00086,
+    "top8": 0.00297,
+    "top24": 0.4162,
+    "last16": 0.15213,
+    "quarter": 0.02933,
+    "semi": 0.00589,
+    "final": 0.00085,
     "win": 0.0002
    },
    {
@@ -5652,11 +6043,11 @@
     "points": 3,
     "goal_difference": -12,
     "top8": 0.00024,
-    "top24": 0.18502,
-    "last16": 0.06296,
-    "quarter": 0.01291,
-    "semi": 0.00277,
-    "final": 0.00052,
+    "top24": 0.18511,
+    "last16": 0.06305,
+    "quarter": 0.01297,
+    "semi": 0.00275,
+    "final": 0.00053,
     "win": 9e-05
    },
    {
@@ -5666,11 +6057,11 @@
     "points": 3,
     "goal_difference": -1,
     "top8": 0.00251,
-    "top24": 0.48087,
-    "last16": 0.15412,
-    "quarter": 0.02461,
-    "semi": 0.00412,
-    "final": 0.00047,
+    "top24": 0.48085,
+    "last16": 0.15402,
+    "quarter": 0.02459,
+    "semi": 0.00413,
+    "final": 0.00048,
     "win": 9e-05
    },
    {
@@ -5679,10 +6070,10 @@
     "played": 4,
     "points": 4,
     "goal_difference": -1,
-    "top8": 0.00528,
-    "top24": 0.50557,
-    "last16": 0.15485,
-    "quarter": 0.02106,
+    "top8": 0.00529,
+    "top24": 0.50546,
+    "last16": 0.15481,
+    "quarter": 0.02101,
     "semi": 0.00325,
     "final": 0.00043,
     "win": 7e-05
@@ -5693,11 +6084,11 @@
     "played": 4,
     "points": 6,
     "goal_difference": -1,
-    "top8": 0.01945,
-    "top24": 0.76887,
-    "last16": 0.25272,
-    "quarter": 0.0356,
-    "semi": 0.0053,
+    "top8": 0.01941,
+    "top24": 0.76892,
+    "last16": 0.25267,
+    "quarter": 0.03565,
+    "semi": 0.00533,
     "final": 0.00046,
     "win": 6e-05
    },
@@ -5708,10 +6099,10 @@
     "points": 4,
     "goal_difference": 0,
     "top8": 0.00518,
-    "top24": 0.58652,
-    "last16": 0.15193,
-    "quarter": 0.01906,
-    "semi": 0.00255,
+    "top24": 0.58636,
+    "last16": 0.15181,
+    "quarter": 0.01891,
+    "semi": 0.00254,
     "final": 0.00033,
     "win": 3e-05
    },
@@ -5722,11 +6113,11 @@
     "points": 6,
     "goal_difference": 1,
     "top8": 0.01395,
-    "top24": 0.71589,
-    "last16": 0.17045,
-    "quarter": 0.01501,
-    "semi": 0.00159,
-    "final": 0.0001,
+    "top24": 0.71597,
+    "last16": 0.17034,
+    "quarter": 0.01503,
+    "semi": 0.0016,
+    "final": 9e-05,
     "win": 2e-05
    },
    {
@@ -5737,8 +6128,8 @@
     "goal_difference": -7,
     "top8": 0.00025,
     "top24": 0.23429,
-    "last16": 0.04818,
-    "quarter": 0.00505,
+    "last16": 0.04824,
+    "quarter": 0.00506,
     "semi": 0.00059,
     "final": 8e-05,
     "win": 2e-05
@@ -5750,9 +6141,9 @@
     "points": 5,
     "goal_difference": -5,
     "top8": 0.00164,
-    "top24": 0.31624,
-    "last16": 0.05039,
-    "quarter": 0.00307,
+    "top24": 0.31634,
+    "last16": 0.05026,
+    "quarter": 0.00308,
     "semi": 0.00022,
     "final": 1e-05,
     "win": 0.0
@@ -5764,9 +6155,9 @@
     "points": 3,
     "goal_difference": -6,
     "top8": 2e-05,
-    "top24": 0.04731,
-    "last16": 0.00502,
-    "quarter": 0.00024,
+    "top24": 0.04724,
+    "last16": 0.00493,
+    "quarter": 0.00023,
     "semi": 2e-05,
     "final": 0.0,
     "win": 0.0
@@ -5778,8 +6169,8 @@
     "points": 3,
     "goal_difference": -6,
     "top8": 0.0,
-    "top24": 0.01362,
-    "last16": 0.00093,
+    "top24": 0.01363,
+    "last16": 0.00092,
     "quarter": 2e-05,
     "semi": 0.0,
     "final": 0.0,
@@ -5792,7 +6183,7 @@
     "points": 1,
     "goal_difference": -4,
     "top8": 0.0,
-    "top24": 0.00596,
+    "top24": 0.00598,
     "last16": 0.00049,
     "quarter": 2e-05,
     "semi": 0.0,
@@ -5806,7 +6197,7 @@
     "points": 0,
     "goal_difference": -16,
     "top8": 0.0,
-    "top24": 0.0002,
+    "top24": 0.00022,
     "last16": 0.0,
     "quarter": 0.0,
     "semi": 0.0,
@@ -5822,8 +6213,8 @@
      "away": "LASK (AUT)",
      "shares": [
       0.5898,
-      0.1848,
-      0.2253
+      0.1847,
+      0.2254
      ]
     },
     {
@@ -5841,9 +6232,9 @@
      "home": "Arsenal",
      "away": "Dortmund",
      "shares": [
-      0.64,
+      0.6399,
       0.2284,
-      0.1316
+      0.1317
      ]
     },
     {
@@ -5851,7 +6242,7 @@
      "home": "Como",
      "away": "AEK Athen (GRE)",
      "shares": [
-      0.8077,
+      0.8078,
       0.1261,
       0.0661
      ]
@@ -5862,7 +6253,7 @@
      "away": "FC Porto (POR)",
      "shares": [
       0.3719,
-      0.2384,
+      0.2385,
       0.3896
      ]
     },
@@ -5871,8 +6262,8 @@
      "home": "Man City",
      "away": "Napoli",
      "shares": [
-      0.637,
-      0.2084,
+      0.6369,
+      0.2085,
       0.1547
      ]
     },
@@ -5881,9 +6272,9 @@
      "home": "RB Leipzig",
      "away": "Lens",
      "shares": [
-      0.5085,
+      0.5084,
       0.2223,
-      0.2692
+      0.2693
      ]
     },
     {
@@ -5892,7 +6283,7 @@
      "away": "PSV",
      "shares": [
       0.7104,
-      0.1684,
+      0.1685,
       0.1211
      ]
     },
@@ -5901,9 +6292,9 @@
      "home": "ŠK Slovan Bratislava (SVK)",
      "away": "Betis",
      "shares": [
-      0.0701,
-      0.1427,
-      0.7872
+      0.0702,
+      0.1428,
+      0.787
      ]
     },
     {
@@ -5911,8 +6302,8 @@
      "home": "Sabah (AZE)",
      "away": "Barcelona",
      "shares": [
-      0.0485,
-      0.0873,
+      0.0484,
+      0.0874,
       0.8642
      ]
     },
@@ -5942,7 +6333,7 @@
      "away": "Liverpool",
      "shares": [
       0.3241,
-      0.2141,
+      0.2142,
       0.4617
      ]
     },
@@ -5961,9 +6352,9 @@
      "home": "Shakhtar Donetsk",
      "away": "Fenerbahçe (TUR)",
      "shares": [
-      0.4986,
+      0.4985,
       0.2519,
-      0.2495
+      0.2496
      ]
     },
     {
@@ -5973,7 +6364,7 @@
      "shares": [
       0.2265,
       0.2285,
-      0.5451
+      0.545
      ]
     },
     {
@@ -5991,7 +6382,7 @@
      "home": "Sporting CP",
      "away": "Man United",
      "shares": [
-      0.453,
+      0.4529,
       0.2496,
       0.2975
      ]
@@ -6001,8 +6392,8 @@
      "home": "Viking (NOR)",
      "away": "Feyenoord",
      "shares": [
-      0.5665,
-      0.1929,
+      0.5664,
+      0.193,
       0.2406
      ]
     },
@@ -6021,9 +6412,9 @@
      "home": "AEK Athen (GRE)",
      "away": "Galatasaray",
      "shares": [
-      0.2952,
+      0.2953,
       0.2152,
-      0.4896
+      0.4895
      ]
     },
     {
@@ -6032,7 +6423,7 @@
      "away": "Sporting CP",
      "shares": [
       0.4809,
-      0.2637,
+      0.2638,
       0.2553
      ]
     },
@@ -6041,9 +6432,9 @@
      "home": "Aston Villa",
      "away": "Paris SG",
      "shares": [
-      0.2829,
+      0.2828,
       0.2354,
-      0.4817
+      0.4818
      ]
     },
     {
@@ -6051,9 +6442,9 @@
      "home": "Barcelona",
      "away": "Man City",
      "shares": [
-      0.5207,
+      0.5208,
       0.2071,
-      0.2722
+      0.2721
      ]
     },
     {
@@ -6061,8 +6452,8 @@
      "home": "Bayern Munich",
      "away": "Slavia Praha",
      "shares": [
-      0.9367,
-      0.0459,
+      0.9366,
+      0.046,
       0.0174
      ]
     },
@@ -6073,7 +6464,7 @@
      "shares": [
       0.5119,
       0.2199,
-      0.2681
+      0.2682
      ]
     },
     {
@@ -6081,9 +6472,9 @@
      "home": "Napoli",
      "away": "Club Brugge KV (BEL)",
      "shares": [
-      0.4476,
-      0.2299,
-      0.3226
+      0.4477,
+      0.2298,
+      0.3225
      ]
     },
     {
@@ -6101,9 +6492,9 @@
      "home": "ŠK Slovan Bratislava (SVK)",
      "away": "Shakhtar Donetsk",
      "shares": [
-      0.1366,
-      0.2321,
-      0.6313
+      0.1368,
+      0.2322,
+      0.631
      ]
     },
     {
@@ -6131,9 +6522,9 @@
      "home": "LASK (AUT)",
      "away": "Fenerbahçe (TUR)",
      "shares": [
-      0.5687,
+      0.5686,
       0.1837,
-      0.2475
+      0.2477
      ]
     },
     {
@@ -6141,7 +6532,7 @@
      "home": "Liverpool",
      "away": "FC Porto (POR)",
      "shares": [
-      0.6892,
+      0.6891,
       0.1768,
       0.1341
      ]
@@ -6151,9 +6542,9 @@
      "home": "PSV",
      "away": "Ath Madrid",
      "shares": [
-      0.3046,
-      0.251,
-      0.4445
+      0.3044,
+      0.2509,
+      0.4446
      ]
     },
     {
@@ -6161,9 +6552,9 @@
      "home": "Lens",
      "away": "FK Bodø/Glimt (NOR)",
      "shares": [
-      0.4689,
-      0.2342,
-      0.2969
+      0.469,
+      0.2343,
+      0.2968
      ]
     },
     {
@@ -6181,7 +6572,7 @@
      "home": "FK Bodø/Glimt (NOR)",
      "away": "Ath Madrid",
      "shares": [
-      0.2985,
+      0.2984,
       0.2449,
       0.4566
      ]
@@ -6202,8 +6593,8 @@
      "away": "Roma",
      "shares": [
       0.1388,
-      0.1899,
-      0.6713
+      0.19,
+      0.6712
      ]
     },
     {
@@ -6211,9 +6602,9 @@
      "home": "Aston Villa",
      "away": "Dortmund",
      "shares": [
-      0.4363,
+      0.4362,
       0.2522,
-      0.3115
+      0.3116
      ]
     },
     {
@@ -6222,7 +6613,7 @@
      "away": "Liverpool",
      "shares": [
       0.4703,
-      0.2357,
+      0.2356,
       0.2941
      ]
     },
@@ -6232,7 +6623,7 @@
      "away": "Slavia Praha",
      "shares": [
       0.676,
-      0.1872,
+      0.1871,
       0.1368
      ]
     },
@@ -6241,7 +6632,7 @@
      "home": "Lille",
      "away": "ŠK Slovan Bratislava (SVK)",
      "shares": [
-      0.8641,
+      0.864,
       0.1021,
       0.0339
      ]
@@ -6251,7 +6642,7 @@
      "home": "Real Madrid",
      "away": "LASK (AUT)",
      "shares": [
-      0.8449,
+      0.8448,
       0.0935,
       0.0616
      ]
@@ -6261,9 +6652,9 @@
      "home": "Stuttgart",
      "away": "Club Brugge KV (BEL)",
      "shares": [
-      0.4514,
+      0.4515,
       0.2129,
-      0.3357
+      0.3356
      ]
     },
     {
@@ -6281,9 +6672,9 @@
      "home": "Sabah (AZE)",
      "away": "Napoli",
      "shares": [
-      0.1716,
-      0.2251,
-      0.6032
+      0.1717,
+      0.2252,
+      0.6031
      ]
     },
     {
@@ -6302,7 +6693,7 @@
      "away": "Bayern Munich",
      "shares": [
       0.2496,
-      0.2004,
+      0.2003,
       0.5501
      ]
     },
@@ -6322,8 +6713,8 @@
      "away": "Man City",
      "shares": [
       0.2271,
-      0.2217,
-      0.5512
+      0.2218,
+      0.5511
      ]
     },
     {
@@ -6331,9 +6722,9 @@
      "home": "Betis",
      "away": "Arsenal",
      "shares": [
-      0.1586,
+      0.1587,
       0.2467,
-      0.5948
+      0.5947
      ]
     },
     {
@@ -6341,9 +6732,9 @@
      "home": "Sporting CP",
      "away": "Barcelona",
      "shares": [
-      0.2773,
+      0.2772,
       0.2288,
-      0.4939
+      0.494
      ]
     },
     {
@@ -6351,8 +6742,8 @@
      "home": "Viking (NOR)",
      "away": "PSV",
      "shares": [
-      0.4315,
-      0.2137,
+      0.4314,
+      0.2138,
       0.3548
      ]
     },
@@ -6361,9 +6752,9 @@
      "home": "Arsenal",
      "away": "Sabah (AZE)",
      "shares": [
-      0.9121,
+      0.9122,
       0.0701,
-      0.0178
+      0.0177
      ]
     },
     {
@@ -6371,7 +6762,7 @@
      "home": "Roma",
      "away": "Lille",
      "shares": [
-      0.5061,
+      0.5062,
       0.2671,
       0.2267
      ]
@@ -6391,9 +6782,9 @@
      "home": "Dortmund",
      "away": "AEK Athen (GRE)",
      "shares": [
-      0.7924,
+      0.7923,
       0.13,
-      0.0776
+      0.0777
      ]
     },
     {
@@ -6402,8 +6793,8 @@
      "away": "FK Bodø/Glimt (NOR)",
      "shares": [
       0.557,
-      0.1967,
-      0.2463
+      0.1968,
+      0.2462
      ]
     },
     {
@@ -6413,7 +6804,7 @@
      "shares": [
       0.7439,
       0.1468,
-      0.1093
+      0.1094
      ]
     },
     {
@@ -6433,7 +6824,7 @@
      "shares": [
       0.154,
       0.2225,
-      0.6235
+      0.6236
      ]
     },
     {
@@ -6442,8 +6833,8 @@
      "away": "RB Leipzig",
      "shares": [
       0.3005,
-      0.224,
-      0.4755
+      0.2239,
+      0.4756
      ]
     },
     {
@@ -6453,7 +6844,7 @@
      "shares": [
       0.4003,
       0.2124,
-      0.3874
+      0.3873
      ]
     },
     {
@@ -6471,8 +6862,8 @@
      "home": "Man City",
      "away": "Sporting CP",
      "shares": [
-      0.5815,
-      0.2264,
+      0.5816,
+      0.2263,
       0.1921
      ]
     },
@@ -6483,7 +6874,7 @@
      "shares": [
       0.818,
       0.1133,
-      0.0687
+      0.0688
      ]
     },
     {
@@ -6491,8 +6882,8 @@
      "home": "PSV",
      "away": "Stuttgart",
      "shares": [
-      0.4166,
-      0.2382,
+      0.4167,
+      0.2381,
       0.3452
      ]
     },
@@ -6502,8 +6893,8 @@
      "away": "Aston Villa",
      "shares": [
       0.1328,
-      0.1874,
-      0.6797
+      0.1875,
+      0.6796
      ]
     },
     {
@@ -6511,9 +6902,9 @@
      "home": "Napoli",
      "away": "Viking (NOR)",
      "shares": [
-      0.5561,
+      0.5562,
       0.2089,
-      0.235
+      0.2349
      ]
     },
     {
@@ -6523,7 +6914,7 @@
      "shares": [
       0.3906,
       0.2301,
-      0.3794
+      0.3793
      ]
     },
     {
@@ -6531,9 +6922,9 @@
      "home": "ŠK Slovan Bratislava (SVK)",
      "away": "Inter",
      "shares": [
-      0.026,
-      0.0718,
-      0.9023
+      0.0261,
+      0.0717,
+      0.9021
      ]
     }
    ],
@@ -6581,37 +6972,37 @@
       "match": 2,
       "top8": [
        0.9797,
-       0.8538,
-       0.7208
+       0.8534,
+       0.7209
       ],
-      "swing": 0.2589
+      "swing": 0.2588
      },
      {
       "match": 51,
       "top8": [
-       0.9804,
-       0.8715,
-       0.7489
+       0.9805,
+       0.8713,
+       0.7486
       ],
-      "swing": 0.2316
+      "swing": 0.2319
      },
      {
       "match": 29,
       "top8": [
        0.9814,
-       0.8801,
-       0.7802
+       0.88,
+       0.78
       ],
-      "swing": 0.2012
+      "swing": 0.2014
      },
      {
       "match": 54,
       "top8": [
-       0.9354,
-       0.7516,
-       0.6188
+       0.9353,
+       0.7506,
+       0.6185
       ],
-      "swing": 0.1837
+      "swing": 0.1848
      }
     ],
     "Aston Villa": [
@@ -6619,37 +7010,37 @@
       "match": 39,
       "top8": [
        0.7412,
-       0.447,
-       0.2298
+       0.4468,
+       0.2296
       ],
-      "swing": 0.5114
+      "swing": 0.5116
      },
      {
       "match": 1,
       "top8": [
-       0.704,
-       0.4123,
+       0.7038,
+       0.4121,
        0.247
       ],
-      "swing": 0.457
+      "swing": 0.4568
      },
      {
       "match": 22,
       "top8": [
-       0.7882,
-       0.5174,
-       0.3382
+       0.7881,
+       0.5171,
+       0.3381
       ],
       "swing": 0.45
      },
      {
       "match": 68,
       "top8": [
-       0.6165,
+       0.6163,
        0.333,
-       0.1974
+       0.1976
       ],
-      "swing": 0.4191
+      "swing": 0.4187
      }
     ],
     "Ath Madrid": [
@@ -6669,25 +7060,25 @@
        0.0014,
        0.0
       ],
-      "swing": 0.1393
+      "swing": 0.1394
      },
      {
       "match": 11,
       "top8": [
-       0.0949,
+       0.095,
        0.0009,
        0.0
       ],
-      "swing": 0.0949
+      "swing": 0.095
      },
      {
       "match": 56,
       "top8": [
-       0.0834,
+       0.0835,
        0.0006,
        0.0
       ],
-      "swing": 0.0834
+      "swing": 0.0835
      }
     ],
     "Barcelona": [
@@ -6695,37 +7086,37 @@
       "match": 60,
       "top8": [
        0.9,
-       0.687,
-       0.4796
+       0.6873,
+       0.4798
       ],
-      "swing": 0.4204
+      "swing": 0.4202
      },
      {
       "match": 23,
       "top8": [
        0.9162,
-       0.7315,
-       0.5218
+       0.7319,
+       0.5217
       ],
-      "swing": 0.3944
+      "swing": 0.3945
      },
      {
       "match": 52,
       "top8": [
-       0.915,
+       0.9151,
        0.7392,
-       0.5392
+       0.5394
       ],
-      "swing": 0.3758
+      "swing": 0.3756
      },
      {
       "match": 9,
       "top8": [
-       0.8114,
+       0.8115,
        0.5745,
-       0.3961
+       0.3964
       ],
-      "swing": 0.2369
+      "swing": 0.237
      }
     ],
     "Bayern Munich": [
@@ -6733,16 +7124,16 @@
       "match": 59,
       "top8": [
        0.8621,
-       0.5903,
-       0.348
+       0.5902,
+       0.3475
       ],
-      "swing": 0.514
+      "swing": 0.5146
      },
      {
       "match": 48,
       "top8": [
-       0.9175,
-       0.7094,
+       0.9174,
+       0.7092,
        0.4775
       ],
       "swing": 0.44
@@ -6750,18 +7141,18 @@
      {
       "match": 15,
       "top8": [
-       0.9101,
-       0.6954,
-       0.4904
+       0.91,
+       0.6953,
+       0.4905
       ],
-      "swing": 0.4196
+      "swing": 0.4195
      },
      {
       "match": 24,
       "top8": [
        0.7859,
-       0.5247,
-       0.3287
+       0.5241,
+       0.3282
       ],
       "swing": 0.0
      }
@@ -6770,45 +7161,45 @@
      {
       "match": 59,
       "top8": [
-       0.5704,
-       0.2593,
+       0.5702,
+       0.2597,
        0.0996
       ],
-      "swing": 0.4707
+      "swing": 0.4706
      },
      {
       "match": 51,
       "top8": [
-       0.4847,
-       0.2081,
+       0.4844,
+       0.2082,
        0.0779
       ],
-      "swing": 0.4068
+      "swing": 0.4065
      },
      {
       "match": 27,
       "top8": [
-       0.3816,
-       0.1301,
+       0.3818,
+       0.13,
        0.0408
       ],
-      "swing": 0.3408
+      "swing": 0.341
      },
      {
       "match": 8,
       "top8": [
-       0.2085,
-       0.0603,
-       0.025
+       0.2086,
+       0.0604,
+       0.0252
       ],
-      "swing": 0.1835
+      "swing": 0.1833
      }
     ],
     "Club Brugge KV (BEL)": [
      {
       "match": 12,
       "top8": [
-       0.5715,
+       0.5716,
        0.2884,
        0.1276
       ],
@@ -6819,35 +7210,35 @@
       "top8": [
        0.5395,
        0.2843,
-       0.1424
+       0.1426
       ],
       "swing": 0.397
      },
      {
       "match": 26,
       "top8": [
-       0.5365,
+       0.5364,
        0.2892,
-       0.1483
+       0.1486
       ],
-      "swing": 0.3882
+      "swing": 0.3878
      },
      {
       "match": 58,
       "top8": [
-       0.4355,
-       0.2013,
-       0.0964
+       0.4357,
+       0.2011,
+       0.0963
       ],
-      "swing": 0.3391
+      "swing": 0.3393
      }
     ],
     "Como": [
      {
       "match": 27,
       "top8": [
-       0.7374,
-       0.3942,
+       0.7375,
+       0.3943,
        0.2205
       ],
       "swing": 0.517
@@ -6855,67 +7246,67 @@
      {
       "match": 60,
       "top8": [
-       0.837,
-       0.5319,
+       0.8371,
+       0.532,
        0.3386
       ],
-      "swing": 0.4983
+      "swing": 0.4986
      },
      {
       "match": 47,
       "top8": [
        0.7721,
        0.4573,
-       0.2845
+       0.2846
       ],
-      "swing": 0.4876
+      "swing": 0.4875
      },
      {
       "match": 3,
       "top8": [
        0.5429,
        0.2525,
-       0.1481
+       0.1484
       ],
-      "swing": 0.3948
+      "swing": 0.3945
      }
     ],
     "Dortmund": [
      {
       "match": 39,
       "top8": [
-       0.5717,
+       0.5718,
        0.266,
        0.0997
       ],
-      "swing": 0.472
+      "swing": 0.4721
      },
      {
       "match": 2,
       "top8": [
-       0.6457,
-       0.3675,
-       0.1871
+       0.6456,
+       0.3676,
+       0.1872
       ],
-      "swing": 0.4587
+      "swing": 0.4584
      },
      {
       "match": 30,
       "top8": [
-       0.5317,
-       0.233,
+       0.5318,
+       0.2333,
        0.0879
       ],
-      "swing": 0.4438
+      "swing": 0.4439
      },
      {
       "match": 57,
       "top8": [
-       0.3387,
-       0.1261,
+       0.3389,
+       0.1263,
        0.0497
       ],
-      "swing": 0.289
+      "swing": 0.2892
      }
     ],
     "FC Porto (POR)": [
@@ -7074,29 +7465,29 @@
      {
       "match": 66,
       "top8": [
-       0.1563,
-       0.0455,
-       0.0044
+       0.1561,
+       0.0454,
+       0.0043
       ],
-      "swing": 0.1519
+      "swing": 0.1517
      },
      {
       "match": 1,
       "top8": [
-       0.0591,
+       0.059,
        0.0101,
-       0.0007
+       0.0006
       ],
-      "swing": 0.0585
+      "swing": 0.0584
      },
      {
       "match": 20,
       "top8": [
-       0.0368,
+       0.0367,
        0.0055,
        0.0009
       ],
-      "swing": 0.0359
+      "swing": 0.0358
      },
      {
       "match": 37,
@@ -7105,74 +7496,74 @@
        0.0061,
        0.0009
       ],
-      "swing": 0.0323
+      "swing": 0.0322
      }
     ],
     "Inter": [
      {
       "match": 30,
       "top8": [
-       0.5105,
-       0.2288,
+       0.5108,
+       0.2287,
        0.0482
       ],
-      "swing": 0.4623
+      "swing": 0.4625
      },
      {
       "match": 40,
       "top8": [
-       0.457,
-       0.1773,
-       0.04
+       0.4568,
+       0.1774,
+       0.0402
       ],
-      "swing": 0.417
+      "swing": 0.4166
      },
      {
       "match": 13,
       "top8": [
-       0.3693,
-       0.1328,
+       0.3694,
+       0.1327,
        0.0362
       ],
-      "swing": 0.3331
+      "swing": 0.3332
      },
      {
       "match": 71,
       "top8": [
-       0.2895,
-       0.0911,
-       0.0262
+       0.2896,
+       0.091,
+       0.026
       ],
-      "swing": 0.1984
+      "swing": 0.1986
      }
     ],
     "LASK (AUT)": [
      {
       "match": 43,
       "top8": [
-       0.1299,
-       0.0316,
+       0.1295,
+       0.0318,
        0.0036
       ],
-      "swing": 0.1263
+      "swing": 0.1259
      },
      {
       "match": 0,
       "top8": [
-       0.0506,
-       0.0098,
-       0.0013
+       0.0508,
+       0.0097,
+       0.0012
       ],
-      "swing": 0.0493
+      "swing": 0.0497
      },
      {
       "match": 63,
       "top8": [
-       0.0314,
+       0.0313,
        0.0048,
-       0.0009
+       0.001
       ],
-      "swing": 0.0305
+      "swing": 0.0303
      },
      {
       "match": 31,
@@ -7181,7 +7572,7 @@
        0.0039,
        0.0006
       ],
-      "swing": 0.0225
+      "swing": 0.0224
      }
     ],
     "Lens": [
@@ -7264,76 +7655,76 @@
      {
       "match": 12,
       "top8": [
-       0.7991,
-       0.52,
-       0.286
+       0.7992,
+       0.5201,
+       0.2858
       ],
-      "swing": 0.513
+      "swing": 0.5134
      },
      {
       "match": 40,
       "top8": [
-       0.8432,
-       0.6058,
-       0.3877
+       0.8433,
+       0.6056,
+       0.3878
       ],
-      "swing": 0.4555
+      "swing": 0.4554
      },
      {
       "match": 64,
       "top8": [
-       0.6921,
-       0.4264,
-       0.2453
+       0.6922,
+       0.4262,
+       0.2454
       ],
-      "swing": 0.4468
+      "swing": 0.4467
      },
      {
       "match": 32,
       "top8": [
        0.682,
-       0.4035,
-       0.2364
+       0.4038,
+       0.2363
       ],
-      "swing": 0.4456
+      "swing": 0.4457
      }
     ],
     "Man City": [
      {
       "match": 65,
       "top8": [
-       0.7225,
-       0.4313,
-       0.2328
+       0.7224,
+       0.4307,
+       0.2327
       ],
-      "swing": 0.4898
+      "swing": 0.4897
      },
      {
       "match": 50,
       "top8": [
        0.7287,
-       0.4517,
-       0.2675
+       0.4513,
+       0.2672
       ],
-      "swing": 0.4612
-     },
-     {
-      "match": 5,
-      "top8": [
-       0.693,
-       0.4056,
-       0.2363
-      ],
-      "swing": 0.4567
+      "swing": 0.4614
      },
      {
       "match": 23,
       "top8": [
-       0.85,
-       0.6095,
-       0.3935
+       0.8499,
+       0.6094,
+       0.3934
       ],
       "swing": 0.4565
+     },
+     {
+      "match": 5,
+      "top8": [
+       0.6929,
+       0.4051,
+       0.2366
+      ],
+      "swing": 0.4563
      }
     ],
     "Man United": [
@@ -7349,29 +7740,29 @@
      {
       "match": 17,
       "top8": [
-       0.1148,
-       0.0286,
-       0.0036
+       0.1147,
+       0.0285,
+       0.0037
       ],
-      "swing": 0.1112
+      "swing": 0.111
      },
      {
       "match": 70,
       "top8": [
        0.0944,
        0.0232,
-       0.0046
+       0.0045
       ],
-      "swing": 0.0898
+      "swing": 0.09
      },
      {
       "match": 25,
       "top8": [
-       0.0754,
-       0.0164,
-       0.0027
+       0.0753,
+       0.0165,
+       0.0028
       ],
-      "swing": 0.0727
+      "swing": 0.0725
      }
     ],
     "Napoli": [
@@ -7416,11 +7807,11 @@
      {
       "match": 7,
       "top8": [
-       0.0239,
+       0.0241,
        0.0003,
        0.0
       ],
-      "swing": 0.0239
+      "swing": 0.0241
      },
      {
       "match": 33,
@@ -7434,11 +7825,11 @@
      {
       "match": 53,
       "top8": [
-       0.0083,
+       0.0084,
        0.0,
        0.0
       ],
-      "swing": 0.0083
+      "swing": 0.0084
      },
      {
       "match": 67,
@@ -7455,34 +7846,34 @@
       "match": 66,
       "top8": [
        0.9848,
-       0.9101,
-       0.8155
+       0.9099,
+       0.8152
       ],
-      "swing": 0.1693
+      "swing": 0.1696
      },
      {
       "match": 16,
       "top8": [
-       0.9945,
-       0.9551,
-       0.88
+       0.9944,
+       0.9552,
+       0.8798
       ],
-      "swing": 0.1144
+      "swing": 0.1146
      },
      {
       "match": 22,
       "top8": [
        0.9967,
        0.9706,
-       0.9052
+       0.9051
       ],
-      "swing": 0.0915
+      "swing": 0.0916
      },
      {
       "match": 47,
       "top8": [
        0.9972,
-       0.9706,
+       0.9705,
        0.9143
       ],
       "swing": 0.0829
@@ -7492,11 +7883,11 @@
      {
       "match": 25,
       "top8": [
-       0.0053,
+       0.0054,
        0.0,
        0.0
       ],
-      "swing": 0.0053
+      "swing": 0.0054
      },
      {
       "match": 62,
@@ -7531,10 +7922,10 @@
       "match": 43,
       "top8": [
        0.9826,
-       0.8862,
-       0.7498
+       0.8858,
+       0.7502
       ],
-      "swing": 0.2328
+      "swing": 0.2325
      },
      {
       "match": 7,
@@ -7543,22 +7934,22 @@
        0.9297,
        0.8228
       ],
-      "swing": 0.1668
+      "swing": 0.1667
      },
      {
       "match": 61,
       "top8": [
        0.9907,
-       0.9429,
-       0.8554
+       0.9427,
+       0.8557
       ],
-      "swing": 0.1353
+      "swing": 0.135
      },
      {
       "match": 29,
       "top8": [
        0.9967,
-       0.98,
+       0.9801,
        0.9366
       ],
       "swing": 0.0601
@@ -7568,38 +7959,38 @@
      {
       "match": 16,
       "top8": [
-       0.125,
+       0.1252,
        0.0012,
        0.0001
       ],
-      "swing": 0.125
+      "swing": 0.1251
      },
      {
       "match": 21,
       "top8": [
-       0.0486,
+       0.0487,
        0.0004,
        0.0
       ],
-      "swing": 0.0486
+      "swing": 0.0487
      },
      {
       "match": 55,
       "top8": [
-       0.046,
+       0.0461,
        0.0007,
        0.0
       ],
-      "swing": 0.046
+      "swing": 0.0461
      },
      {
       "match": 38,
       "top8": [
-       0.0348,
+       0.0349,
        0.0005,
        0.0
       ],
-      "swing": 0.0348
+      "swing": 0.0349
      }
     ],
     "Sabah (AZE)": [
@@ -7644,11 +8035,11 @@
      {
       "match": 61,
       "top8": [
-       0.0334,
+       0.0335,
        0.0001,
        0.0
       ],
-      "swing": 0.0334
+      "swing": 0.0335
      },
      {
       "match": 49,
@@ -7720,105 +8111,105 @@
      {
       "match": 65,
       "top8": [
-       0.4495,
-       0.1927,
+       0.4497,
+       0.1926,
        0.0804
       ],
-      "swing": 0.3691
+      "swing": 0.3694
      },
      {
       "match": 52,
       "top8": [
-       0.3991,
+       0.3989,
        0.1537,
        0.0627
       ],
-      "swing": 0.3364
+      "swing": 0.3362
      },
      {
       "match": 21,
       "top8": [
-       0.3868,
-       0.164,
+       0.3864,
+       0.1642,
        0.0723
       ],
-      "swing": 0.3145
+      "swing": 0.3141
      },
      {
       "match": 17,
       "top8": [
-       0.2975,
-       0.1126,
-       0.0468
+       0.2974,
+       0.1124,
+       0.0469
       ],
-      "swing": 0.2507
+      "swing": 0.2506
      }
     ],
     "Stuttgart": [
      {
       "match": 13,
       "top8": [
-       0.2967,
-       0.0844,
+       0.297,
+       0.0845,
        0.0364
       ],
-      "swing": 0.2602
+      "swing": 0.2606
      },
      {
       "match": 67,
       "top8": [
        0.203,
-       0.043,
-       0.0202
+       0.0431,
+       0.0203
       ],
       "swing": 0.1827
      },
      {
       "match": 35,
       "top8": [
-       0.178,
-       0.0356,
+       0.1781,
+       0.0355,
        0.0171
       ],
-      "swing": 0.1609
+      "swing": 0.161
      },
      {
       "match": 44,
       "top8": [
-       0.1715,
+       0.1716,
        0.0322,
        0.0132
       ],
-      "swing": 0.1583
+      "swing": 0.1584
      }
     ],
     "Viking (NOR)": [
      {
       "match": 11,
       "top8": [
-       0.0337,
+       0.0338,
        0.0004,
        0.0
       ],
-      "swing": 0.0337
+      "swing": 0.0338
      },
      {
       "match": 69,
       "top8": [
-       0.0223,
+       0.0224,
        0.0001,
        0.0
       ],
-      "swing": 0.0223
+      "swing": 0.0224
      },
      {
       "match": 53,
       "top8": [
-       0.0122,
+       0.0123,
        0.0,
        0.0
       ],
-      "swing": 0.0122
+      "swing": 0.0123
      },
      {
       "match": 18,
@@ -7843,20 +8234,20 @@
      {
       "match": 45,
       "top8": [
-       0.0105,
+       0.0106,
        0.0,
        0.0
       ],
-      "swing": 0.0105
+      "swing": 0.0106
      },
      {
       "match": 10,
       "top8": [
-       0.0091,
+       0.0092,
        0.0,
        0.0
       ],
-      "swing": 0.0091
+      "swing": 0.0092
      },
      {
       "match": 19,
@@ -7912,51 +8303,51 @@
      "club": "Liverpool",
      "match": 12,
      "top8": [
-      0.7991,
-      0.52,
-      0.286
+      0.7992,
+      0.5201,
+      0.2858
      ],
-     "swing": 0.513
+     "swing": 0.5134
     },
     {
      "club": "Dortmund",
      "match": 2,
      "top8": [
-      0.6457,
-      0.3675,
-      0.1871
+      0.6456,
+      0.3676,
+      0.1872
      ],
-     "swing": 0.4587
+     "swing": 0.4584
     },
     {
      "club": "Aston Villa",
      "match": 1,
      "top8": [
-      0.704,
-      0.4123,
+      0.7038,
+      0.4121,
       0.247
      ],
-     "swing": 0.457
+     "swing": 0.4568
     },
     {
      "club": "Man City",
      "match": 5,
      "top8": [
-      0.693,
-      0.4056,
-      0.2363
+      0.6929,
+      0.4051,
+      0.2366
      ],
-     "swing": 0.4567
+     "swing": 0.4563
     },
     {
      "club": "Bayern Munich",
      "match": 15,
      "top8": [
-      0.9101,
-      0.6954,
-      0.4904
+      0.91,
+      0.6953,
+      0.4905
      ],
-     "swing": 0.4196
+     "swing": 0.4195
     },
     {
      "club": "Como",
@@ -7964,9 +8355,9 @@
      "top8": [
       0.5429,
       0.2525,
-      0.1481
+      0.1484
      ],
-     "swing": 0.3948
+     "swing": 0.3945
     }
    ]
   },
@@ -7991,10 +8382,12 @@
     "2026-11-16",
     "2026-11-17",
     "2026-11-18",
-    "2026-11-19"
+    "2026-11-19",
+    "2026-11-20"
    ],
    "win": {
     "AEK Athen (GRE)": [
+     0.0,
      0.0,
      0.0,
      0.0,
@@ -8036,7 +8429,8 @@
      0.26759,
      0.26739,
      0.26721,
-     0.26718
+     0.26718,
+     0.26686
     ],
     "Aston Villa": [
      0.00868,
@@ -8058,7 +8452,8 @@
      0.01429,
      0.01433,
      0.01438,
-     0.01434
+     0.01434,
+     0.01432
     ],
     "Ath Madrid": [
      0.01093,
@@ -8080,7 +8475,8 @@
      0.0116,
      0.01157,
      0.01152,
-     0.0115
+     0.0115,
+     0.01154
     ],
     "Barcelona": [
      0.1042,
@@ -8102,7 +8498,8 @@
      0.11427,
      0.11435,
      0.11438,
-     0.11449
+     0.11449,
+     0.11458
     ],
     "Bayern Munich": [
      0.15258,
@@ -8124,7 +8521,8 @@
      0.1425,
      0.14228,
      0.1424,
-     0.14237
+     0.14237,
+     0.14236
     ],
     "Betis": [
      0.00123,
@@ -8146,6 +8544,7 @@
      0.00251,
      0.00256,
      0.00256,
+     0.00254,
      0.00254
     ],
     "Club Brugge KV (BEL)": [
@@ -8168,7 +8567,8 @@
      0.00287,
      0.00285,
      0.00286,
-     0.00284
+     0.00284,
+     0.00287
     ],
     "Como": [
      0.01022,
@@ -8190,7 +8590,8 @@
      0.02468,
      0.02467,
      0.02469,
-     0.02474
+     0.02474,
+     0.02475
     ],
     "Dortmund": [
      0.01522,
@@ -8212,7 +8613,8 @@
      0.01313,
      0.01306,
      0.01306,
-     0.01308
+     0.01308,
+     0.01318
     ],
     "FC Porto (POR)": [
      0.00039,
@@ -8230,6 +8632,7 @@
      0.0001,
      0.0001,
      0.0001,
+     9e-05,
      9e-05,
      9e-05,
      9e-05,
@@ -8256,11 +8659,13 @@
      0.00027,
      0.00027,
      0.00027,
-     0.00027
+     0.00027,
+     0.00024
     ],
     "Fenerbahçe (TUR)": [
      4e-05,
      0.00011,
+     0.0,
      0.0,
      0.0,
      0.0,
@@ -8300,6 +8705,7 @@
      2e-05,
      2e-05,
      2e-05,
+     2e-05,
      2e-05
     ],
     "Galatasaray": [
@@ -8318,6 +8724,7 @@
      9e-05,
      8e-05,
      8e-05,
+     6e-05,
      6e-05,
      6e-05,
      6e-05,
@@ -8344,7 +8751,8 @@
      0.03698,
      0.03711,
      0.03703,
-     0.03704
+     0.03704,
+     0.03697
     ],
     "LASK (AUT)": [
      2e-05,
@@ -8361,6 +8769,7 @@
      2e-05,
      1e-05,
      1e-05,
+     2e-05,
      2e-05,
      2e-05,
      2e-05,
@@ -8388,6 +8797,7 @@
      9e-05,
      9e-05,
      9e-05,
+     9e-05,
      9e-05
     ],
     "Lille": [
@@ -8407,6 +8817,7 @@
      0.0004,
      0.00041,
      0.00043,
+     0.00051,
      0.00051,
      0.00051,
      0.00051,
@@ -8432,7 +8843,8 @@
      0.0385,
      0.03838,
      0.03839,
-     0.03832
+     0.03832,
+     0.0384
     ],
     "Man City": [
      0.08303,
@@ -8454,7 +8866,8 @@
      0.06324,
      0.06329,
      0.06334,
-     0.06333
+     0.06333,
+     0.06346
     ],
     "Man United": [
      0.00832,
@@ -8476,7 +8889,8 @@
      0.00311,
      0.0031,
      0.00306,
-     0.00307
+     0.00307,
+     0.00309
     ],
     "Napoli": [
      0.00373,
@@ -8498,7 +8912,8 @@
      0.00091,
      0.00093,
      0.00094,
-     0.00093
+     0.00093,
+     0.00092
     ],
     "PSV": [
      0.00192,
@@ -8514,6 +8929,7 @@
      0.0002,
      0.00025,
      0.00021,
+     0.0002,
      0.0002,
      0.0002,
      0.0002,
@@ -8542,7 +8958,8 @@
      0.15339,
      0.15352,
      0.15359,
-     0.15369
+     0.15369,
+     0.15378
     ],
     "RB Leipzig": [
      0.00148,
@@ -8564,7 +8981,8 @@
      0.0007,
      0.00071,
      0.0007,
-     0.00069
+     0.00069,
+     0.0007
     ],
     "Real Madrid": [
      0.06939,
@@ -8586,7 +9004,8 @@
      0.09001,
      0.09022,
      0.09015,
-     0.09016
+     0.09016,
+     0.09015
     ],
     "Roma": [
      0.01924,
@@ -8608,9 +9027,11 @@
      0.00957,
      0.00957,
      0.00961,
-     0.00963
+     0.00963,
+     0.00956
     ],
     "Sabah (AZE)": [
+     0.0,
      0.0,
      0.0,
      0.0,
@@ -8652,9 +9073,11 @@
      3e-05,
      3e-05,
      3e-05,
+     3e-05,
      3e-05
     ],
     "Slavia Praha": [
+     0.0,
      0.0,
      0.0,
      0.0,
@@ -8696,7 +9119,8 @@
      0.00666,
      0.00664,
      0.00663,
-     0.00659
+     0.00659,
+     0.00655
     ],
     "Stuttgart": [
      0.00313,
@@ -8718,7 +9142,8 @@
      0.00154,
      0.0015,
      0.00151,
-     0.00151
+     0.00151,
+     0.00152
     ],
     "Viking (NOR)": [
      0.0,
@@ -8740,6 +9165,7 @@
      7e-05,
      7e-05,
      8e-05,
+     7e-05,
      7e-05
     ],
     "Villarreal": [
@@ -8762,9 +9188,11 @@
      0.00059,
      0.00061,
      0.00062,
-     0.0006
+     0.0006,
+     0.00057
     ],
     "ŠK Slovan Bratislava (SVK)": [
+     0.0,
      0.0,
      0.0,
      0.0,
