@@ -1,6 +1,6 @@
 # Live scorecard
 
-Last updated 2026-11-21 13:37 UTC. Predictions are made before kick-off and never changed afterwards.
+Last updated 2026-11-22 13:30 UTC. Predictions are made before kick-off and never changed afterwards.
 
 - Predictions in the ledger: 96
 - Matches played and scored: 48
