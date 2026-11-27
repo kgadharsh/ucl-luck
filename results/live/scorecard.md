@@ -1,8 +1,8 @@
 # Live scorecard
 
-Last updated 2026-11-26 15:31 UTC. Predictions are made before kick-off and never changed afterwards.
+Last updated 2026-11-27 15:25 UTC. Predictions are made before kick-off and never changed afterwards.
 
-- Predictions in the ledger: 96
+- Predictions in the ledger: 144
 - Matches played and scored: 96
 - Brier on 96 matches with closing odds: model 0.5560, bookmakers 0.5434 (lower is better)
 
